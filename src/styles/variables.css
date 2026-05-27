@@ -1,0 +1,78 @@
+/**
+ * Дизайн-токены салона «Здоровье и красота»
+ * ПОЧЕМУ CSS-переменные? Единая точка настройки темы.
+ * Изменение одного значения обновляет весь сайт.
+ */
+
+:root {
+  /* === ЦВЕТА БРЕНДА === */
+  /* ПОЧЕМУ такие? Тёплая палитра салона: золото, бежевый, глубокий коричневый */
+  --color-primary: #d4a574; /* Золотисто-бежевый (основной) */
+  --color-primary-dark: #b8895a; /* Тёмный акцент */
+  --color-primary-light: #f0d9bc; /* Светлый фон */
+  --color-secondary: #8b6f47; /* Коричневый (дополнительный) */
+
+  /* === НЕЙТРАЛЬНЫЕ === */
+  --color-bg: #fdfaf6; /* Тёплый белый фон */
+  --color-surface: #ffffff; /* Поверхности (карточки) */
+  --color-text: #2d2419; /* Основной текст */
+  --color-text-muted: #6b5d4f; /* Приглушённый текст */
+  --color-border: #e8dcc4; /* Границы */
+
+  /* === СТАТУСЫ === */
+  /* ПОЧЕМУ отдельные цвета? Семантическая раскраска статусов записей */
+  --color-success: #4caf50; /* Подтверждено / Успех */
+  --color-warning: #ff9800; /* Ожидает / Предупреждение */
+  --color-error: #f44336; /* Отменено / Ошибка */
+  --color-info: #2196f3; /* Информация */
+
+  /* === ТИПОГРАФИКА === */
+  --font-family:
+    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-size-xs: 0.75rem; /* 12px */
+  --font-size-sm: 0.875rem; /* 14px */
+  --font-size-base: 1rem; /* 16px */
+  --font-size-lg: 1.125rem; /* 18px */
+  --font-size-xl: 1.5rem; /* 24px */
+  --font-size-2xl: 2rem; /* 32px */
+
+  /* === ОТСТУПЫ === */
+  --spacing-xs: 0.25rem; /* 4px */
+  --spacing-sm: 0.5rem; /* 8px */
+  --spacing-md: 1rem; /* 16px */
+  --spacing-lg: 1.5rem; /* 24px */
+  --spacing-xl: 2rem; /* 32px */
+  --spacing-2xl: 3rem; /* 48px */
+
+  /* === СКРУГЛЕНИЯ === */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+
+  /* === ТЕНИ === */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+
+  /* === АДАПТИВНОСТЬ (breakpoints) === */
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+
+  /* === АНИМАЦИИ === */
+  --transition-fast: 150ms ease;
+  --transition-base: 250ms ease;
+  --transition-slow: 400ms ease;
+}
+
+/* === ТЁМНАЯ ТЕМА (бонус) === */
+[data-theme="dark"] {
+  --color-bg: #1a1410;
+  --color-surface: #2d2419;
+  --color-text: #fdfaf6;
+  --color-text-muted: #b8a892;
+  --color-border: #3d3226;
+}

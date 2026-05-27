@@ -1,0 +1,141 @@
+/**
+ * Стили для Layout
+ * ПОЧЕМУ BEM-нотация (layout__header, layout__nav-link--active)?
+ * - Избегаем конфликтов стилей между компонентами
+ * - Читаемая структура: блок__элемент--модификатор
+ */
+
+.layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.layout__container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-md, 1rem);
+  width: 100%;
+}
+
+/* === ШАПКА === */
+.layout__header {
+  background-color: var(--color-primary, #d4a574);
+  color: white;
+  padding: var(--spacing-md, 1rem) 0;
+  box-shadow: var(--shadow-md, 0 4px 6px rgba(0, 0, 0, 0.07));
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.layout__header .layout__container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-md, 1rem);
+  flex-wrap: wrap;
+}
+
+.layout__logo {
+  font-size: var(--font-size-xl, 1.5rem);
+  font-weight: 700;
+  color: white;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm, 0.5rem);
+}
+
+.layout__nav {
+  display: flex;
+  gap: var(--spacing-md, 1rem);
+}
+
+.layout__nav-link {
+  color: white;
+  text-decoration: none;
+  padding: var(--spacing-xs, 0.25rem) var(--spacing-sm, 0.5rem);
+  border-radius: var(--radius-md, 8px);
+  transition: background-color var(--transition-fast, 150ms ease);
+  font-weight: 500;
+}
+
+.layout__nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.layout__nav-link--active {
+  background-color: rgba(255, 255, 255, 0.3);
+  font-weight: 600;
+}
+
+.layout__role-switcher {
+  display: flex;
+  align-items: center;
+}
+
+.layout__role-label {
+  color: white;
+  font-size: var(--font-size-sm, 0.875rem);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs, 0.25rem);
+}
+
+.layout__role-select {
+  padding: var(--spacing-xs, 0.25rem) var(--spacing-sm, 0.5rem);
+  border-radius: var(--radius-md, 8px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  background-color: white;
+  font-size: var(--font-size-sm, 0.875rem);
+  cursor: pointer;
+}
+
+/* === ОСНОВНОЙ КОНТЕНТ === */
+.layout__main {
+  flex: 1;
+  padding: var(--spacing-xl, 2rem) 0;
+}
+
+/* === ПОДВАЛ === */
+.layout__footer {
+  background-color: var(--color-secondary, #8b6f47);
+  color: white;
+  padding: var(--spacing-xl, 2rem) 0;
+  margin-top: auto;
+}
+
+.layout__footer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--spacing-lg, 1.5rem);
+}
+
+.layout__footer-col h4 {
+  margin-bottom: var(--spacing-sm, 0.5rem);
+  font-size: var(--font-size-lg, 1.125rem);
+}
+
+.layout__footer-col p {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: var(--font-size-sm, 0.875rem);
+  margin-bottom: var(--spacing-xs, 0.25rem);
+}
+
+/* === АДАПТИВНОСТЬ === */
+@media (max-width: 768px) {
+  .layout__header .layout__container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .layout__nav {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .layout__role-switcher {
+    justify-content: center;
+  }
+}

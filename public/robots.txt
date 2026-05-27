@@ -1,3 +1,14 @@
-# https://www.robotstxt.org/robotstxt.html
+# robots.txt для bookme24.by
+# Разрешаем индексацию всем поисковым системам
 User-agent: *
-Disallow:
+Allow: /
+
+# Запрещаем индексацию служебных путей (если будут)
+Disallow: /admin
+Disallow: /api/
+
+# Указываем адрес карты сайта (создадим позже)
+Sitemap: https://bookme24.by/sitemap.xml
+
+# Хост (для Яндекса — указываем основной домен)
+Host: bookme24.by

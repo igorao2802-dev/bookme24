@@ -2,29 +2,67 @@
 <html lang="ru">
   <head>
     <meta charset="utf-8" />
-    <!-- ПОЧЕМУ? viewport обеспечивает корректное отображение на мобильных устройствах -->
+    <!-- ПОЧЕМУ viewport? Адаптивность для мобильных устройств -->
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#1e4d8c" />
+    <meta name="theme-color" content="#d4a574" />
+
+    <!-- SEO: описание для поисковиков -->
     <meta
       name="description"
-      content="Система онлайн-записи в салон «Здоровье и красота»"
+      content="Салон «Здоровье и красота» — онлайн-запись на услуги: стрижки, маникюр, массаж, косметология в Минске. Быстро, удобно, круглосуточно."
     />
+    <meta
+      name="keywords"
+      content="салон красоты Минск, онлайн запись, стрижка, маникюр, массаж, косметология, bookme24"
+    />
+    <meta name="author" content="Салон «Здоровье и красота»" />
 
-    <!-- ПОЧЕМУ? %PUBLIC_URL% — переменная CRA, которая подставляет правильный путь при сборке -->
-    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    <!-- Open Graph для соцсетей (Telegram, VK, Facebook) -->
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:title"
+      content="Салон «Здоровье и красота» — Онлайн-запись"
+    />
+    <meta
+      property="og:description"
+      content="Запись на услуги салона красоты за 30 секунд. Лучшие мастера Минска."
+    />
+    <meta property="og:image" content="%PUBLIC_URL%/images/og-image.jpg" />
+    <meta property="og:url" content="https://bookme24.by" />
+    <meta property="og:locale" content="ru_BY" />
 
-    <!-- ПОЧЕМУ? manifest.json нужен для PWA-функционала (установка приложения) -->
+    <!-- PWA-манифест -->
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
 
-    <title>Система онлайн-записи в салон «Здоровье и красота»</title>
+    <!-- Favicon (кастомная иконка салона) -->
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/images/logo192.png" />
+
+    <!-- Предзагрузка шрифтов для быстрого отображения -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- 
+      ПОЧЕМУ %PUBLIC_URL%? 
+      CRA подставляет сюда путь к папке public. Это позволяет использовать
+      абсолютные пути к ресурсам независимо от места деплоя.
+    -->
+    <title>Салон «Здоровье и красота» — Онлайн-запись | bookme24.by</title>
   </head>
   <body>
-    <!-- ПОЧЕМУ? <noscript> показывает сообщение, если у пользователя отключён JavaScript -->
-    <noscript>Для работы приложения необходимо включить JavaScript.</noscript>
+    <!-- ПОЧЕМУ noscript? SEO и доступность для пользователей без JS -->
+    <noscript>
+      <div style="padding: 40px; text-align: center; font-family: sans-serif">
+        <h1>Для работы сайта требуется JavaScript</h1>
+        <p>Пожалуйста, включите JavaScript в настройках браузера.</p>
+      </div>
+    </noscript>
 
-    <!-- ПОЧЕМУ? <div id="root"> — единственная точка монтирования для React-приложения.
-         ReactDOM.createRoot() находит этот элемент и «вкладывает» туда весь UI. -->
+    <!-- Точка монтирования React -->
     <div id="root"></div>
   </body>
 </html>

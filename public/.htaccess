@@ -1,0 +1,49 @@
+# Регулировщик для SPA-приложения bookme24.by
+# ПОЧЕМУ? React Router управляет маршрутами на клиенте.
+# Сервер Apache по умолчанию ищет физические файлы, и при F5
+# на подстранице (/booking, /catalog, /admin) отдаёт 404.
+# Этот файл перенаправляет ВСЕ запросы в index.html,
+# а React Router уже сам решает, что показать.
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # Если запрошенный файл реально существует (картинка, CSS, JS) — отдать его
+  RewriteCond %{REQUEST_FILENAME} !-f
+  # Если запрошенная папка реально существует — отдать её
+  RewriteCond %{REQUEST_FILENAME} !-d
+  # Если запрошенный файл не существует — перенаправить в index.html
+  RewriteRule . /index.html [L]
+</IfModule>
+
+# === КЭШИРОВАНИЕ СТАТИКИ (ускорение сайта) ===
+# ПОЧЕМУ? Повторные визиты пользователей будут мгновенными
+<IfModule mod_expires.c>
+  ExpiresActive On
+  # Картинки и шрифты — кэш на 1 год
+  ExpiresByType image/jpg "access plus 1 year"
+  ExpiresByType image/jpeg "access plus 1 year"
+  ExpiresByType image/png "access plus 1 year"
+  ExpiresByType image/webp "access plus 1 year"
+  ExpiresByType image/svg+xml "access plus 1 year"
+  ExpiresByType font/woff2 "access plus 1 year"
+  # CSS и JS — кэш на 1 месяц (сборка CRA добавляет хеши в имена)
+  ExpiresByType text/css "access plus 1 month"
+  ExpiresByType application/javascript "access plus 1 month"
+</IfModule>
+
+# === СЖАТИЕ (уменьшение трафика) ===
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json
+</IfModule>
+
+# === БЕЗОПАСНОСТЬ (заголовки) ===
+<IfModule mod_headers.c>
+  # Защита от XSS-атак
+  Header set X-XSS-Protection "1; mode=block"
+  # Запрет встраивания сайта в iframe (кликджекинг)
+  Header set X-Frame-Options "SAMEORIGIN"
+  # Защита MIME-типов
+  Header set X-Content-Type-Options "nosniff"
+</IfModule>

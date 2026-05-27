@@ -1,0 +1,61 @@
+.booking-wizard {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.booking-wizard h1 {
+  margin-bottom: var(--spacing-md);
+}
+
+.booking-wizard__description {
+  color: var(--color-text-muted);
+  margin-bottom: var(--spacing-xl);
+}
+
+.booking-wizard__stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-xl);
+}
+
+.booking-wizard__stat {
+  background: var(--color-surface);
+  padding: var(--spacing-lg);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.booking-wizard__stat-label {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.booking-wizard__stat strong {
+  font-size: var(--font-size-2xl);
+  color: var(--color-primary-dark);
+}
+
+.booking-wizard__placeholder {
+  background: var(--color-primary-light);
+  padding: var(--spacing-xl);
+  border-radius: var(--radius-lg);
+  text-align: center;
+  border: 2px dashed var(--color-primary);
+}
+
+.booking-wizard__placeholder p {
+  color: var(--color-text);
+  margin-bottom: var(--spacing-sm);
+}
+
+.booking-wizard__message {
+  margin-top: var(--spacing-md);
+  padding: var(--spacing-md);
+  background: var(--color-success);
+  color: white;
+  border-radius: var(--radius-md);
+}

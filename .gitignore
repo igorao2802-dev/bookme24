@@ -1,31 +1,44 @@
-# dependencies
-/node_modules
+# === ЗАВИСИМОСТИ ===
+node_modules/
 /.pnp
 .pnp.js
 
-# testing
-/coverage
-
-# production
+# === СБОРКА ===
 /build
+/dist
+coverage/
 
-# misc
-.DS_Store
+# === ОКРУЖЕНИЕ (СЕКРЕТЫ) ===
+# ПОЧЕМУ? Ключи API никогда не должны попадать в GitHub
+.env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
 
-# logs
+# === ЛОКАЛЬНЫЕ ФАЙЛЫ ТЗ (ТОЛЬКО ДЛЯ МЕНЯ) ===
+# ПОЧЕМУ TT_*.md? Маска покрывает все версии ТЗ (TT_01.00.md, TT_01.01.md и т.д.)
+TT_*.md
+
+# === IDE И РЕДАКТОРЫ ===
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# === ЛОГИ ===
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+*.log
 
-# IDE
-.idea/
-.vscode/
-*.iml
+# === ТЕСТЫ И ВРЕМЕННЫЕ ФАЙЛЫ ===
+*.test.js.snap
+.cache/
 
-# OS
-Thumbs.db
-ehthumbs.db
+# === РАЗНОЕ ===
+.eslintcache
+.vercel
