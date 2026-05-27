@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <!-- ПОЧЕМУ? viewport обеспечивает корректное отображение на мобильных устройствах -->
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#1e4d8c" />
+    <meta
+      name="description"
+      content="Система онлайн-записи в салон «Здоровье и красота»"
+    />
+
+    <!-- ПОЧЕМУ? %PUBLIC_URL% — переменная CRA, которая подставляет правильный путь при сборке -->
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+
+    <!-- ПОЧЕМУ? manifest.json нужен для PWA-функционала (установка приложения) -->
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+
+    <title>Система онлайн-записи в салон «Здоровье и красота»</title>
+  </head>
+  <body>
+    <!-- ПОЧЕМУ? <noscript> показывает сообщение, если у пользователя отключён JavaScript -->
+    <noscript>Для работы приложения необходимо включить JavaScript.</noscript>
+
+    <!-- ПОЧЕМУ? <div id="root"> — единственная точка монтирования для React-приложения.
+         ReactDOM.createRoot() находит этот элемент и «вкладывает» туда весь UI. -->
+    <div id="root"></div>
+  </body>
+</html>
