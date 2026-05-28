@@ -16,7 +16,7 @@
  * но мы успеваем отсеять лишние промежуточные значения.
  */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 
 /**
  * @param {*} value - исходное значение (может меняться часто)
