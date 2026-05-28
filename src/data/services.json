@@ -1,0 +1,184 @@
+{
+  "services": [
+    {
+      "id": "svc_hair_01",
+      "name": "Женская стрижка",
+      "category": "hair",
+      "description": "Профессиональная стрижка с мытьём головы и укладкой. Подбор формы под тип лица и структуру волос.",
+      "duration": 60,
+      "price": 45.00,
+      "rating": 4.8,
+      "image": "/images/services/haircut-women.jpg"
+    },
+    {
+      "id": "svc_hair_02",
+      "name": "Мужская стрижка",
+      "category": "hair",
+      "description": "Классическая или модельная мужская стрижка с оформлением контура и укладкой.",
+      "duration": 45,
+      "price": 30.00,
+      "rating": 4.9,
+      "image": "/images/services/haircut-men.jpg"
+    },
+    {
+      "id": "svc_hair_03",
+      "name": "Окрашивание волос",
+      "category": "hair",
+      "description": "Однотонное окрашивание профессиональными красителями Wella и L'Oréal. Включает мытьё и укладку.",
+      "duration": 120,
+      "price": 95.00,
+      "rating": 4.7,
+      "image": "/images/services/coloring.jpg"
+    },
+    {
+      "id": "svc_hair_04",
+      "name": "Мелирование",
+      "category": "hair",
+      "description": "Классическое или калифорнийское мелирование для создания объёма и глубины цвета.",
+      "duration": 150,
+      "price": 120.00,
+      "rating": 4.9,
+      "image": "/images/services/highlights.jpg"
+    },
+    {
+      "id": "svc_hair_05",
+      "name": "Кератиновое выпрямление",
+      "category": "hair",
+      "description": "Выпрямление и восстановление волос кератином. Эффект до 4 месяцев.",
+      "duration": 180,
+      "price": 200.00,
+      "rating": 4.6,
+      "image": "/images/services/keratin.jpg"
+    },
+    {
+      "id": "svc_nails_01",
+      "name": "Классический маникюр",
+      "category": "nails",
+      "description": "Обработка кутикулы, придание формы ногтям, покрытие базой и лаком.",
+      "duration": 60,
+      "price": 35.00,
+      "rating": 4.6,
+      "image": "/images/services/manicure.jpg"
+    },
+    {
+      "id": "svc_nails_02",
+      "name": "Маникюр с гель-лаком",
+      "category": "nails",
+      "description": "Комбинированный маникюр с покрытием стойким гель-лаком (до 3 недель).",
+      "duration": 90,
+      "price": 55.00,
+      "rating": 4.9,
+      "image": "/images/services/gel-polish.jpg"
+    },
+    {
+      "id": "svc_nails_03",
+      "name": "Педикюр аппаратный",
+      "category": "nails",
+      "description": "Аппаратная обработка стоп и ногтей, покрытие по желанию клиента.",
+      "duration": 75,
+      "price": 60.00,
+      "rating": 4.8,
+      "image": "/images/services/pedicure.jpg"
+    },
+    {
+      "id": "svc_nails_04",
+      "name": "Наращивание ногтей",
+      "category": "nails",
+      "description": "Наращивание ногтей гелем или акрилом с дизайном на выбор.",
+      "duration": 150,
+      "price": 85.00,
+      "rating": 4.7,
+      "image": "/images/services/nail-extension.jpg"
+    },
+    {
+      "id": "svc_massage_01",
+      "name": "Массаж классический (спина)",
+      "category": "massage",
+      "description": "Расслабляющий массаж спины и шейно-воротниковой зоны. Снимает напряжение и улучшает кровообращение.",
+      "duration": 45,
+      "price": 50.00,
+      "rating": 4.9,
+      "image": "/images/services/massage-back.jpg"
+    },
+    {
+      "id": "svc_massage_02",
+      "name": "Массаж общий (всё тело)",
+      "category": "massage",
+      "description": "Полный расслабляющий массаж тела длительностью 1 час. Рекомендуется при хронической усталости.",
+      "duration": 60,
+      "price": 80.00,
+      "rating": 5.0,
+      "image": "/images/services/massage-full.jpg"
+    },
+    {
+      "id": "svc_massage_03",
+      "name": "Антицеллюлитный массаж",
+      "category": "massage",
+      "description": "Интенсивный массаж проблемных зон для улучшения тонуса кожи и уменьшения целлюлита.",
+      "duration": 60,
+      "price": 70.00,
+      "rating": 4.8,
+      "image": "/images/services/massage-anticellulite.jpg"
+    },
+    {
+      "id": "svc_cosm_01",
+      "name": "Чистка лица комбинированная",
+      "category": "cosmetology",
+      "description": "Механическая и ультразвуковая чистка с маской по типу кожи. Глубокое очищение пор.",
+      "duration": 90,
+      "price": 75.00,
+      "rating": 4.8,
+      "image": "/images/services/facial-cleaning.jpg"
+    },
+    {
+      "id": "svc_cosm_02",
+      "name": "Пилинг химический",
+      "category": "cosmetology",
+      "description": "Поверхностный пилинг для обновления кожи и улучшения цвета лица. Минимальный период восстановления.",
+      "duration": 45,
+      "price": 65.00,
+      "rating": 4.7,
+      "image": "/images/services/peeling.jpg"
+    },
+    {
+      "id": "svc_cosm_03",
+      "name": "Мезотерапия лица",
+      "category": "cosmetology",
+      "description": "Инъекционная процедура для увлажнения и омоложения кожи. Курс из 5-10 процедур.",
+      "duration": 60,
+      "price": 120.00,
+      "rating": 4.9,
+      "image": "/images/services/mesotherapy.jpg"
+    },
+    {
+      "id": "svc_spa_01",
+      "name": "SPA-обёртывание шоколадное",
+      "category": "spa",
+      "description": "Тонизирующее обёртывание с натуральным шоколадом. Улучшает тонус кожи и настроение.",
+      "duration": 90,
+      "price": 85.00,
+      "rating": 4.9,
+      "image": "/images/services/spa-chocolate.jpg"
+    },
+    {
+      "id": "svc_spa_02",
+      "name": "Стоун-терапия",
+      "category": "spa",
+      "description": "Массаж горячими вулканическими камнями для глубокого расслабления мышц и снятия стресса.",
+      "duration": 75,
+      "price": 90.00,
+      "rating": 5.0,
+      "image": "/images/services/spa-stones.jpg"
+    },
+    {
+      "id": "svc_spa_03",
+      "name": "Ароматерапия",
+      "category": "spa",
+      "description": "Расслабляющий массаж с эфирными маслами. Индивидуальный подбор ароматов под настроение клиента.",
+      "duration": 60,
+      "price": 75.00,
+      "rating": 4.8,
+      "image": "/images/services/spa-aromatherapy.jpg"
+    }
+  ]
+}

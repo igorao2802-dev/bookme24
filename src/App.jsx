@@ -12,23 +12,45 @@
  */
 
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import Layout from './components/Layout/Layout';
 import BookingWizard from './components/Booking/BookingWizard';
 import CatalogPage from './components/Catalog/CatalogPage';
-import AdminDashboard from './components/Admin/AdminDashboard'; // ← обновлено
-
-import { INITIAL_SERVICES } from './data/initialServices';
-import { INITIAL_SPECIALISTS } from './data/initialSpecialists';
+import AdminDashboard from './components/Admin/AdminDashboard';
 
 import { useBookings } from './hooks/useBookings';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { STORAGE_KEYS, USER_ROLES } from './utils/constants';
 
 function App() {
-  const [services] = useLocalStorage(STORAGE_KEYS.SERVICES, INITIAL_SERVICES);
-  const [specialists] = useLocalStorage(STORAGE_KEYS.SPECIALISTS, INITIAL_SPECIALISTS);
+  // === ЗАГРУЗКА ДАННЫХ ИЗ JSON ===
+  const [services, setServices] = useState([]);
+  const [specialists, setSpecialists] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        // Загружаем услуги
+        const servicesResponse = await fetch('/data/services.json');
+        const servicesData = await servicesResponse.json();
+        
+        // Загружаем мастеров
+        const specialistsResponse = await fetch('/data/specialists.json');
+        const specialistsData = await specialistsResponse.json();
+
+        setServices(servicesData.services);
+        setSpecialists(specialistsData.specialists);
+      } catch (error) {
+        console.error('Ошибка загрузки данных:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadData();
+  }, []);
 
   // === ГЛАВНЫЙ ХУК — CRUD ЗАПИСЕЙ ===
   const {
@@ -43,6 +65,20 @@ function App() {
     STORAGE_KEYS.USER_ROLE,
     USER_ROLES.CLIENT
   );
+
+  // === СОСТОЯНИЕ ЗАГРУЗКИ ===
+  if (isLoading) {
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh' 
+      }}>
+        <p>Загрузка данных салона...</p>
+      </div>
+    );
+  }
 
   return (
     <Layout userRole={userRole} onRoleChange={setUserRole}>
@@ -66,7 +102,6 @@ function App() {
           }
         />
 
-        {/* === АДМИН-ПАНЕЛЬ (полная версия) === */}
         <Route
           path="/admin"
           element={
