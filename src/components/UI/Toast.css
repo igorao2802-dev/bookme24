@@ -1,0 +1,63 @@
+/**
+ * Стили для Toast (переопределяем дефолты react-hot-toast)
+ */
+
+.toast {
+  display: flex !important;
+  align-items: center;
+  gap: var(--spacing-sm, 8px);
+
+  padding: var(--spacing-md, 16px) var(--spacing-lg, 24px) !important;
+
+  background-color: var(--color-surface, #ffffff) !important;
+  border-radius: var(--radius-md, 8px) !important;
+  box-shadow: var(--shadow-lg) !important;
+
+  font-family: var(--font-family);
+  font-size: var(--font-size-base, 1rem);
+  color: var(--color-text, #2d2419);
+
+  border-left: 4px solid transparent;
+
+  max-width: 420px !important;
+}
+
+/* === ВАРИАНТЫ === */
+.toast--success {
+  border-left-color: var(--color-success, #4caf50);
+}
+
+.toast--error {
+  border-left-color: var(--color-error, #f44336);
+}
+
+.toast--warning {
+  border-left-color: var(--color-warning, #ff9800);
+}
+
+.toast--info {
+  border-left-color: var(--color-info, #2196f3);
+}
+
+/* === ИКОНКИ === */
+.toast__icon--success {
+  color: var(--color-success, #4caf50);
+}
+.toast__icon--error {
+  color: var(--color-error, #f44336);
+}
+.toast__icon--warning {
+  color: var(--color-warning, #ff9800);
+}
+.toast__icon--info {
+  color: var(--color-info, #2196f3);
+}
+
+/* === АДАПТИВНОСТЬ === */
+@media (max-width: 480px) {
+  .toast {
+    max-width: calc(100vw - 32px) !important;
+    font-size: var(--font-size-sm, 0.875rem);
+    padding: var(--spacing-sm, 8px) var(--spacing-md, 16px) !important;
+  }
+}

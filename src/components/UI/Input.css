@@ -1,0 +1,135 @@
+/**
+ * Стили для Input (BEM)
+ * ПОЧЕМУ через классы, а не inline-стили?
+ * Замечание В.В. из ПР-03: "управляйте состоянием через CSS-классы"
+ */
+
+.input {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs, 4px);
+  width: 100%;
+}
+
+/* === LABEL === */
+.input__label {
+  font-size: var(--font-size-sm, 0.875rem);
+  font-weight: 500;
+  color: var(--color-text, #2d2419);
+  margin-bottom: var(--spacing-xs, 4px);
+}
+
+.input__required {
+  color: var(--color-error, #f44336);
+  font-weight: 700;
+}
+
+/* === WRAPPER (для позиционирования иконок) === */
+.input__wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* === ПОЛЕ ВВОДА === */
+.input__field {
+  width: 100%;
+  min-height: 44px;
+  padding: var(--spacing-sm, 8px) var(--spacing-md, 16px);
+
+  font-family: var(--font-family);
+  font-size: var(--font-size-base, 1rem);
+  color: var(--color-text, #2d2419);
+
+  background-color: var(--color-surface, #ffffff);
+  border: 1.5px solid var(--color-border, #e8dcc4);
+  border-radius: var(--radius-md, 8px);
+
+  transition:
+    border-color var(--transition-fast, 150ms ease),
+    box-shadow var(--transition-fast, 150ms ease),
+    background-color var(--transition-fast, 150ms ease);
+}
+
+.input__field::placeholder {
+  color: var(--color-text-muted, #6b5d4f);
+  opacity: 0.6;
+}
+
+/* === ИКОНКИ === */
+.input__icon {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted, #6b5d4f);
+  pointer-events: none;
+}
+
+.input__icon--left {
+  left: 12px;
+}
+
+.input__icon--right {
+  right: 12px;
+}
+
+.input__field--with-left-icon {
+  padding-left: 40px;
+}
+
+.input__field--with-right-icon {
+  padding-right: 40px;
+}
+
+/* === СОСТОЯНИЯ === */
+.input__field:hover:not(:disabled):not(:read-only) {
+  border-color: var(--color-primary, #d4a574);
+}
+
+.input__field:focus {
+  outline: none;
+  border-color: var(--color-primary-dark, #b8895a);
+  box-shadow: 0 0 0 3px rgba(212, 165, 116, 0.15);
+}
+
+/* === ОШИБКА (CSS-класс вместо inline-style!) === */
+.input__field--error {
+  border-color: var(--color-error, #f44336);
+  background-color: #fff5f5;
+}
+
+.input__field--error:focus {
+  box-shadow: 0 0 0 3px rgba(244, 67, 54, 0.15);
+}
+
+/* === DISABLED === */
+.input__field--disabled,
+.input__field:disabled {
+  background-color: var(--color-bg, #fdfaf6);
+  color: var(--color-text-muted, #6b5d4f);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* === СООБЩЕНИЯ (ошибка / подсказка) === */
+.input__message {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs, 4px);
+  font-size: var(--font-size-sm, 0.875rem);
+  margin-top: var(--spacing-xs, 4px);
+}
+
+.input__message--error {
+  color: var(--color-error, #f44336);
+  font-weight: 500;
+}
+
+.input__message--helper {
+  color: var(--color-text-muted, #6b5d4f);
+}
+
+.input__message-icon {
+  flex-shrink: 0;
+}
