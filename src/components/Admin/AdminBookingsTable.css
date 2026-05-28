@@ -1,0 +1,153 @@
+.admin-bookings-table {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md, 16px);
+}
+
+/* === СТРОКА-КАРТОЧКА === */
+.admin-booking-row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--spacing-lg, 24px);
+  padding: var(--spacing-lg, 24px);
+  background: var(--color-bg, #fdfaf6);
+  border-radius: var(--radius-md, 8px);
+  border-left: 4px solid var(--color-border, #e8dcc4);
+  transition: all var(--transition-base, 250ms ease);
+}
+
+.admin-booking-row:hover {
+  box-shadow: var(--shadow-md);
+}
+
+/* === ЦВЕТОВАЯ ИНДИКАЦИЯ СТАТУСА === */
+.admin-booking-row--pending {
+  border-left-color: var(--color-warning, #ff9800);
+}
+
+.admin-booking-row--confirmed {
+  border-left-color: var(--color-success, #4caf50);
+}
+
+.admin-booking-row--in-progress {
+  border-left-color: var(--color-info, #2196f3);
+}
+
+.admin-booking-row--completed {
+  border-left-color: var(--color-text-muted, #6b5d4f);
+  opacity: 0.75;
+}
+
+.admin-booking-row--cancelled {
+  border-left-color: var(--color-error, #f44336);
+  opacity: 0.6;
+  background: #fff5f5;
+}
+
+/* === ОСНОВНАЯ ЧАСТЬ === */
+.admin-booking-row__main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm, 8px);
+}
+
+.admin-booking-row__service {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm, 8px);
+  flex-wrap: wrap;
+}
+
+.admin-booking-row__title {
+  font-size: var(--font-size-lg, 1.125rem);
+  font-weight: 600;
+  color: var(--color-text, #2d2419);
+  margin: 0;
+}
+
+/* === ДЕТАЛИ КЛИЕНТА === */
+.admin-booking-row__details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-md, 16px);
+}
+
+.admin-booking-row__detail {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--color-text, #2d2419);
+  font-size: var(--font-size-sm, 0.875rem);
+}
+
+.admin-booking-row__detail strong {
+  color: var(--color-text-muted, #6b5d4f);
+  font-weight: 500;
+}
+
+/* === МЕТА-ИНФОРМАЦИЯ === */
+.admin-booking-row__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-md, 16px);
+  padding-top: var(--spacing-sm, 8px);
+  border-top: 1px solid var(--color-border, #e8dcc4);
+}
+
+.admin-booking-row__meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--color-text-muted, #6b5d4f);
+  font-size: var(--font-size-sm, 0.875rem);
+}
+
+.admin-booking-row__meta-item--price {
+  font-weight: 700;
+  color: var(--color-primary-dark, #b8895a);
+  font-size: var(--font-size-base, 1rem);
+  margin-left: auto;
+}
+
+/* === КОММЕНТАРИЙ === */
+.admin-booking-row__comment {
+  padding: var(--spacing-sm, 8px) var(--spacing-md, 16px);
+  background: var(--color-surface, #fff);
+  border-radius: var(--radius-sm, 4px);
+  color: var(--color-text-muted, #6b5d4f);
+  font-size: var(--font-size-sm, 0.875rem);
+  font-style: italic;
+  margin-top: var(--spacing-xs, 4px);
+}
+
+/* === ДЕЙСТВИЯ === */
+.admin-booking-row__actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm, 8px);
+  align-self: flex-start;
+  flex-shrink: 0;
+}
+
+/* === АДАПТИВНОСТЬ === */
+@media (max-width: 768px) {
+  .admin-booking-row {
+    flex-direction: column;
+    gap: var(--spacing-md, 16px);
+  }
+
+  .admin-booking-row__actions {
+    flex-direction: row;
+    width: 100%;
+  }
+
+  .admin-booking-row__actions button {
+    flex: 1;
+  }
+
+  .admin-booking-row__meta-item--price {
+    margin-left: 0;
+  }
+}

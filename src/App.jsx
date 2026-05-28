@@ -17,7 +17,7 @@ import { useState } from 'react';
 import Layout from './components/Layout/Layout';
 import BookingWizard from './components/Booking/BookingWizard';
 import CatalogPage from './components/Catalog/CatalogPage';
-import AdminDashboard from './components/Admin/AdminDashboard';
+import AdminDashboard from './components/Admin/AdminDashboard'; // ← обновлено
 
 import { INITIAL_SERVICES } from './data/initialServices';
 import { INITIAL_SPECIALISTS } from './data/initialSpecialists';
@@ -27,11 +27,10 @@ import { useLocalStorage } from './hooks/useLocalStorage';
 import { STORAGE_KEYS, USER_ROLES } from './utils/constants';
 
 function App() {
-  // === СПРАВОЧНИКИ ===
   const [services] = useLocalStorage(STORAGE_KEYS.SERVICES, INITIAL_SERVICES);
   const [specialists] = useLocalStorage(STORAGE_KEYS.SPECIALISTS, INITIAL_SPECIALISTS);
 
-  // === 🔥 ГЛАВНЫЙ ХУК — CRUD ЗАПИСЕЙ ===
+  // === ГЛАВНЫЙ ХУК — CRUD ЗАПИСЕЙ ===
   const {
     bookings,
     stats,
@@ -40,7 +39,6 @@ function App() {
     cancelBooking,
   } = useBookings(services, specialists);
 
-  // === РОЛЬ ПОЛЬЗОВАТЕЛЯ ===
   const [userRole, setUserRole] = useLocalStorage(
     STORAGE_KEYS.USER_ROLE,
     USER_ROLES.CLIENT
@@ -49,7 +47,6 @@ function App() {
   return (
     <Layout userRole={userRole} onRoleChange={setUserRole}>
       <Routes>
-        {/* === ГЛАВНАЯ: МНОГОШАГОВАЯ ЗАПИСЬ === */}
         <Route
           path="/"
           element={
@@ -62,7 +59,6 @@ function App() {
           }
         />
 
-        {/* === КАТАЛОГ === */}
         <Route
           path="/catalog"
           element={
@@ -70,7 +66,7 @@ function App() {
           }
         />
 
-        {/* === АДМИН-ПАНЕЛЬ === */}
+        {/* === АДМИН-ПАНЕЛЬ (полная версия) === */}
         <Route
           path="/admin"
           element={

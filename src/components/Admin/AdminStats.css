@@ -1,0 +1,101 @@
+.admin-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--spacing-md, 16px);
+  margin-bottom: var(--spacing-lg, 24px);
+}
+
+.admin-stats__card {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md, 16px);
+  padding: var(--spacing-lg, 24px);
+  background: var(--color-surface, #fff);
+  border-radius: var(--radius-lg, 12px);
+  box-shadow: var(--shadow-sm);
+  border-left: 4px solid transparent;
+  transition: transform var(--transition-base, 250ms ease);
+}
+
+.admin-stats__card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* === ВАРИАНТЫ === */
+.admin-stats__card--default {
+  border-left-color: var(--color-primary, #d4a574);
+}
+
+.admin-stats__card--info {
+  border-left-color: var(--color-info, #2196f3);
+}
+
+.admin-stats__card--success {
+  border-left-color: var(--color-success, #4caf50);
+}
+
+.admin-stats__card--danger {
+  border-left-color: var(--color-error, #f44336);
+}
+
+.admin-stats__card--highlight {
+  background: linear-gradient(
+    135deg,
+    var(--color-primary),
+    var(--color-primary-dark)
+  );
+  color: white;
+  border-left-color: transparent;
+}
+
+.admin-stats__card--highlight .admin-stats__label {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.admin-stats__card--highlight .admin-stats__icon {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+/* === ИКОНКА === */
+.admin-stats__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background: var(--color-primary-light, #f0d9bc);
+  color: var(--color-primary-dark, #b8895a);
+  border-radius: var(--radius-md, 8px);
+  flex-shrink: 0;
+}
+
+/* === КОНТЕНТ === */
+.admin-stats__content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.admin-stats__label {
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--color-text-muted, #6b5d4f);
+}
+
+.admin-stats__value {
+  font-size: var(--font-size-xl, 1.5rem);
+  font-weight: 700;
+  color: var(--color-text, #2d2419);
+}
+
+.admin-stats__card--highlight .admin-stats__value {
+  color: white;
+}
+
+/* === АДАПТИВНОСТЬ === */
+@media (max-width: 640px) {
+  .admin-stats {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,62 @@
+.booking-edit-modal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg, 24px);
+}
+
+/* === ИНФОРМАЦИЯ О КЛИЕНТЕ === */
+.booking-edit-modal__info {
+  background: var(--color-bg, #fdfaf6);
+  padding: var(--spacing-md, 16px);
+  border-radius: var(--radius-md, 8px);
+  border-left: 4px solid var(--color-primary, #d4a574);
+}
+
+.booking-edit-modal__info h4 {
+  font-size: var(--font-size-base, 1rem);
+  font-weight: 600;
+  margin-bottom: var(--spacing-sm, 8px);
+  color: var(--color-text, #2d2419);
+}
+
+.booking-edit-modal__info p {
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--color-text-muted, #6b5d4f);
+  margin-bottom: var(--spacing-xs, 4px);
+}
+
+.booking-edit-modal__info p:last-child {
+  margin-bottom: 0;
+}
+
+.booking-edit-modal__info strong {
+  color: var(--color-text, #2d2419);
+}
+
+/* === ФОРМА === */
+.booking-edit-modal__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md, 16px);
+}
+
+/* === КНОПКИ === */
+.booking-edit-modal__actions {
+  display: flex;
+  gap: var(--spacing-md, 16px);
+  justify-content: flex-end;
+  padding-top: var(--spacing-md, 16px);
+  border-top: 1px solid var(--color-border, #e8dcc4);
+  margin-top: var(--spacing-sm, 8px);
+}
+
+/* === АДАПТИВНОСТЬ === */
+@media (max-width: 480px) {
+  .booking-edit-modal__actions {
+    flex-direction: column;
+  }
+
+  .booking-edit-modal__actions button {
+    width: 100%;
+  }
+}
