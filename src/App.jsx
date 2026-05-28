@@ -11,78 +11,45 @@
  * - События текут ВВЕРХ через callbacks (отчёты)
  */
 
-import { Routes, Route, Navigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { useState } from 'react';
 
-import Layout from "./components/Layout/Layout";
-import BookingWizard from "./components/Booking/BookingWizard";
-import CatalogPage from "./components/Catalog/CatalogPage";
-import AdminDashboard from "./components/Admin/AdminDashboard";
+import Layout from './components/Layout/Layout';
+import BookingWizard from './components/Booking/BookingWizard';
+import CatalogPage from './components/Catalog/CatalogPage';
+import AdminDashboard from './components/Admin/AdminDashboard';
 
-// === НАЧАЛЬНЫЕ ДАННЫЕ (будут заменены на импорт из data/) ===
-import { INITIAL_SERVICES } from "./data/initialServices";
-import { INITIAL_SPECIALISTS } from "./data/initialSpecialists";
+import { INITIAL_SERVICES } from './data/initialServices';
+import { INITIAL_SPECIALISTS } from './data/initialSpecialists';
 
-// === УТИЛИТЫ ===
-import { STORAGE_KEYS, USER_ROLES } from "./utils/constants";
-import { safeGetItem, safeSetItem } from "./utils/storageHelper";
+import { useBookings } from './hooks/useBookings';
+import { useLocalStorage } from './hooks/useLocalStorage';
+import { STORAGE_KEYS, USER_ROLES } from './utils/constants';
 
 function App() {
-  // === ГЛОБАЛЬНОЕ СОСТОЯНИЕ ===
+  // === СПРАВОЧНИКИ ===
+  const [services] = useLocalStorage(STORAGE_KEYS.SERVICES, INITIAL_SERVICES);
+  const [specialists] = useLocalStorage(STORAGE_KEYS.SPECIALISTS, INITIAL_SPECIALISTS);
 
-  // Справочники (загружаются один раз)
-  const [services] = useState(() =>
-    safeGetItem(STORAGE_KEYS.SERVICES, INITIAL_SERVICES),
+  // === 🔥 ГЛАВНЫЙ ХУК — CRUD ЗАПИСЕЙ ===
+  const {
+    bookings,
+    stats,
+    createBooking,
+    updateBooking,
+    cancelBooking,
+  } = useBookings(services, specialists);
+
+  // === РОЛЬ ПОЛЬЗОВАТЕЛЯ ===
+  const [userRole, setUserRole] = useLocalStorage(
+    STORAGE_KEYS.USER_ROLE,
+    USER_ROLES.CLIENT
   );
 
-  const [specialists] = useState(() =>
-    safeGetItem(STORAGE_KEYS.SPECIALISTS, INITIAL_SPECIALISTS),
-  );
-
-  // Записи клиентов (динамический массив)
-  const [bookings, setBookings] = useState(() =>
-    safeGetItem(STORAGE_KEYS.BOOKINGS, []),
-  );
-
-  // Текущая роль пользователя (упрощённо, без авторизации)
-  const [userRole, setUserRole] = useState(() =>
-    safeGetItem(STORAGE_KEYS.USER_ROLE, USER_ROLES.CLIENT),
-  );
-
-  // === СИНХРОНИЗАЦИЯ С LOCALSTORAGE ===
-  // ПОЧЕМУ useEffect? Запись в localStorage — это side effect,
-  // который должен выполняться ПОСЛЕ рендера, а не во время него.
-  useEffect(() => {
-    safeSetItem(STORAGE_KEYS.BOOKINGS, bookings);
-  }, [bookings]);
-
-  useEffect(() => {
-    safeSetItem(STORAGE_KEYS.USER_ROLE, userRole);
-  }, [userRole]);
-
-  // === CRUD-ОПЕРАЦИИ НАД ЗАПИСЯМИ ===
-
-  const handleAddBooking = (newBooking) => {
-    setBookings((prev) => [...prev, newBooking]);
-  };
-
-  const handleUpdateBooking = (id, updates) => {
-    setBookings((prev) =>
-      prev.map((booking) =>
-        booking.id === id ? { ...booking, ...updates } : booking,
-      ),
-    );
-  };
-
-  const handleCancelBooking = (id) => {
-    // ПОЧЕМУ не filter? Не удаляем физически — меняем статус на 'cancelled'
-    handleUpdateBooking(id, { status: "cancelled" });
-  };
-
-  // === РОУТИНГ ===
   return (
     <Layout userRole={userRole} onRoleChange={setUserRole}>
       <Routes>
+        {/* === ГЛАВНАЯ: МНОГОШАГОВАЯ ЗАПИСЬ === */}
         <Route
           path="/"
           element={
@@ -90,16 +57,20 @@ function App() {
               services={services}
               specialists={specialists}
               bookings={bookings}
-              onAddBooking={handleAddBooking}
+              onCreateBooking={createBooking}
             />
           }
         />
+
+        {/* === КАТАЛОГ === */}
         <Route
           path="/catalog"
           element={
             <CatalogPage services={services} specialists={specialists} />
           }
         />
+
+        {/* === АДМИН-ПАНЕЛЬ === */}
         <Route
           path="/admin"
           element={
@@ -108,15 +79,16 @@ function App() {
                 bookings={bookings}
                 services={services}
                 specialists={specialists}
-                onUpdateBooking={handleUpdateBooking}
-                onCancelBooking={handleCancelBooking}
+                stats={stats}
+                onUpdateBooking={updateBooking}
+                onCancelBooking={cancelBooking}
               />
             ) : (
               <Navigate to="/" replace />
             )
           }
         />
-        {/* Fallback: любой неизвестный маршрут → главная */}
+
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Layout>

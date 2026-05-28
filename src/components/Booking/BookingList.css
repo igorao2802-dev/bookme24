@@ -1,0 +1,31 @@
+.booking-list__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-xl, 32px);
+  gap: var(--spacing-md, 16px);
+  flex-wrap: wrap;
+}
+
+.booking-list__header h2 {
+  font-size: var(--font-size-xl, 1.5rem);
+  margin: 0;
+}
+
+.booking-list__section {
+  margin-bottom: var(--spacing-xl, 32px);
+}
+
+.booking-list__section-title {
+  font-size: var(--font-size-lg, 1.125rem);
+  color: var(--color-text-muted, #6b5d4f);
+  margin-bottom: var(--spacing-md, 16px);
+  padding-bottom: var(--spacing-sm, 8px);
+  border-bottom: 2px solid var(--color-primary-light, #f0d9bc);
+}
+
+.booking-list__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--spacing-md, 16px);
+}

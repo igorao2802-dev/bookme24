@@ -1,0 +1,94 @@
+.confirmation-modal__intro {
+  color: var(--color-text-muted, #6b5d4f);
+  margin-bottom: var(--spacing-md, 16px);
+}
+
+.confirmation-modal__summary {
+  background: var(--color-bg, #fdfaf6);
+  padding: var(--spacing-lg, 24px);
+  border-radius: var(--radius-md, 8px);
+  margin-bottom: var(--spacing-lg, 24px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm, 8px);
+}
+
+.confirmation-modal__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--spacing-md, 16px);
+  padding: var(--spacing-xs, 4px) 0;
+}
+
+.confirmation-modal__row--column {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.confirmation-modal__label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--color-text-muted, #6b5d4f);
+  font-size: var(--font-size-sm, 0.875rem);
+  flex-shrink: 0;
+}
+
+.confirmation-modal__value {
+  font-weight: 500;
+  color: var(--color-text, #2d2419);
+  text-align: right;
+}
+
+.confirmation-modal__meta {
+  display: flex;
+  gap: var(--spacing-sm, 8px);
+  justify-content: flex-end;
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--color-text-muted, #6b5d4f);
+  margin-top: var(--spacing-xs, 4px);
+}
+
+.confirmation-modal__divider {
+  height: 1px;
+  background: var(--color-border, #e8dcc4);
+  margin: var(--spacing-sm, 8px) 0;
+}
+
+.confirmation-modal__comment {
+  background: var(--color-surface, #ffffff);
+  padding: var(--spacing-sm, 8px);
+  border-radius: var(--radius-sm, 4px);
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--color-text, #2d2419);
+  margin: 0;
+  width: 100%;
+}
+
+.confirmation-modal__total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: var(--spacing-md, 16px);
+  margin-top: var(--spacing-sm, 8px);
+  border-top: 2px solid var(--color-border, #e8dcc4);
+  font-size: var(--font-size-lg, 1.125rem);
+}
+
+.confirmation-modal__total strong {
+  font-size: var(--font-size-xl, 1.5rem);
+  color: var(--color-primary-dark, #b8895a);
+}
+
+.confirmation-modal__actions {
+  display: flex;
+  gap: var(--spacing-md, 16px);
+  justify-content: flex-end;
+}
+
+@media (max-width: 480px) {
+  .confirmation-modal__actions {
+    flex-direction: column;
+  }
+}

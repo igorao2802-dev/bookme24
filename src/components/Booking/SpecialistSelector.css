@@ -1,0 +1,111 @@
+.specialist-selector__header {
+  margin-bottom: var(--spacing-lg, 24px);
+}
+
+.specialist-selector__header h2 {
+  font-size: var(--font-size-xl, 1.5rem);
+  margin-bottom: var(--spacing-xs, 4px);
+}
+
+.specialist-selector__description {
+  color: var(--color-text-muted, #6b5d4f);
+}
+
+.specialist-selector__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--spacing-md, 16px);
+}
+
+.specialist-card {
+  position: relative;
+  background: var(--color-surface, #ffffff);
+  padding: var(--spacing-lg, 24px);
+  border: 2px solid var(--color-border, #e8dcc4);
+  border-radius: var(--radius-lg, 12px);
+
+  cursor: pointer;
+  transition: all var(--transition-base, 250ms ease);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--spacing-sm, 8px);
+}
+
+.specialist-card:hover {
+  border-color: var(--color-primary, #d4a574);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.specialist-card--selected {
+  border-color: var(--color-primary, #d4a574);
+  background: var(--color-primary-light, #f0d9bc);
+}
+
+.specialist-card__check {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--color-primary, #d4a574);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.specialist-card__avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(
+    135deg,
+    var(--color-primary),
+    var(--color-primary-dark)
+  );
+  color: white;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-xl, 1.5rem);
+  font-weight: 600;
+
+  margin-bottom: var(--spacing-sm, 8px);
+}
+
+.specialist-card__name {
+  font-size: var(--font-size-lg, 1.125rem);
+  font-weight: 600;
+  color: var(--color-text, #2d2419);
+  margin: 0;
+}
+
+.specialist-card__position {
+  color: var(--color-text-muted, #6b5d4f);
+  font-size: var(--font-size-sm, 0.875rem);
+  margin: 0;
+}
+
+.specialist-card__meta {
+  display: flex;
+  gap: var(--spacing-md, 16px);
+  margin-top: var(--spacing-sm, 8px);
+  padding-top: var(--spacing-sm, 8px);
+  border-top: 1px solid var(--color-border, #e8dcc4);
+  width: 100%;
+  justify-content: center;
+}
+
+.specialist-card__meta-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--color-text-muted, #6b5d4f);
+  font-size: var(--font-size-sm, 0.875rem);
+}

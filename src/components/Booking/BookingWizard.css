@@ -1,61 +1,161 @@
+/**
+ * Стили для BookingWizard
+ * BEM-методология + мобильная адаптивность
+ */
+
 .booking-wizard {
   max-width: 900px;
   margin: 0 auto;
 }
 
-.booking-wizard h1 {
-  margin-bottom: var(--spacing-md);
+/* === ЗАГОЛОВОК === */
+.booking-wizard__header {
+  text-align: center;
+  margin-bottom: var(--spacing-xl, 32px);
 }
 
-.booking-wizard__description {
-  color: var(--color-text-muted);
-  margin-bottom: var(--spacing-xl);
+.booking-wizard__header h1 {
+  font-size: var(--font-size-2xl, 2rem);
+  margin-bottom: var(--spacing-sm, 8px);
+  color: var(--color-text, #2d2419);
 }
 
-.booking-wizard__stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: var(--spacing-md);
-  margin-bottom: var(--spacing-xl);
+.booking-wizard__subtitle {
+  color: var(--color-text-muted, #6b5d4f);
+  font-size: var(--font-size-base, 1rem);
 }
 
-.booking-wizard__stat {
-  background: var(--color-surface);
-  padding: var(--spacing-lg);
-  border-radius: var(--radius-md);
+/* === ПРОГРЕСС === */
+.booking-wizard__progress {
+  background: var(--color-surface, #ffffff);
+  padding: var(--spacing-lg, 24px);
+  border-radius: var(--radius-lg, 12px);
   box-shadow: var(--shadow-sm);
+  margin-bottom: var(--spacing-xl, 32px);
+}
+
+.booking-wizard__steps {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--spacing-sm, 8px);
+  margin-bottom: var(--spacing-lg, 24px);
+}
+
+.booking-wizard__step {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-xs);
+  align-items: center;
+  gap: var(--spacing-xs, 4px);
+  flex: 1;
+  transition: all var(--transition-base, 250ms ease);
 }
 
-.booking-wizard__stat-label {
-  color: var(--color-text-muted);
-  font-size: var(--font-size-sm);
+.booking-wizard__step-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: var(--color-border, #e8dcc4);
+  color: var(--color-text-muted, #6b5d4f);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+
+  transition: all var(--transition-base, 250ms ease);
 }
 
-.booking-wizard__stat strong {
-  font-size: var(--font-size-2xl);
-  color: var(--color-primary-dark);
-}
-
-.booking-wizard__placeholder {
-  background: var(--color-primary-light);
-  padding: var(--spacing-xl);
-  border-radius: var(--radius-lg);
-  text-align: center;
-  border: 2px dashed var(--color-primary);
-}
-
-.booking-wizard__placeholder p {
-  color: var(--color-text);
-  margin-bottom: var(--spacing-sm);
-}
-
-.booking-wizard__message {
-  margin-top: var(--spacing-md);
-  padding: var(--spacing-md);
-  background: var(--color-success);
+.booking-wizard__step--active .booking-wizard__step-circle {
+  background-color: var(--color-primary, #d4a574);
   color: white;
-  border-radius: var(--radius-md);
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(212, 165, 116, 0.4);
+}
+
+.booking-wizard__step--completed .booking-wizard__step-circle {
+  background-color: var(--color-success, #4caf50);
+  color: white;
+}
+
+.booking-wizard__step-label {
+  font-size: var(--font-size-xs, 0.75rem);
+  color: var(--color-text-muted, #6b5d4f);
+  text-align: center;
+  font-weight: 500;
+}
+
+.booking-wizard__step--active .booking-wizard__step-label {
+  color: var(--color-text, #2d2419);
+  font-weight: 600;
+}
+
+/* === ПРОГРЕСС-БАР === */
+.booking-wizard__progress-bar {
+  height: 6px;
+  background-color: var(--color-border, #e8dcc4);
+  border-radius: var(--radius-full, 9999px);
+  overflow: hidden;
+}
+
+.booking-wizard__progress-fill {
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    var(--color-primary, #d4a574),
+    var(--color-primary-dark, #b8895a)
+  );
+  border-radius: var(--radius-full, 9999px);
+  transition: width var(--transition-slow, 400ms ease);
+}
+
+/* === КОНТЕНТ === */
+.booking-wizard__content {
+  background: var(--color-surface, #ffffff);
+  padding: var(--spacing-xl, 32px);
+  border-radius: var(--radius-lg, 12px);
+  box-shadow: var(--shadow-sm);
+  min-height: 400px;
+  margin-bottom: var(--spacing-lg, 24px);
+}
+
+/* === НАВИГАЦИЯ === */
+.booking-wizard__navigation {
+  display: flex;
+  gap: var(--spacing-md, 16px);
+  justify-content: flex-end;
+}
+
+.booking-wizard__nav-spacer {
+  flex: 1;
+}
+
+/* === АДАПТИВНОСТЬ === */
+@media (max-width: 768px) {
+  .booking-wizard__header h1 {
+    font-size: var(--font-size-xl, 1.5rem);
+  }
+
+  .booking-wizard__content {
+    padding: var(--spacing-lg, 24px);
+  }
+
+  /* На мобильных скрываем текст шагов, оставляем только кружки */
+  .booking-wizard__step-label {
+    display: none;
+  }
+
+  .booking-wizard__step-circle {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+@media (max-width: 480px) {
+  .booking-wizard__navigation {
+    flex-direction: column;
+  }
+
+  .booking-wizard__nav-spacer {
+    display: none;
+  }
 }
