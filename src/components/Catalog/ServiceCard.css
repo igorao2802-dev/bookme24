@@ -1,0 +1,113 @@
+.service-card {
+  position: relative;
+  background: var(--color-surface, #fff);
+  padding: var(--spacing-lg, 24px);
+  border-radius: var(--radius-lg, 12px);
+  box-shadow: var(--shadow-sm);
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm, 8px);
+
+  transition:
+    transform var(--transition-base, 250ms ease),
+    box-shadow var(--transition-base, 250ms ease);
+}
+
+.service-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* === КНОПКА ИЗБРАННОГО === */
+.service-card__favorite {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 40px;
+  height: 40px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  background: var(--color-bg, #fdfaf6);
+  border: 1.5px solid var(--color-border, #e8dcc4);
+  border-radius: 50%;
+
+  color: var(--color-text-muted, #6b5d4f);
+  cursor: pointer;
+
+  transition: all var(--transition-fast, 150ms ease);
+}
+
+.service-card__favorite:hover {
+  color: var(--color-error, #f44336);
+  border-color: var(--color-error, #f44336);
+}
+
+.service-card__favorite--active {
+  color: var(--color-error, #f44336);
+  background: #fff5f5;
+  border-color: var(--color-error, #f44336);
+}
+
+/* === ЗАГОЛОВОК === */
+.service-card__title {
+  font-size: var(--font-size-lg, 1.125rem);
+  font-weight: 600;
+  color: var(--color-text, #2d2419);
+  margin: var(--spacing-sm, 8px) 0 0 0;
+  padding-right: 40px; /* Место для кнопки избранного */
+}
+
+/* === ОПИСАНИЕ (text-break — защита от длинных текстов) === */
+.service-card__description {
+  color: var(--color-text-muted, #6b5d4f);
+  font-size: var(--font-size-sm, 0.875rem);
+  line-height: 1.5;
+  flex: 1;
+
+  /* Ограничение высоты с многоточием (3 строки) */
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* === МЕТА === */
+.service-card__meta {
+  display: flex;
+  gap: var(--spacing-md, 16px);
+  padding: var(--spacing-sm, 8px) 0;
+  border-top: 1px solid var(--color-border, #e8dcc4);
+  border-bottom: 1px solid var(--color-border, #e8dcc4);
+}
+
+.service-card__meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--color-text-muted, #6b5d4f);
+  font-size: var(--font-size-sm, 0.875rem);
+}
+
+.service-card__star {
+  color: #ffc107;
+  fill: #ffc107;
+}
+
+/* === ФУТЕР С ЦЕНОЙ === */
+.service-card__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-md, 16px);
+  margin-top: auto;
+}
+
+.service-card__price {
+  font-size: var(--font-size-xl, 1.5rem);
+  font-weight: 700;
+  color: var(--color-primary-dark, #b8895a);
+}
