@@ -92,3 +92,19 @@
     flex-direction: column;
   }
 }
+
+/* === ЗАЩИТА ОТ ДЛИННЫХ КОММЕНТАРИЕВ === */
+.confirmation-modal__comment {
+  background: var(--color-surface, #ffffff);
+  padding: var(--spacing-sm, 8px);
+  border-radius: var(--radius-sm, 4px);
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--color-text, #2d2419);
+  margin: 0;
+  width: 100%;
+
+  /* ↓ ДОБАВЬТЕ ЭТИ 3 СТРОКИ ↓ */
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}

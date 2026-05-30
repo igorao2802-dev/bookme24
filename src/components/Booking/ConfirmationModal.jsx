@@ -15,6 +15,7 @@ import Badge from '../UI/Badge';
 
 import { formatPrice, formatDuration } from '../../utils/formatters';
 import { formatDateHumanReadable } from '../../utils/timeHelpers';
+import './ConfirmationModal.css';  
 
 export default function ConfirmationModal({
   isOpen,
