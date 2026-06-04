@@ -1,3 +1,12 @@
+/**
+ * Стили для блока статистики (Admin Stats)
+ * Сетка карточек KPI
+ */
+
+/* ═══════════════════════════════════════════════
+   СЕТКА СТАТИСТИКИ
+   ═══════════════════════════════════════════════ */
+
 .admin-stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -5,16 +14,22 @@
   margin-bottom: var(--spacing-lg, 24px);
 }
 
+/* ═══════════════════════════════════════════════
+   КАРТОЧКА СТАТИСТИКИ
+   ═══════════════════════════════════════════════ */
+
 .admin-stats__card {
   display: flex;
   align-items: center;
   gap: var(--spacing-md, 16px);
   padding: var(--spacing-lg, 24px);
-  background: var(--color-surface, #fff);
+  background: var(--color-surface, #ffffff);
   border-radius: var(--radius-lg, 12px);
   box-shadow: var(--shadow-sm);
   border-left: 4px solid transparent;
-  transition: transform var(--transition-base, 250ms ease);
+  transition:
+    transform var(--transition-base, 250ms ease),
+    box-shadow var(--transition-base, 250ms ease);
 }
 
 .admin-stats__card:hover {
@@ -22,28 +37,32 @@
   box-shadow: var(--shadow-md);
 }
 
-/* === ВАРИАНТЫ === */
+/* ═══════════════════════════════════════════════
+   ВАРИАНТЫ КАРТОЧЕК
+   ═══════════════════════════════════════════════ */
+
 .admin-stats__card--default {
-  border-left-color: var(--color-primary, #d4a574);
+  border-left-color: var(--color-primary, #b8957a);
 }
 
 .admin-stats__card--info {
-  border-left-color: var(--color-info, #2196f3);
+  border-left-color: var(--color-info, #5b8ba6);
 }
 
 .admin-stats__card--success {
-  border-left-color: var(--color-success, #4caf50);
+  border-left-color: var(--color-success, #5f8c6d);
 }
 
 .admin-stats__card--danger {
-  border-left-color: var(--color-error, #f44336);
+  border-left-color: var(--color-error, #c65d52);
 }
 
+/* Выделенная карточка (например, выручка) */
 .admin-stats__card--highlight {
   background: linear-gradient(
     135deg,
-    var(--color-primary),
-    var(--color-primary-dark)
+    var(--color-primary-600, #9c7558) 0%,
+    var(--color-primary-700, #7f5e44) 100%
   );
   color: white;
   border-left-color: transparent;
@@ -58,7 +77,14 @@
   color: white;
 }
 
-/* === ИКОНКА === */
+.admin-stats__card--highlight .admin-stats__value {
+  color: white;
+}
+
+/* ═══════════════════════════════════════════════
+   ИКОНКА
+   ═══════════════════════════════════════════════ */
+
 .admin-stats__icon {
   display: flex;
   align-items: center;
@@ -71,11 +97,15 @@
   flex-shrink: 0;
 }
 
-/* === КОНТЕНТ === */
+/* ═══════════════════════════════════════════════
+   КОНТЕНТ
+   ═══════════════════════════════════════════════ */
+
 .admin-stats__content {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  flex: 1;
 }
 
 .admin-stats__label {
@@ -86,16 +116,23 @@
 .admin-stats__value {
   font-size: var(--font-size-xl, 1.5rem);
   font-weight: 700;
-  color: var(--color-text, #2d2419);
+  color: var(--color-text, #3d2f26);
 }
 
-.admin-stats__card--highlight .admin-stats__value {
-  color: white;
-}
+/* ═══════════════════════════════════════════════
+   АДАПТИВНОСТЬ
+   ═══════════════════════════════════════════════ */
 
-/* === АДАПТИВНОСТЬ === */
 @media (max-width: 640px) {
   .admin-stats {
     grid-template-columns: 1fr;
+  }
+
+  .admin-stats__card {
+    padding: var(--spacing-md, 16px);
+  }
+
+  .admin-stats__value {
+    font-size: var(--font-size-lg, 1.125rem);
   }
 }

@@ -1,3 +1,20 @@
+/**
+ * Стили для ServiceSelector (Шаг 1 многошаговой формы записи)
+ * 
+ * Особенности:
+ * 1. Стабильный контраст текста при hover (текст не меняет цвет, меняется только фон/рамка).
+ * 2. Защита от "разваливания" вёрстки длинными описаниями услуг (-webkit-line-clamp).
+ * 3. Адаптивная сетка карточек.
+ */
+
+/* ═══════════════════════════════════════════════
+   ОБЩИЙ КОНТЕЙНЕР И ЗАГОЛОВОК
+   ═══════════════════════════════════════════════ */
+
+.service-selector {
+  width: 100%;
+}
+
 .service-selector__header {
   margin-bottom: var(--spacing-lg, 24px);
 }
@@ -5,13 +22,18 @@
 .service-selector__header h2 {
   font-size: var(--font-size-xl, 1.5rem);
   margin-bottom: var(--spacing-xs, 4px);
+  color: var(--color-neutral-900, #251b14); /* Максимальный контраст */
 }
 
 .service-selector__description {
   color: var(--color-text-muted, #6b5d4f);
+  font-size: var(--font-size-base, 1rem);
 }
 
-/* === ФИЛЬТРЫ === */
+/* ═══════════════════════════════════════════════
+   ПАНЕЛЬ ФИЛЬТРОВ (Поиск + Категории)
+   ═══════════════════════════════════════════════ */
+
 .service-selector__filters {
   display: flex;
   flex-direction: column;
@@ -29,36 +51,62 @@
   gap: var(--spacing-sm, 8px);
 }
 
+/* ═══════════════════════════════════════════════
+   ЧИПСЫ КАТЕГОРИЙ (ИСПРАВЛЕН КОНТРАСТ)
+   ═══════════════════════════════════════════════ */
+
 .service-selector__category {
   padding: 6px 16px;
+  min-height: 36px;
+
+  background: var(--color-surface, #ffffff);
   border: 1.5px solid var(--color-border, #e8dcc4);
   border-radius: var(--radius-full, 9999px);
-  background: var(--color-surface, #ffffff);
-  color: var(--color-text, #2d2419);
+
   font-size: var(--font-size-sm, 0.875rem);
   font-weight: 500;
+  color: var(--color-text, #3d2f26); /* Тёмный текст ВСЕГДА читаем */
+
   cursor: pointer;
   transition: all var(--transition-fast, 150ms ease);
 }
 
 .service-selector__category:hover {
-  border-color: var(--color-primary, #d4a574);
+  border-color: var(--color-primary-400, #c9a88c);
+  background: var(--color-primary-soft, #fbf5ef);
+  /* Цвет текста НЕ меняется, чтобы сохранить контраст */
 }
 
 .service-selector__category--active {
-  background: var(--color-primary, #d4a574);
-  border-color: var(--color-primary, #d4a574);
-  color: white;
+  background: var(--color-primary-600, #9c7558);
+  border-color: var(--color-primary-600, #9c7558);
+  color: var(
+    --color-text-inverse,
+    #ffffff
+  ); /* Белый на тёмном = высокий контраст */
+  font-weight: 600;
 }
 
-/* === СЕТКА КАРТОЧЕК === */
+.service-selector__category--active:hover {
+  background: var(--color-primary-700, #7f5e44);
+  border-color: var(--color-primary-700, #7f5e44);
+  color: var(--color-text-inverse, #ffffff);
+}
+
+/* ═══════════════════════════════════════════════
+   СЕТКА КАРТОЧЕК
+   ═══════════════════════════════════════════════ */
+
 .service-selector__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: var(--spacing-md, 16px);
 }
 
-/* === КАРТОЧКА УСЛУГИ === */
+/* ═══════════════════════════════════════════════
+   КАРТОЧКА УСЛУГИ
+   ═══════════════════════════════════════════════ */
+
 .service-card {
   position: relative;
   background: var(--color-surface, #ffffff);
@@ -74,23 +122,27 @@
   gap: var(--spacing-sm, 8px);
 }
 
+/* HOVER ЭФФЕКТ (БЕЗ ПОТЕРИ КОНТРАСТА) */
 .service-card:hover {
-  border-color: var(--color-primary, #d4a574);
+  border-color: var(--color-primary-400, #c9a88c);
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
+  /* Мы меняем только рамку и тень. Цвет текста остаётся прежним! */
 }
 
 .service-card:focus-visible {
-  outline: 3px solid var(--color-primary, #d4a574);
+  outline: 3px solid var(--color-primary, #b8957a);
   outline-offset: 2px;
 }
 
+/* СОСТОЯНИЕ ВЫБОРА */
 .service-card--selected {
-  border-color: var(--color-primary, #d4a574);
-  background: var(--color-primary-light, #f0d9bc);
+  border-color: var(--color-primary-600, #9c7558);
+  background: var(--color-primary-soft, #fbf5ef);
   box-shadow: var(--shadow-md);
 }
 
+/* Индикатор выбора (галочка) */
 .service-card__check {
   position: absolute;
   top: 12px;
@@ -98,7 +150,7 @@
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: var(--color-primary, #d4a574);
+  background: var(--color-primary-600, #9c7558);
   color: white;
 
   display: flex;
@@ -106,27 +158,54 @@
   justify-content: center;
 }
 
+/* ═══════════════════════════════════════════════
+   ТИПОГРАФИКА КАРТОЧКИ
+   ═══════════════════════════════════════════════ */
+
 .service-card__category {
   font-size: var(--font-size-xs, 0.75rem);
   font-weight: 600;
   text-transform: uppercase;
-  color: var(--color-primary-dark, #b8895a);
   letter-spacing: 0.5px;
+  color: var(--color-primary-600, #9c7558);
 }
 
 .service-card__title {
   font-size: var(--font-size-lg, 1.125rem);
   font-weight: 600;
-  color: var(--color-text, #2d2419);
+  color: var(
+    --color-neutral-900,
+    #251b14
+  ); /* Очень тёмный для максимального контраста */
   margin: 0;
+  padding-right: 32px; /* Место под галочку, чтобы не наезжала */
 }
+
+/* ═══════════════════════════════════════════════
+   ЗАЩИТА ОТ ДЛИННЫХ ТЕКСТОВ (Замечание из ПР-07)
+   ═══════════════════════════════════════════════ */
 
 .service-card__description {
   color: var(--color-text-muted, #6b5d4f);
   font-size: var(--font-size-sm, 0.875rem);
   line-height: 1.5;
   flex: 1;
+
+  /* Ограничиваем описание 3 строками с многоточием */
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+
+  /* Дополнительная защита от слов-гигантов без пробелов */
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
+
+/* ═══════════════════════════════════════════════
+   МЕТА-ИНФОРМАЦИЯ И ЦЕНА
+   ═══════════════════════════════════════════════ */
 
 .service-card__meta {
   display: flex;
@@ -136,22 +215,37 @@
 }
 
 .service-card__meta-item {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 4px;
   color: var(--color-text-muted, #6b5d4f);
   font-size: var(--font-size-sm, 0.875rem);
 }
 
+.service-card__meta-item svg {
+  color: var(--color-primary-500, #b8957a);
+}
+
 .service-card__price {
   font-size: var(--font-size-xl, 1.5rem);
   font-weight: 700;
-  color: var(--color-primary-dark, #b8895a);
-  margin-top: var(--spacing-sm, 8px);
+  color: var(
+    --color-primary-700,
+    #7f5e44
+  ); /* Насыщенный терракот для отличной читаемости на белом */
+  margin-top: auto;
 }
+
+/* ═══════════════════════════════════════════════
+   АДАПТИВНОСТЬ (Mobile-first)
+   ═══════════════════════════════════════════════ */
 
 @media (max-width: 480px) {
   .service-selector__grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr; /* Одна колонка на мобильных */
+  }
+
+  .service-selector__header h2 {
+    font-size: var(--font-size-lg, 1.125rem);
   }
 }

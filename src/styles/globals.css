@@ -1,12 +1,20 @@
 /**
  * Глобальные стили приложения
- * ПОЧЕМУ отдельный файл? Reset + базовые правила,
- * которые применяются ко всему приложению.
+ * 
+ * ПОЧЕМУ такая структура?
+ * 1. CSS Reset — убираем браузерные дефолты
+ * 2. Базовые элементы — предсказуемое поведение
+ * 3. Утилитарные классы — переиспользование без inline-стилей
+ * 4. Состояния и статусы — единый визуальный язык
+ * 5. Защита от типовых проблем (длинные тексты, переполнение)
  */
 
 @import "./variables.css";
 
-/* === СБРОС === */
+/* ═══════════════════════════════════════════════
+   🧹 RESET
+   ═══════════════════════════════════════════════ */
+
 *,
 *::before,
 *::after {
@@ -18,20 +26,25 @@
 html {
   font-size: 16px;
   scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
   font-family: var(--font-family);
   font-size: var(--font-size-base);
-  line-height: 1.6;
+  line-height: var(--line-height-normal);
   color: var(--color-text);
   background-color: var(--color-bg);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
+  text-rendering: optimizeLegibility;
 }
 
-/* === ТИПОГРАФИКА === */
+/* ═══════════════════════════════════════════════
+   📝 ТИПОГРАФИКА
+   ═══════════════════════════════════════════════ */
+
 h1,
 h2,
 h3,
@@ -39,50 +52,72 @@ h4,
 h5,
 h6 {
   font-weight: 600;
-  line-height: 1.3;
-  color: var(--color-text);
+  line-height: var(--line-height-tight);
+  color: var(--color-neutral-900);
+  letter-spacing: -0.01em;
 }
 
 h1 {
-  font-size: var(--font-size-2xl);
+  font-size: var(--font-size-3xl);
 }
 h2 {
-  font-size: var(--font-size-xl);
+  font-size: var(--font-size-2xl);
 }
 h3 {
+  font-size: var(--font-size-xl);
+}
+h4 {
   font-size: var(--font-size-lg);
 }
 
 p {
   margin-bottom: var(--spacing-md);
-  color: var(--color-text-muted);
+  color: var(--color-text);
 }
 
+/* ═══════════════════════════════════════════════
+   🔗 ССЫЛКИ
+   Чётко видны, но не кричащие
+   ═══════════════════════════════════════════════ */
+
 a {
-  color: var(--color-primary-dark);
+  color: var(--color-primary-hover);
   text-decoration: none;
-  transition: color var(--transition-fast);
+  border-bottom: 1px solid transparent;
+  transition:
+    color var(--transition-fast),
+    border-color var(--transition-fast);
 }
 
 a:hover {
-  color: var(--color-primary);
+  color: var(--color-primary-active);
+  border-bottom-color: var(--color-primary-active);
 }
 
-/* === КНОПКИ (базовый стиль) === */
+a:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+  border-radius: var(--radius-sm);
+}
+
+/* ═══════════════════════════════════════════════
+   🖱 БАЗОВЫЕ ЭЛЕМЕНТЫ
+   ═══════════════════════════════════════════════ */
+
 button {
   font-family: inherit;
   font-size: inherit;
   cursor: pointer;
   border: none;
   background: none;
+  color: inherit;
 }
 
 button:disabled {
   cursor: not-allowed;
-  opacity: 0.6;
+  opacity: 0.5;
 }
 
-/* === ФОРМЫ === */
 input,
 textarea,
 select {
@@ -91,20 +126,22 @@ select {
   color: inherit;
 }
 
-/* === СПИСКИ === */
-ul,
-ol {
-  list-style: none;
-}
-
-/* === ИЗОБРАЖЕНИЯ === */
 img {
   max-width: 100%;
   height: auto;
   display: block;
 }
 
-/* === СКРОЛЛ === */
+ul,
+ol {
+  list-style: none;
+}
+
+/* ═══════════════════════════════════════════════
+   📜 СКРОЛЛ
+   Мягкий, в тон палитры
+   ═══════════════════════════════════════════════ */
+
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
@@ -115,15 +152,20 @@ img {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-primary-light);
+  background: var(--color-primary-200);
   border-radius: var(--radius-full);
+  border: 2px solid var(--color-bg);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-primary);
+  background: var(--color-primary-400);
 }
 
-/* === УТИЛИТАРНЫЕ КЛАССЫ === */
+/* ═══════════════════════════════════════════════
+   🎭 УТИЛИТАРНЫЕ КЛАССЫ
+   ═══════════════════════════════════════════════ */
+
+/* Скрытие */
 .hidden {
   display: none !important;
 }
@@ -140,57 +182,12 @@ img {
   border: 0;
 }
 
-/* === СТАТУСЫ (используется в BookingCard) === */
-.status-pending {
-  background-color: #fff3cd;
-  color: #856404;
-  border: 1px solid #ffeaa7;
-}
+/* ═══════════════════════════════════════════════
+   🛡 ЗАЩИТА ОТ ДЛИННЫХ ТЕКСТОВ
+   ПОЧЕМУ? Замечание В.В. из ПР-07: длинные комментарии
+   и описания не должны ломать вёрстку.
+   ═══════════════════════════════════════════════ */
 
-.status-confirmed {
-  background-color: #d4edda;
-  color: #155724;
-  border: 1px solid #c3e6cb;
-}
-
-.status-in-progress {
-  background-color: #cce5ff;
-  color: #004085;
-  border: 1px solid #b8daff;
-}
-
-.status-completed {
-  background-color: #d1ecf1;
-  color: #0c5460;
-  border: 1px solid #bee5eb;
-}
-
-.status-cancelled {
-  background-color: #f8d7da;
-  color: #721c24;
-  border: 1px solid #f5c6cb;
-}
-
-/* === ВАЛИДАЦИЯ ФОРМ (замечание В.В. из ПР-03) === */
-/* ПОЧЕМУ CSS-классы? Управление состоянием через классы, НЕ inline-стили */
-.input-error {
-  border-color: var(--color-error) !important;
-  background-color: #fff5f5;
-}
-
-.error-message {
-  color: var(--color-error);
-  font-size: var(--font-size-sm);
-  margin-top: var(--spacing-xs);
-  display: block;
-}
-
-.input-success {
-  border-color: var(--color-success) !important;
-}
-
-/* === ЗАЩИТА ОТ ДЛИННЫХ ТЕКСТОВ (замечание из ПР-07) === */
-/* ПОЧЕМУ? Длинные комментарии/описания не должны ломать вёрстку */
 .text-break {
   word-wrap: break-word;
   overflow-wrap: break-word;
@@ -198,7 +195,142 @@ img {
   hyphens: auto;
 }
 
-/* === АДАПТИВНЫЙ КОНТЕЙНЕР === */
+.text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.text-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.text-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ═══════════════════════════════════════════════
+   🏷 СТАТУСЫ (универсальные)
+   Каждая пара фон/текст имеет контраст ≥4.5:1
+   ═══════════════════════════════════════════════ */
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: 4px 12px;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  border-radius: var(--radius-full);
+  line-height: 1.4;
+}
+
+.status-badge--success {
+  background-color: var(--color-success-light);
+  color: var(--color-success-dark);
+}
+
+.status-badge--warning {
+  background-color: var(--color-warning-light);
+  color: var(--color-warning-dark);
+}
+
+.status-badge--error {
+  background-color: var(--color-error-light);
+  color: var(--color-error-dark);
+}
+
+.status-badge--info {
+  background-color: var(--color-info-light);
+  color: var(--color-info-dark);
+}
+
+/* ═══════════════════════════════════════════════
+   📋 СТАТУСЫ ЗАПИСЕЙ (специфичные для салона)
+   ═══════════════════════════════════════════════ */
+
+.status-pending {
+  background-color: var(--color-warning-light);
+  color: var(--color-warning-dark);
+  border: 1px solid var(--color-warning);
+}
+
+.status-confirmed {
+  background-color: var(--color-success-light);
+  color: var(--color-success-dark);
+  border: 1px solid var(--color-success);
+}
+
+.status-in-progress {
+  background-color: var(--color-info-light);
+  color: var(--color-info-dark);
+  border: 1px solid var(--color-info);
+}
+
+.status-completed {
+  background-color: var(--color-secondary-100);
+  color: var(--color-secondary-700);
+  border: 1px solid var(--color-secondary-400);
+}
+
+.status-cancelled {
+  background-color: var(--color-error-light);
+  color: var(--color-error-dark);
+  border: 1px solid var(--color-error);
+}
+
+/* ═══════════════════════════════════════════════
+   ✅ ВАЛИДАЦИЯ ФОРМ
+   ПОЧЕМУ через CSS-классы, а не inline-стили?
+   Требование В.В. из ПР-03 — управление состоянием
+   через классы делает код гибче и тестируемее.
+   ═══════════════════════════════════════════════ */
+
+.input-error {
+  border-color: var(--color-error) !important;
+  background-color: var(--color-error-light) !important;
+}
+
+.input-error:focus {
+  box-shadow: var(--focus-ring-error) !important;
+}
+
+.input-success {
+  border-color: var(--color-success) !important;
+}
+
+.error-message {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-xs);
+  color: var(--color-error-dark);
+  background-color: var(--color-error-light);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  margin-top: var(--spacing-xs);
+  border-left: 3px solid var(--color-error);
+}
+
+.success-message {
+  color: var(--color-success-dark);
+  background-color: var(--color-success-light);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  border-left: 3px solid var(--color-success);
+}
+
+/* ═══════════════════════════════════════════════
+   📦 КОНТЕЙНЕРЫ
+   ═══════════════════════════════════════════════ */
+
 .container {
   width: 100%;
   max-width: 1200px;
@@ -206,12 +338,116 @@ img {
   padding: 0 var(--spacing-md);
 }
 
+.container--narrow {
+  max-width: 800px;
+}
+
+.container--wide {
+  max-width: 1400px;
+}
+
+/* Карточка-обёртка */
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-sm);
+  transition:
+    box-shadow var(--transition-base),
+    transform var(--transition-base),
+    border-color var(--transition-base);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-primary-200);
+}
+
+/* ═══════════════════════════════════════════════
+   🎨 УТИЛИТЫ ФОНА И ТЕКСТА
+   ═══════════════════════════════════════════════ */
+
+.bg-primary-soft {
+  background-color: var(--color-primary-soft);
+}
+.bg-primary-light {
+  background-color: var(--color-primary-light);
+}
+.bg-surface {
+  background-color: var(--color-surface);
+}
+.bg-surface-alt {
+  background-color: var(--color-surface-alt);
+}
+
+.text-primary {
+  color: var(--color-primary-hover);
+}
+.text-muted {
+  color: var(--color-text-muted);
+}
+.text-subtle {
+  color: var(--color-text-subtle);
+}
+.text-success {
+  color: var(--color-success-dark);
+}
+.text-warning {
+  color: var(--color-warning-dark);
+}
+.text-error {
+  color: var(--color-error-dark);
+}
+
+/* ═══════════════════════════════════════════════
+   📱 АДАПТИВНОСТЬ
+   ═══════════════════════════════════════════════ */
+
 @media (max-width: 768px) {
   html {
     font-size: 15px;
   }
 
+  h1 {
+    font-size: var(--font-size-2xl);
+  }
+  h2 {
+    font-size: var(--font-size-xl);
+  }
+  h3 {
+    font-size: var(--font-size-lg);
+  }
+
   .container {
     padding: 0 var(--spacing-sm);
   }
+}
+
+@media (max-width: 480px) {
+  html {
+    font-size: 14px;
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   ♿ ДОСТУПНОСТЬ
+   Уважение к пользовательским настройкам
+   ═══════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Усиленный фокус для клавиатурной навигации */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
