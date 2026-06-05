@@ -1,17 +1,19 @@
 /**
  * BookingList.jsx — список записей клиента
- *
+ * 
  * Отображает будущие и прошедшие записи, сгруппированные по статусу.
  * Даёт возможность отменить запись.
+ * 
+ * 🔥 ЭТАП 1.3: Добавлена поддержка lastCreatedBooking
+ * Если пользователь только что создал запись, она отображается первой
+ * в секции "Предстоящие", даже если фильтр по телефону не находит записи.
  */
 
-import { CalendarPlus } from 'lucide-react';
-
+import { CalendarPlus, Sparkles } from 'lucide-react';
 import { BOOKING_STATUS } from '../../utils/constants';
 import BookingCard from './BookingCard';
 import EmptyState from '../UI/EmptyState';
 import Button from '../UI/Button';
-
 import './BookingList.css';
 
 export default function BookingList({
@@ -19,6 +21,7 @@ export default function BookingList({
   services,
   specialists,
   onNewBooking,
+  lastCreatedBooking, // 🔥 Новая prop для отображения созданной записи
 }) {
   // === ГРУППИРОВКА ЗАПИСЕЙ ===
   const now = new Date();
@@ -38,6 +41,25 @@ export default function BookingList({
     })
     .sort((a, b) => new Date(b.date) - new Date(a.date));
 
+  // === 🔥 ОБЪЕДИНЕНИЕ lastCreatedBooking С БУДУЩИМИ ЗАПИСЯМИ (ЭТАП 1.3) ===
+  // ПОЧЕМУ исключаем дубликаты?
+  // Если lastCreatedBooking уже есть в futureBookings (например, после обновления
+  // страницы или если фильтр по телефону нашёл её), мы не хотим показывать её дважды.
+  // Проверяем по ID — это уникальный идентификатор записи.
+  const displayedFutureBookings = lastCreatedBooking
+    ? [
+        lastCreatedBooking,
+        ...futureBookings.filter(b => b.id !== lastCreatedBooking.id)
+      ]
+    : futureBookings;
+
+  // === 🔥 ПРОВЕРКА: ЕСТЬ ЛИ ВООБЩЕ ЗАПИСИ? (ЭТАП 1.3) ===
+  // ПОЧЕМУ это важно?
+  // Раньше при пустом futureBookings показывалось "У вас пока нет записей".
+  // Но если есть lastCreatedBooking — запись есть, просто она ещё не попала
+  // в отфильтрованный список. Нужно показать её.
+  const hasAnyBookings = displayedFutureBookings.length > 0 || pastBookings.length > 0;
+
   return (
     <div className="booking-list">
       <div className="booking-list__header">
@@ -51,12 +73,33 @@ export default function BookingList({
         </Button>
       </div>
 
+      {/* === 🔥 БАННЕР УСПЕШНОГО СОЗДАНИЯ (ЭТАП 1.3) === */}
+      {/* ПОЧЕМУ отдельный баннер?
+          Это даёт пользователю мгновенную визуальную обратную связь:
+          "Ваша запись успешно создана!" — даже до того, как он увидит карточку.
+          Улучшает UX и устраняет ощущение "запись не создалась". */}
+      {lastCreatedBooking && (
+        <div className="booking-list__success-banner">
+          <Sparkles size={20} />
+          <div>
+            <strong>Запись успешно создана!</strong>
+            <p>
+              {services.find(s => s.id === lastCreatedBooking.serviceId)?.name} •{' '}
+              {new Date(lastCreatedBooking.date).toLocaleDateString('ru-RU', {
+                day: 'numeric',
+                month: 'long',
+              })} в {lastCreatedBooking.startTime}
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* === БУДУЩИЕ ЗАПИСИ === */}
       <section className="booking-list__section">
         <h3 className="booking-list__section-title">
-          Предстоящие ({futureBookings.length})
+          Предстоящие ({displayedFutureBookings.length})
         </h3>
-        {futureBookings.length === 0 ? (
+        {displayedFutureBookings.length === 0 ? (
           <EmptyState
             title="У вас пока нет предстоящих записей"
             description="Запишитесь на первую услугу салона «Здоровье и красота»"
@@ -66,13 +109,15 @@ export default function BookingList({
           />
         ) : (
           <div className="booking-list__grid">
-            {futureBookings.map((booking) => (
+            {displayedFutureBookings.map((booking) => (
               <BookingCard
                 key={booking.id}
                 booking={booking}
                 service={services.find((s) => s.id === booking.serviceId)}
                 specialist={specialists.find((s) => s.id === booking.specialistId)}
                 isFuture
+                // 🔥 Подсвечиваем только что созданную запись
+                isNew={lastCreatedBooking && booking.id === lastCreatedBooking.id}
               />
             ))}
           </div>

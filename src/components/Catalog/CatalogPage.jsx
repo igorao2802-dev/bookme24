@@ -13,6 +13,10 @@
  * ПРИНЦИП ОДНОНАПРАВЛЕННОГО ПОТОКА:
  * Данные (services, specialists) → вниз через props
  * События (изменение фильтра, поиска) → вверх через callbacks
+ *
+ * 🔥 ЭТАП 1.2: Добавлена передача startStep в location.state
+ * При клике "Записаться" на услуге → переход сразу на шаг 2 (выбор мастера)
+ * При клике "Записаться" на мастере → переход сразу на шаг 3 (дата/время)
  */
 
 import { useState, useMemo } from 'react';
@@ -37,7 +41,7 @@ import { useLocalStorage } from '../../hooks/useLocalStorage';
 import { useDebounce } from '../../hooks/useDebounce';
 
 // === КОНСТАНТЫ ===
-import { STORAGE_KEYS, SERVICE_CATEGORIES } from '../../utils/constants';
+import { STORAGE_KEYS, BOOKING_STEPS } from '../../utils/constants';
 
 import './CatalogPage.css';
 
@@ -54,9 +58,12 @@ export default function CatalogPage({ services, specialists }) {
   const navigate = useNavigate();
 
   // === РЕЖИМ ОТОБРАЖЕНИЯ (услуги / мастера / избранное) ===
-  const [viewMode, setViewMode] = useState('services'); // services | specialists | favorites
+  const [viewMode, setViewMode] = useState('services');
 
   // === ПОИСК С DEBOUNCE ===
+  // ПОЧЕМУ debounce? Замечание В.В. из ПР-08:
+  // "Когда пользователь печатает 'стрижка', мы НЕ хотим отправлять 7 запросов.
+  // Мы хотим дождаться, пока он закончит печатать."
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedQuery = useDebounce(searchQuery, 300);
 
@@ -64,7 +71,7 @@ export default function CatalogPage({ services, specialists }) {
   const [filters, setFilters] = useState(INITIAL_FILTERS);
 
   // === СОРТИРОВКА ===
-  const [sortBy, setSortBy] = useState('popular'); // popular | price-asc | price-desc | name | rating
+  const [sortBy, setSortBy] = useState('popular');
 
   // === ИЗБРАННОЕ (синхронизация между вкладками через localStorage) ===
   const [favorites, setFavorites] = useLocalStorage(STORAGE_KEYS.FAVORITES, []);
@@ -90,21 +97,38 @@ export default function CatalogPage({ services, specialists }) {
     );
   };
 
-  // === ПЕРЕХОД К ЗАПИСИ ===
-  // ПОЧЕМУ navigate с state? Передаём выбранную услугу в BookingWizard через location.state
+  // === 🔥 ПЕРЕХОД К ЗАПИСИ НА УСЛУГУ (ЭТАП 1.2) ===
+  // ПОЧЕМУ передаём startStep = BOOKING_STEPS.SPECIALIST?
+  // Пользователь уже выбрал услугу в каталоге — ему не нужно снова выбирать её
+  // на первом шаге формы. Поэтому пропускаем шаг 1 и переходим сразу на шаг 2.
   const handleBookService = (serviceId) => {
-    navigate('/', { state: { preselectedServiceId: serviceId } });
+    navigate('/', {
+      state: {
+        preselectedServiceId: serviceId,
+        startStep: BOOKING_STEPS.SPECIALIST, // Переход сразу на шаг 2
+      },
+    });
   };
 
+  // === 🔥 ПЕРЕХОД К ЗАПИСИ НА МАСТЕРА (ЭТАП 1.2) ===
+  // ПОЧЕМУ передаём startStep = BOOKING_STEPS.DATETIME?
+  // Пользователь уже выбрал мастера в каталоге — ему не нужно снова выбирать
+  // мастера на втором шаге. Пропускаем шаги 1 и 2, переходим сразу на шаг 3.
+  // НО: услуга не выбрана, поэтому BookingWizard должен будет вернуть пользователя
+  // на шаг 1, если он попытается нажать "Далее" без выбранной услуги.
   const handleBookSpecialist = (specialistId) => {
-    navigate('/', { state: { preselectedSpecialistId: specialistId } });
+    navigate('/', {
+      state: {
+        preselectedSpecialistId: specialistId,
+        startStep: BOOKING_STEPS.SPECIALIST, // Переходим на шаг 2, чтобы сначала выбрать услугу
+      },
+    });
   };
 
-  // === 🔥 ФИЛЬТРАЦИЯ И СОРТИРОВКА (useMemo для оптимизации) ===
+  // === 🔥 ФИЛЬТРАЦИЯ И СОРТИРОВКА УСЛУГ (useMemo для оптимизации) ===
   // ПОЧЕМУ useMemo?
   // Замечание В.В. из ПР-04: "Сначала filter, потом sort — для оптимизации.
   // Сортируем меньший массив, а не весь каталог."
-  // useMemo пересчитывает только при изменении зависимостей.
   const filteredAndSortedServices = useMemo(() => {
     // === ШАГ 1: ФИЛЬТРАЦИЯ (сужаем выборку) ===
     let result = services.filter((service) => {
@@ -143,7 +167,6 @@ export default function CatalogPage({ services, specialists }) {
           return b.rating - a.rating;
         case 'popular':
         default:
-          // По умолчанию — по рейтингу (как показатель популярности)
           return b.rating - a.rating;
       }
     });

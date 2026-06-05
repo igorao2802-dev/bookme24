@@ -1,31 +1,68 @@
-.booking-list__header {
+/* === 🔥 БАННЕР УСПЕШНОГО СОЗДАНИЯ (ЭТАП 1.3) === */
+.booking-list__success-banner {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--spacing-xl, 32px);
   gap: var(--spacing-md, 16px);
-  flex-wrap: wrap;
+
+  padding: var(--spacing-md, 16px) var(--spacing-lg, 24px);
+  margin-bottom: var(--spacing-lg, 24px);
+
+  background: linear-gradient(
+    135deg,
+    var(--color-success-light, #e6f0e9) 0%,
+    #f0f9f2 100%
+  );
+  border: 1px solid var(--color-success, #5f8c6d);
+  border-left: 4px solid var(--color-success, #5f8c6d);
+  border-radius: var(--radius-md, 8px);
+
+  color: var(--color-success-dark, #3e6b4c);
+
+  animation: slideDown 0.4s ease-out;
 }
 
-.booking-list__header h2 {
-  font-size: var(--font-size-xl, 1.5rem);
+.booking-list__success-banner svg {
+  flex-shrink: 0;
+  color: var(--color-success, #5f8c6d);
+}
+
+.booking-list__success-banner strong {
+  display: block;
+  font-size: var(--font-size-base, 1rem);
+  margin-bottom: 2px;
+}
+
+.booking-list__success-banner p {
   margin: 0;
+  font-size: var(--font-size-sm, 0.875rem);
+  opacity: 0.9;
 }
 
-.booking-list__section {
-  margin-bottom: var(--spacing-xl, 32px);
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.booking-list__section-title {
-  font-size: var(--font-size-lg, 1.125rem);
-  color: var(--color-text-muted, #6b5d4f);
-  margin-bottom: var(--spacing-md, 16px);
-  padding-bottom: var(--spacing-sm, 8px);
-  border-bottom: 2px solid var(--color-primary-light, #f0d9bc);
+/* === ПОДСВЕТКА НОВОЙ ЗАПИСИ (ЭТАП 1.3) === */
+.booking-card--new {
+  animation: highlightNew 2s ease-out;
+  border-left: 4px solid var(--color-success, #5f8c6d) !important;
+  box-shadow: 0 0 0 2px var(--color-success-light, #e6f0e9);
 }
 
-.booking-list__grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: var(--spacing-md, 16px);
+@keyframes highlightNew {
+  0% {
+    background-color: var(--color-success-light, #e6f0e9);
+    transform: scale(1.02);
+  }
+  100% {
+    background-color: var(--color-surface, #ffffff);
+    transform: scale(1);
+  }
 }

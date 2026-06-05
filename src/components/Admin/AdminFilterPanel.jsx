@@ -1,16 +1,23 @@
 /**
  * AdminFilterPanel.jsx — панель фильтров и сортировки для администратора
- *
+ * 
  * АРХИТЕКТУРНАЯ РОЛЬ:
  * Презентационный компонент. НЕ владеет состоянием фильтров.
  * Сообщает об изменениях родителю через onFilterChange и onSortChange.
+ * 
+ * 🔥 ЭТАП 1.4: Добавлена валидация дат (запрет нелогичных периодов)
+ * - Поле "Дата от" не может быть позже "Дата до"
+ * - Поле "Дата до" не может быть раньше "Дата от"
+ * - Браузер автоматически блокирует недоступные даты (серым цветом)
+ * - Добавлены helperText для пояснения ограничений
  */
 
-import { Filter, RotateCcw, Search, SortAsc } from 'lucide-react';
+import { Filter, RotateCcw, Search } from 'lucide-react';
 
 import Input from '../UI/Input';
 import Select from '../UI/Select';
 import Badge from '../UI/Badge';
+import Toast from '../UI/Toast';
 
 import { BOOKING_STATUS, BOOKING_STATUS_LABELS } from '../../utils/constants';
 
@@ -51,6 +58,43 @@ export default function AdminFilterPanel({
     { value: 'specialist', label: 'По мастеру' },
     { value: 'client', label: 'По клиенту' },
   ];
+
+  // === 🔥 ОБРАБОТЧИК ИЗМЕНЕНИЯ ДАТЫ "ОТ" (ЭТАП 1.4) ===
+  // ПОЧЕМУ отдельная функция?
+  // Проверяем логику: если новая дата "от" позже даты "до",
+  // автоматически сбрасываем дату "до". Это предотвращает
+  // ситуацию, когда пользователь выбирает некорректный период.
+  const handleDateFromChange = (e) => {
+    const newDateFrom = e.target.value;
+    
+    // Если дата "до" уже выбрана и новая дата "от" позже неё —
+    // сбрасываем дату "до" и показываем уведомление
+    if (filters.dateTo && newDateFrom > filters.dateTo) {
+      onFilterChange('dateTo', '');
+      Toast.info('Дата окончания сброшена, так как она раньше даты начала', {
+        duration: 3000,
+      });
+    }
+    
+    onFilterChange('dateFrom', newDateFrom);
+  };
+
+  // === 🔥 ОБРАБОТЧИК ИЗМЕНЕНИЯ ДАТЫ "ДО" (ЭТАП 1.4) ===
+  // Аналогичная логика для поля "Дата до"
+  const handleDateToChange = (e) => {
+    const newDateTo = e.target.value;
+    
+    // Если дата "от" уже выбрана и новая дата "до" раньше неё —
+    // сбрасываем дату "от" и показываем уведомление
+    if (filters.dateFrom && newDateTo < filters.dateFrom) {
+      onFilterChange('dateFrom', '');
+      Toast.info('Дата начала сброшена, так как она позже даты окончания', {
+        duration: 3000,
+      });
+    }
+    
+    onFilterChange('dateTo', newDateTo);
+  };
 
   return (
     <div className="admin-filter-panel">
@@ -100,20 +144,48 @@ export default function AdminFilterPanel({
           options={specialistOptions}
         />
 
-        {/* === ДАТА ОТ === */}
+        {/* === 🔥 ДАТА ОТ (с валидацией) === */}
+        {/* 
+          ПОЧЕМУ max={filters.dateTo || undefined}?
+          - Если filters.dateTo пустая строка, передаём undefined,
+            чтобы браузер НЕ устанавливал ограничение (все даты доступны)
+          - Если filters.dateTo заполнена, браузер заблокирует даты ПОЗЖЕ неё
+          - Это предотвращает выбор "нелогичного" периода
+        */}
         <Input
           type="date"
+          label="С (дата начала)"
           value={filters.dateFrom}
-          onChange={(e) => onFilterChange('dateFrom', e.target.value)}
-          placeholder="Дата от"
+          onChange={handleDateFromChange}
+          max={filters.dateTo || undefined}
+          helperText={
+            filters.dateTo
+              ? `Не позже ${new Date(filters.dateTo).toLocaleDateString('ru-RU')}`
+              : 'Выберите начальную дату периода'
+          }
+          title="Выберите начальную дату периода фильтрации"
         />
 
-        {/* === ДАТА ДО === */}
+        {/* === 🔥 ДАТА ДО (с валидацией) === */}
+        {/* 
+          ПОЧЕМУ min={filters.dateFrom || undefined}?
+          Аналогично полю "Дата от":
+          - Если filters.dateFrom пустая, ограничений нет
+          - Если заполнена, браузер заблокирует даты РАНЬШЕ неё
+          - Визуально недоступные даты отображаются серым цветом
+        */}
         <Input
           type="date"
+          label="По (дата окончания)"
           value={filters.dateTo}
-          onChange={(e) => onFilterChange('dateTo', e.target.value)}
-          placeholder="Дата до"
+          onChange={handleDateToChange}
+          min={filters.dateFrom || undefined}
+          helperText={
+            filters.dateFrom
+              ? `Не раньше ${new Date(filters.dateFrom).toLocaleDateString('ru-RU')}`
+              : 'Выберите конечную дату периода'
+          }
+          title="Выберите конечную дату периода фильтрации"
         />
 
         {/* === СОРТИРОВКА === */}

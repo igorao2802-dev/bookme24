@@ -19,12 +19,12 @@ import Badge from '../UI/Badge';
 
 import './BookingCard.css';
 
-export default function BookingCard({ booking, service, specialist, isFuture }) {
+export default function BookingCard({ booking, service, specialist, isFuture, isNew }) {
   return (
     <article
       className={`booking-card ${
         !isFuture ? 'booking-card--past' : ''
-      }`}
+      } ${isNew ? 'booking-card--new' : ''}`}
     >
       <div className="booking-card__header">
         <Badge variant={booking.status}>

@@ -94,13 +94,59 @@
 }
 
 /* ═══════════════════════════════════════════════
-   СЕТКА КАРТОЧЕК
+   СЕТКА КАРТОЧЕК 
+   Mobile-first подход с явными breakpoints.
+   Точный контроль количества колонок:
+   - ≤480px  → 1 колонка (мобильные)
+   - 481-768px  → 2 колонки (планшеты)
+   - 769-1200px → 3 колонки (десктоп)
+   - >1200px    → 4 колонки (широкий экран)
    ═══════════════════════════════════════════════ */
 
+/* Базовые стили — мобильные устройства (≤480px) */
 .service-selector__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: 1fr; /* Одна колонка на мобильных */
   gap: var(--spacing-md, 16px);
+}
+
+/* Планшеты (481px — 768px) */
+@media (min-width: 481px) {
+  .service-selector__grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-md, 16px);
+  }
+}
+
+/* Десктоп (769px — 1200px) */
+@media (min-width: 769px) {
+  .service-selector__grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-lg, 24px); /* Чуть больше отступ на десктопе */
+  }
+}
+
+/* Широкий экран (>1200px) */
+@media (min-width: 1201px) {
+  .service-selector__grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--spacing-lg, 24px);
+  }
+}
+
+/* 
+  ПОЧЕМУ карточки имеют одинаковую высоту в строке?
+  Grid по умолчанию растягивает все элементы строки до высоты
+  самого высокого элемента (align-items: stretch).
+  Карточка (.service-card) имеет display: flex + flex-direction: column,
+  а описание (.service-card__description) имеет flex: 1 —
+  оно занимает всё оставшееся пространство, выравнивая карточки.
+*/
+
+/* Гарантируем, что карточки растягиваются на всю высоту ячейки grid */
+.service-card {
+  height: 100%;
+  /* Остальные стили карточки остаются без изменений */
 }
 
 /* ═══════════════════════════════════════════════
@@ -247,5 +293,108 @@
 
   .service-selector__header h2 {
     font-size: var(--font-size-lg, 1.125rem);
+  }
+}
+
+/* ═══════════════════════════════════════════════
+    ПАНЕЛЬ СОРТИРОВКИ (ЭТАП 2.3)
+   Визуально отделена от фильтров категорий.
+   Кнопки с иконками стрелок ↑/↓ для индикации направления.
+   ═══════════════════════════════════════════════ */
+
+.service-selector__sort {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md, 16px);
+  margin-bottom: var(--spacing-lg, 24px);
+  padding: var(--spacing-md, 16px);
+  background: var(--color-surface-alt, #f2ebe0);
+  border-radius: var(--radius-md, 8px);
+  flex-wrap: wrap;
+}
+
+.service-selector__sort-label {
+  font-size: var(--font-size-sm, 0.875rem);
+  font-weight: 600;
+  color: var(--color-text, #3d2f26);
+  white-space: nowrap;
+}
+
+.service-selector__sort-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs, 8px);
+}
+
+/* === КНОПКА СОРТИРОВКИ === */
+.service-selector__sort-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  min-height: 36px;
+
+  background: var(--color-surface, #ffffff);
+  border: 1.5px solid var(--color-border, #e8dcc4);
+  border-radius: var(--radius-full, 9999px);
+
+  font-size: var(--font-size-sm, 0.875rem);
+  font-weight: 500;
+  color: var(--color-text, #3d2f26);
+
+  cursor: pointer;
+  transition: all var(--transition-fast, 150ms ease);
+}
+
+.service-selector__sort-btn:hover {
+  border-color: var(--color-primary-400, #c9a88c);
+  background: var(--color-primary-soft, #fbf5ef);
+  /* Цвет текста НЕ меняется — сохраняет контраст */
+}
+
+.service-selector__sort-btn:focus-visible {
+  outline: 2px solid var(--color-primary, #b8957a);
+  outline-offset: 2px;
+}
+
+/* === АКТИВНАЯ КНОПКА СОРТИРОВКИ === */
+.service-selector__sort-btn--active {
+  background: var(--color-primary-600, #9c7558);
+  border-color: var(--color-primary-600, #9c7558);
+  color: var(--color-text-inverse, #ffffff);
+  font-weight: 600;
+}
+
+.service-selector__sort-btn--active:hover {
+  background: var(--color-primary-700, #7f5e44);
+  border-color: var(--color-primary-700, #7f5e44);
+  color: var(--color-text-inverse, #ffffff);
+}
+
+/* === ИКОНКА СТРЕЛКИ === */
+.service-selector__sort-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+}
+
+/* === АДАПТИВНОСТЬ === */
+@media (max-width: 480px) {
+  .service-selector__sort {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-sm, 8px);
+  }
+
+  .service-selector__sort-buttons {
+    width: 100%;
+  }
+
+  .service-selector__sort-btn {
+    flex: 1;
+    justify-content: center;
+    min-width: 0;
   }
 }
