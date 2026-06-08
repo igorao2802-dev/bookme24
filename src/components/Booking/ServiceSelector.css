@@ -106,8 +106,35 @@
 /* Базовые стили — мобильные устройства (≤480px) */
 .service-selector__grid {
   display: grid;
-  grid-template-columns: 1fr; /* Одна колонка на мобильных */
+  /* 
+    ПОЧЕМУ repeat(4, 1fr), а не auto-fill?
+    - auto-fill может давать разное количество колонок на разных экранах
+    - repeat(4, 1fr) гарантирует ровно 4 колонки на десктопе
+    - На планшетах и мобильных — media queries ниже переключают на 3/2/1
+  */
+  grid-template-columns: repeat(4, 1fr);
   gap: var(--spacing-md, 16px);
+}
+
+/* Планшет (3 колонки) */
+@media (max-width: 1024px) {
+  .service-selector__grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Маленький планшет (2 колонки) */
+@media (max-width: 768px) {
+  .service-selector__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Мобильный (1 колонка) */
+@media (max-width: 480px) {
+  .service-selector__grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Планшеты (481px — 768px) */
