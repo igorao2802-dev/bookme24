@@ -1,5 +1,5 @@
 /**
- * Кастомный хук для генерации временных слотов с учётом:
+ * Кастомный хук для генерации свободных окон записи с учётом:
  * - Рабочих часов специалиста
  * - Длительности услуги
  * - Существующих записей (проверка пересечений)
@@ -15,9 +15,9 @@
  * - Инкапсуляция упрощает тестирование
  *
  * Архитектурная роль:
- * Этот хук — "калькулятор свободных слотов". Он превращает
+ * Этот хук — "калькулятор свободных окон". Он превращает
  * сырые данные (мастер, услуга, существующие записи) в
- * готовый для UI массив слотов с флагами isAvailable.
+ * готовый для UI массив окон с флагами isAvailable.
  */
 
 import { useMemo } from "react";
@@ -38,7 +38,7 @@ import { BUSINESS_CONFIG } from "../utils/constants";
  * @param {Object} params.specialist - объект мастера
  * @param {Object} params.service - объект услуги
  * @param {Array} params.existingBookings - массив всех записей
- * @param {number} [params.stepMinutes=30] - шаг генерации слотов
+ * @param {number} [params.stepMinutes=30] - шаг генерации окон
  * @returns {Object} { slots, isLoading, error }
  */
 export function useTimeSlots({
@@ -96,10 +96,10 @@ export function useTimeSlots({
       };
     }
 
-    // === ГЕНЕРИРУЕМ ВСЕ ВОЗМОЖНЫЕ СЛОТЫ ===
+    // === ГЕНЕРИРУЕМ ВСЕ ВОЗМОЖНЫЕ ОКНА ===
     // ПОЧЕМУ вычитаем duration из end?
     // Мастер должен УСПЕТЬ закончить услугу до конца рабочего дня.
-    // Если он работает до 18:00, а услуга 60 мин, последний слот — 17:00.
+    // Если он работает до 18:00, а услуга 60 мин, последнее окно — 17:00.
     const adjustedHours = {
       start: workingHours.start,
       end: subtractMinutes(workingHours.end, service.duration),
@@ -107,11 +107,11 @@ export function useTimeSlots({
 
     const allSlots = generateTimeSlots(adjustedHours, stepMinutes);
 
-    // === ПРОВЕРЯЕМ КАЖДЫЙ СЛОТ НА ДОСТУПНОСТЬ ===
+    // === ПРОВЕРЯЕМ КАЖДОЕ ОКНО НА ДОСТУПНОСТЬ ===
     const slotsWithAvailability = allSlots.map((startTime) => {
       const endTime = calculateEndTime(startTime, service.duration);
 
-      // 1. Проверка: слот не в прошлом
+      // 1. Проверка: окно не в прошлом
       if (isDateTimeInPast(date, startTime)) {
         return {
           startTime,
@@ -161,7 +161,7 @@ export function useTimeSlots({
         };
       }
 
-      // 4. Всё ОК — слот свободен
+      // 4. Всё ОК — окно свободен
       return {
         startTime,
         endTime,

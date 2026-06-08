@@ -1,16 +1,22 @@
 /**
  * BookingForm.jsx — Шаг 4: форма контактов клиента
- *
+ * 
  * ОСОБЕННОСТИ:
  * - Управляемые компоненты (Controlled Components)
  * - Валидация "на лету" при потере фокуса (onBlur)
  * - Валидация телефона РБ (+375 XX XXX-XX-XX)
  * - Автоформатирование телефона
  * - CSS-классы для ошибок (требование В.В.)
+ * 
+ * 🔥 ЭТАП 3.1: Оптимизация раскладки полей
+ * - Убран max-width: 600px — форма использует всю ширину
+ * - Телефон и Email размещены в 2 колонки (grid)
+ * - ФИО и Комментарий — на всю ширину
+ * - Адаптивность: на мобильных (≤640px) все поля в одну колонку
  */
 
 import { useState } from 'react';
-import { User, Phone, Mail, MessageSquare } from 'lucide-react';
+import { User, Phone, Mail } from 'lucide-react';
 
 import Input from '../UI/Input';
 import {
@@ -31,7 +37,6 @@ export default function BookingForm({ draft, onChange }) {
   // === ОБНОВЛЕНИЕ ПОЛЯ ===
   const handleChange = (field, value) => {
     onChange({ [field]: value });
-
     // Если поле уже было "тронутым" — валидируем сразу
     if (touched[field]) {
       validateField(field, value);
@@ -108,8 +113,12 @@ export default function BookingForm({ draft, onChange }) {
         </p>
       </div>
 
+      {/* 
+        🔥 ЭТАП 3.1: Убран max-width: 600px в CSS
+        Форма теперь использует всю ширину контейнера
+      */}
       <form className="booking-form__fields" onSubmit={(e) => e.preventDefault()}>
-        {/* === ФИО === */}
+        {/* === СТРОКА 1: ФИО (на всю ширину) === */}
         <Input
           label="ФИО"
           name="clientName"
@@ -123,36 +132,42 @@ export default function BookingForm({ draft, onChange }) {
           required
         />
 
-        {/* === ТЕЛЕФОН === */}
-        <Input
-          label="Телефон"
-          name="clientPhone"
-          type="tel"
-          value={draft.clientPhone}
-          onChange={handlePhoneChange}
-          onBlur={() => handleBlur('clientPhone')}
-          error={errors.clientPhone}
-          placeholder="+375 (29) 123-45-67"
-          helperText={`Коды операторов: ${BY_PHONE_CODES.join(', ')}`}
-          leftIcon={<Phone size={18} />}
-          required
-        />
+        {/* 
+          🔥 ЭТАП 3.1: СТРОКА 2 — Телефон и Email в 2 колонки
+          ПОЧЕМУ обёртка?
+          CSS Grid требует общего родителя для ячеек.
+          На мобильных (≤640px) grid переключается в 1 колонку.
+        */}
+        <div className="booking-form__row-2col">
+          <Input
+            label="Телефон"
+            name="clientPhone"
+            type="tel"
+            value={draft.clientPhone}
+            onChange={handlePhoneChange}
+            onBlur={() => handleBlur('clientPhone')}
+            error={errors.clientPhone}
+            placeholder="+375 (29) 123-45-67"
+            helperText={`Коды операторов: ${BY_PHONE_CODES.join(', ')}`}
+            leftIcon={<Phone size={18} />}
+            required
+          />
 
-        {/* === EMAIL === */}
-        <Input
-          label="Email (необязательно)"
-          name="clientEmail"
-          type="email"
-          value={draft.clientEmail}
-          onChange={(e) => handleChange('clientEmail', e.target.value)}
-          onBlur={() => handleBlur('clientEmail')}
-          error={errors.clientEmail}
-          placeholder="anna@example.com"
-          leftIcon={<Mail size={18} />}
-          maxLength={FIELD_LIMITS.EMAIL_MAX_LENGTH}
-        />
+          <Input
+            label="Email (необязательно)"
+            name="clientEmail"
+            type="email"
+            value={draft.clientEmail}
+            onChange={(e) => handleChange('clientEmail', e.target.value)}
+            onBlur={() => handleBlur('clientEmail')}
+            error={errors.clientEmail}
+            placeholder="anna@example.com"
+            leftIcon={<Mail size={18} />}
+            maxLength={FIELD_LIMITS.EMAIL_MAX_LENGTH}
+          />
+        </div>
 
-        {/* === КОММЕНТАРИЙ === */}
+        {/* === СТРОКА 3: Комментарий (на всю ширину) === */}
         <div className="booking-form__field">
           <label className="input__label" htmlFor="comment">
             Комментарий (необязательно)

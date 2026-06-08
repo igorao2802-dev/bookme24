@@ -1,0 +1,150 @@
+/**
+ * Стили для SettingsForm (форма настроек профиля)
+ * BEM-методология + адаптивность
+ * 
+ * 🔥 ЭТАП 5.5: Стили формы настроек
+ * - Секции с заголовками и иконками
+ * - Radio buttons для выбора уведомлений
+ * - Кнопки действий (сохранить, очистить, выйти)
+ */
+
+/* === ОСНОВНОЙ КОНТЕЙНЕР === */
+.settings-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg, 24px);
+}
+
+/* === СЕКЦИИ === */
+.settings-form__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md, 16px);
+  padding: var(--spacing-lg, 24px);
+  background: var(--color-bg, #fdfaf6);
+  border: 1px solid var(--color-border, #e8dcc4);
+  border-radius: var(--radius-lg, 12px);
+}
+
+.settings-form__section-title {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm, 8px);
+  font-size: var(--font-size-lg, 1.125rem);
+  font-weight: 600;
+  color: var(--color-text, #3d2f26);
+  margin: 0;
+}
+
+/* === RADIO BUTTONS ДЛЯ УВЕДОМЛЕНИЙ === */
+.settings-form__radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm, 8px);
+}
+
+.settings-form__radio-option {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md, 16px);
+  padding: var(--spacing-md, 16px);
+  background: var(--color-surface, #ffffff);
+  border: 2px solid var(--color-border, #e8dcc4);
+  border-radius: var(--radius-md, 8px);
+  cursor: pointer;
+  transition: all var(--transition-fast, 150ms ease);
+}
+
+.settings-form__radio-option:hover {
+  border-color: var(--color-primary-400, #c9a88c);
+  background: var(--color-primary-soft, #fbf5ef);
+}
+
+/* Скрываем нативный radio button */
+.settings-form__radio-input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* Активное состояние radio button */
+.settings-form__radio-option--active {
+  border-color: var(--color-primary-600, #9c7558);
+  background: var(--color-primary-soft, #fbf5ef);
+}
+
+.settings-form__radio-option--active .settings-form__radio-icon {
+  color: var(--color-primary-600, #9c7558);
+}
+
+.settings-form__radio-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--color-bg, #fdfaf6);
+  color: var(--color-text-muted, #6b5d4f);
+  flex-shrink: 0;
+  transition: all var(--transition-fast, 150ms ease);
+}
+
+.settings-form__radio-label {
+  font-size: var(--font-size-base, 1rem);
+  color: var(--color-text, #3d2f26);
+  font-weight: 500;
+}
+
+/* === СЕКЦИЯ ДЕЙСТВИЙ === */
+.settings-form__actions {
+  background: transparent;
+  border: none;
+  padding: 0;
+  gap: var(--spacing-md, 16px);
+}
+
+.settings-form__btn-save {
+  width: 100%;
+  justify-content: center;
+  padding: var(--spacing-md, 16px);
+  font-size: var(--font-size-base, 1rem);
+  font-weight: 600;
+}
+
+/* Кнопки опасных действий */
+.settings-form__danger-actions {
+  display: flex;
+  gap: var(--spacing-sm, 8px);
+  flex-wrap: wrap;
+}
+
+.settings-form__btn-danger {
+  flex: 1;
+  min-width: 140px;
+  justify-content: center;
+  color: var(--color-error, #c65d52);
+  border-color: var(--color-error, #c65d52);
+}
+
+.settings-form__btn-danger:hover {
+  background: var(--color-error-light, #fceae8);
+  color: var(--color-error-dark, #9e4539);
+  border-color: var(--color-error-dark, #9e4539);
+}
+
+/* === АДАПТИВНОСТЬ === */
+@media (max-width: 640px) {
+  .settings-form__section {
+    padding: var(--spacing-md, 16px);
+  }
+
+  .settings-form__danger-actions {
+    flex-direction: column;
+  }
+
+  .settings-form__btn-danger {
+    width: 100%;
+  }
+}

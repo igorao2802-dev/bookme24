@@ -5,14 +5,13 @@
  * Презентационный компонент. НЕ владеет состоянием фильтров.
  * Сообщает об изменениях родителю через onFilterChange и onSortChange.
  * 
- * 🔥 ЭТАП 1.4: Добавлена валидация дат (запрет нелогичных периодов)
- * - Поле "Дата от" не может быть позже "Дата до"
- * - Поле "Дата до" не может быть раньше "Дата от"
- * - Браузер автоматически блокирует недоступные даты (серым цветом)
- * - Добавлены helperText для пояснения ограничений
+ *  ЭТАП 1.4: Валидация дат (запрет нелогичных периодов)
+ * 🔥 ЭТАП 3.2: Разделение на три секции: Поиск, Сортировка, Фильтры
+ * 🔥 ЭТАП 3.4: Явный заголовок "Сортировка" над полем
+ * 🔥 ЭТАП 3.5: Лейблы для всех полей фильтров (Статус, Специалист, С, По)
  */
 
-import { Filter, RotateCcw, Search } from 'lucide-react';
+import { Filter, RotateCcw, Search, ArrowUpDown } from 'lucide-react';
 
 import Input from '../UI/Input';
 import Select from '../UI/Select';
@@ -60,15 +59,9 @@ export default function AdminFilterPanel({
   ];
 
   // === 🔥 ОБРАБОТЧИК ИЗМЕНЕНИЯ ДАТЫ "ОТ" (ЭТАП 1.4) ===
-  // ПОЧЕМУ отдельная функция?
-  // Проверяем логику: если новая дата "от" позже даты "до",
-  // автоматически сбрасываем дату "до". Это предотвращает
-  // ситуацию, когда пользователь выбирает некорректный период.
   const handleDateFromChange = (e) => {
     const newDateFrom = e.target.value;
     
-    // Если дата "до" уже выбрана и новая дата "от" позже неё —
-    // сбрасываем дату "до" и показываем уведомление
     if (filters.dateTo && newDateFrom > filters.dateTo) {
       onFilterChange('dateTo', '');
       Toast.info('Дата окончания сброшена, так как она раньше даты начала', {
@@ -80,12 +73,9 @@ export default function AdminFilterPanel({
   };
 
   // === 🔥 ОБРАБОТЧИК ИЗМЕНЕНИЯ ДАТЫ "ДО" (ЭТАП 1.4) ===
-  // Аналогичная логика для поля "Дата до"
   const handleDateToChange = (e) => {
     const newDateTo = e.target.value;
     
-    // Если дата "от" уже выбрана и новая дата "до" раньше неё —
-    // сбрасываем дату "от" и показываем уведомление
     if (filters.dateFrom && newDateTo < filters.dateFrom) {
       onFilterChange('dateFrom', '');
       Toast.info('Дата начала сброшена, так как она позже даты окончания', {
@@ -98,6 +88,7 @@ export default function AdminFilterPanel({
 
   return (
     <div className="admin-filter-panel">
+      {/* === ЗАГОЛОВОК ПАНЕЛИ === */}
       <div className="admin-filter-panel__header">
         <h3 className="admin-filter-panel__title">
           <Filter size={18} />
@@ -119,81 +110,101 @@ export default function AdminFilterPanel({
         )}
       </div>
 
-      <div className="admin-filter-panel__grid">
-        {/* === ПОИСК === */}
-        <div className="admin-filter-panel__field admin-filter-panel__field--search">
-          <Input
-            placeholder="Поиск по ФИО или телефону клиента..."
-            value={filters.searchQuery}
-            onChange={(e) => onFilterChange('searchQuery', e.target.value)}
-            leftIcon={<Search size={18} />}
-          />
-        </div>
-
-        {/* === СТАТУС === */}
-        <Select
-          value={filters.status}
-          onChange={(e) => onFilterChange('status', e.target.value)}
-          options={statusOptions}
-        />
-
-        {/* === МАСТЕР === */}
-        <Select
-          value={filters.specialistId}
-          onChange={(e) => onFilterChange('specialistId', e.target.value)}
-          options={specialistOptions}
-        />
-
-        {/* === 🔥 ДАТА ОТ (с валидацией) === */}
-        {/* 
-          ПОЧЕМУ max={filters.dateTo || undefined}?
-          - Если filters.dateTo пустая строка, передаём undefined,
-            чтобы браузер НЕ устанавливал ограничение (все даты доступны)
-          - Если filters.dateTo заполнена, браузер заблокирует даты ПОЗЖЕ неё
-          - Это предотвращает выбор "нелогичного" периода
-        */}
+      {/* === 🔥 СЕКЦИЯ 1: ПОИСК (ЭТАП 3.2) === */}
+      <div className="admin-filter-panel__section admin-filter-panel__section--search">
+        <h4 className="admin-filter-panel__section-title">
+          <Search size={16} />
+          Поиск
+        </h4>
         <Input
-          type="date"
-          label="С (дата начала)"
-          value={filters.dateFrom}
-          onChange={handleDateFromChange}
-          max={filters.dateTo || undefined}
-          helperText={
-            filters.dateTo
-              ? `Не позже ${new Date(filters.dateTo).toLocaleDateString('ru-RU')}`
-              : 'Выберите начальную дату периода'
-          }
-          title="Выберите начальную дату периода фильтрации"
+          placeholder="Поиск по ФИО или телефону клиента..."
+          value={filters.searchQuery}
+          onChange={(e) => onFilterChange('searchQuery', e.target.value)}
+          leftIcon={<Search size={18} />}
         />
+      </div>
 
-        {/* === 🔥 ДАТА ДО (с валидацией) === */}
-        {/* 
-          ПОЧЕМУ min={filters.dateFrom || undefined}?
-          Аналогично полю "Дата от":
-          - Если filters.dateFrom пустая, ограничений нет
-          - Если заполнена, браузер заблокирует даты РАНЬШЕ неё
-          - Визуально недоступные даты отображаются серым цветом
-        */}
-        <Input
-          type="date"
-          label="По (дата окончания)"
-          value={filters.dateTo}
-          onChange={handleDateToChange}
-          min={filters.dateFrom || undefined}
-          helperText={
-            filters.dateFrom
-              ? `Не раньше ${new Date(filters.dateFrom).toLocaleDateString('ru-RU')}`
-              : 'Выберите конечную дату периода'
-          }
-          title="Выберите конечную дату периода фильтрации"
-        />
-
-        {/* === СОРТИРОВКА === */}
+      {/* === 🔥 СЕКЦИЯ 2: СОРТИРОВКА (ЭТАП 3.2 + 3.4) === */}
+      {/* 
+        ПОЧЕМУ заголовок "Сортировка" здесь, а не внутри Select?
+        - Заголовок секции описывает НАЗНАЧЕНИЕ всей секции
+        - Лейбл внутри Select описывает КОНКРЕТНОЕ поле
+        - Это разные уровни иерархии информации
+      */}
+      <div className="admin-filter-panel__section admin-filter-panel__section--sort">
+        <h4 className="admin-filter-panel__section-title">
+          <ArrowUpDown size={16} />
+          Сортировка
+        </h4>
         <Select
           value={sortBy}
           onChange={(e) => onSortChange(e.target.value)}
           options={sortOptions}
         />
+      </div>
+
+      {/* === 🔥 СЕКЦИЯ 3: ФИЛЬТРЫ (ЭТАП 3.2 + 3.5) === */}
+      <div className="admin-filter-panel__section admin-filter-panel__section--filters">
+        <h4 className="admin-filter-panel__section-title">
+          <Filter size={16} />
+          Фильтры
+        </h4>
+        
+        <div className="admin-filter-panel__filters-grid">
+          {/* 
+            🔥 ЭТАП 3.5: Каждое поле имеет явный label
+            ПОЧЕМУ label передаётся через prop, а не пишется вручную?
+            - Компоненты Input и Select сами рендерят <label htmlFor="...">
+            - Это гарантирует связь label ↔ input через id (A11y)
+            - Скринридеры правильно озвучивают назначение поля
+          */}
+          
+          {/* Статус */}
+          <Select
+            label="Статус"
+            value={filters.status}
+            onChange={(e) => onFilterChange('status', e.target.value)}
+            options={statusOptions}
+          />
+
+          {/* Специалист */}
+          <Select
+            label="Специалист"
+            value={filters.specialistId}
+            onChange={(e) => onFilterChange('specialistId', e.target.value)}
+            options={specialistOptions}
+          />
+
+          {/* Дата от */}
+          <Input
+            type="date"
+            label="С (дата начала)"
+            value={filters.dateFrom}
+            onChange={handleDateFromChange}
+            max={filters.dateTo || undefined}
+            helperText={
+              filters.dateTo
+                ? `Не позже ${new Date(filters.dateTo).toLocaleDateString('ru-RU')}`
+                : 'Выберите начальную дату периода'
+            }
+            title="Выберите начальную дату периода фильтрации"
+          />
+
+          {/* Дата до */}
+          <Input
+            type="date"
+            label="По (дата окончания)"
+            value={filters.dateTo}
+            onChange={handleDateToChange}
+            min={filters.dateFrom || undefined}
+            helperText={
+              filters.dateFrom
+                ? `Не раньше ${new Date(filters.dateFrom).toLocaleDateString('ru-RU')}`
+                : 'Выберите конечную дату периода'
+            }
+            title="Выберите конечную дату периода фильтрации"
+          />
+        </div>
       </div>
     </div>
   );

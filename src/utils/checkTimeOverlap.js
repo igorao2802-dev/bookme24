@@ -1,16 +1,15 @@
 /**
  * ПРОВЕРКА ПЕРЕСЕЧЕНИЯ ЗАПИСЕЙ ПО ВРЕМЕНИ
- *
  * ⚠️ КРИТИЧЕСКАЯ БИЗНЕС-ЛОГИКА
  * Это главный замечание В.В. к spa-mini-practice:
  * "Если одна процедура длится 2 часа, а вторая начинается через 20 минут —
  *  система пропустит наслоение"
  *
- * АЛГОРИТМ:
- * Две записи пересекаются, если:
- *   startA < endB И startB < endA
+ * Алгоритм:
+ * Два окна пересекаются, если:
+ * startA < endB И startB < endA
  * С учётом буфера подготовки:
- *   startA < (endB + buffer) И startB < (endA + buffer)
+ * startA < (endB + buffer) И startB < (endA + buffer)
  *
  * ПОЧЕМУ функция возвращает объект, а не boolean?
  * - UI может показать: "Это время пересекается с записью Анны на 14:00"
@@ -123,7 +122,7 @@ export function checkTimeOverlap(
   return {
     hasOverlap: false,
     conflictingBooking: null,
-    reason: "Слот свободен",
+    reason: "Окно свободно",
   };
 }
 

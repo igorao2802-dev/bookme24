@@ -3,7 +3,7 @@
  * 
  * НАЗНАЧЕНИЕ:
  * - Календарь для выбора даты (30 дней вперёд)
- * - Генерация свободных слотов с учётом:
+ * - Генерация свободных окон с учётом:
  *   * Рабочих часов мастера
  *   * Длительности услуги
  *   * Существующих записей (checkTimeOverlap)
@@ -93,7 +93,7 @@ export default function TimeSlotPicker({
   // но изменение scrollLeft не должно вызывать ререндер.
   const dateGridRef = useRef(null);
 
-  // === ХУК ДЛЯ ГЕНЕРАЦИИ СЛОТОВ ===
+  // === ХУК ДЛЯ ГЕНЕРАЦИИ ОКОН ===
   const { slots, isLoading, error } = useTimeSlots({
     date: selectedDate,
     specialist,
@@ -132,7 +132,7 @@ export default function TimeSlotPicker({
     };
   }, []);
 
-  // === ГРУППИРОВКА СЛОТОВ ===
+  // === ГРУППИРОВКА ОКОН ===
   const groupedSlots = useMemo(() => {
     if (!slots) return { morning: [], afternoon: [], evening: [] };
     return {
@@ -290,7 +290,7 @@ export default function TimeSlotPicker({
   );
 }
 
-// === 🔥 КОМПОНЕНТ КНОПКИ СЛОТА (ЭТАП 2.2) ===
+// === 🔥 КОМПОНЕНТ КНОПКИ ОКНА ===
 function SlotButton({ slot, isSelected, onSelect }) {
   const slotClasses = [
     'time-slot-picker__slot',

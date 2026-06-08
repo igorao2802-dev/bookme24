@@ -1,6 +1,6 @@
 /**
  * AdminStats.jsx — блок ключевых показателей эффективности (KPI)
- *
+ * 
  * НАЗНАЧЕНИЕ:
  * Отображает сводную статистику по записям:
  * - Всего записей
@@ -8,13 +8,18 @@
  * - Активных (не завершённых и не отменённых)
  * - Отменённых
  * - Выручка (сумма по подтверждённым и завершённым)
- *
+ * 
  * АРХИТЕКТУРНАЯ РОЛЬ:
  * Чисто презентационный компонент — получает готовые данные через props.
  * НЕ владеет состоянием, НЕ делает вычислений (всё считает useBookings).
+ * 
+ * 🔥 ЭТАП 4.3: Замена иконки в карточке "Выручка"
+ * DollarSign ($) заменён на Wallet (кошелёк)
+ * Причина: знак доллара не соответствует белорусской валюте BYN.
+ * Wallet семантически корректнее: "выручка" = деньги.
  */
 
-import { Calendar, CheckCircle, XCircle, DollarSign, TrendingUp } from 'lucide-react';
+import { Calendar, TrendingUp, CheckCircle, XCircle, Wallet } from 'lucide-react';
 import { formatPrice } from '../../utils/formatters';
 import './AdminStats.css';
 
@@ -23,7 +28,6 @@ export default function AdminStats({ stats, bookings }) {
   // ПОЧЕМУ считаем здесь, а не в useBookings?
   // Эти показатели специфичны для UI админки, не нужны в других местах
   const todayDate = new Date().toISOString().split('T')[0];
-
   const todayBookings = bookings.filter((b) => b.date === todayDate).length;
 
   // Выручка считается только по подтверждённым и завершённым
@@ -66,7 +70,8 @@ export default function AdminStats({ stats, bookings }) {
     {
       label: 'Выручка',
       value: formatPrice(revenue),
-      icon: <DollarSign size={24} />,
+      // 🔥 ИСПРАВЛЕНИЕ: MoneyBag заменён на Wallet
+      icon: <Wallet size={24} />,
       variant: 'highlight',
     },
   ];

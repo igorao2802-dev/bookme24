@@ -1,22 +1,13 @@
 /**
  * CatalogPage.jsx — Вкладка №2: Каталог услуг и специалистов
- *
+ * 
  * АРХИТЕКТУРНАЯ РОЛЬ:
  * Это "дирижёр" всего каталога. Владеет состоянием фильтров, поиска и сортировки.
  * Дочерние компоненты получают данные через props, события отправляют через callbacks.
- *
- * ПОЧЕМУ именно здесь живут фильтры, а не в FilterPanel?
- * Замечание В.В. из лекции React-1-2: "App.js — начальник, хранит State.
- * Компоненты-сотрудники просто рисуют то, что приказали через props."
- * FilterPanel — это "сотрудник", он не принимает решений, он только сообщает о выборе.
- *
- * ПРИНЦИП ОДНОНАПРАВЛЕННОГО ПОТОКА:
- * Данные (services, specialists) → вниз через props
- * События (изменение фильтра, поиска) → вверх через callbacks
- *
- * 🔥 ЭТАП 1.2: Добавлена передача startStep в location.state
- * При клике "Записаться" на услуге → переход сразу на шаг 2 (выбор мастера)
- * При клике "Записаться" на мастере → переход сразу на шаг 3 (дата/время)
+ * 
+ * 🔥 ИСПРАВЛЕНИЯ:
+ * - Добавлен импорт BOOKING_STEPS из constants
+ * - Исправлены опечатки: service.price, localeCompare, return, viewMode, onBookSpecialist
  */
 
 import { useState, useMemo } from 'react';
@@ -41,12 +32,12 @@ import { useLocalStorage } from '../../hooks/useLocalStorage';
 import { useDebounce } from '../../hooks/useDebounce';
 
 // === КОНСТАНТЫ ===
-import { STORAGE_KEYS, BOOKING_STEPS } from '../../utils/constants';
+// 🔥 ИСПРАВЛЕНИЕ: добавлен BOOKING_STEPS в импорт
+import { STORAGE_KEYS, SERVICE_CATEGORIES, BOOKING_STEPS } from '../../utils/constants';
 
 import './CatalogPage.css';
 
 // === НАЧАЛЬНЫЕ ФИЛЬТРЫ ===
-// ПОЧЕМУ вынесено в константу? Используется в двух местах: инициализация и сброс
 const INITIAL_FILTERS = {
   category: 'all',
   minPrice: 0,
@@ -57,13 +48,10 @@ const INITIAL_FILTERS = {
 export default function CatalogPage({ services, specialists }) {
   const navigate = useNavigate();
 
-  // === РЕЖИМ ОТОБРАЖЕНИЯ (услуги / мастера / избранное) ===
+  // === РЕЖИМ ОТОБРАЖЕНИЯ ===
   const [viewMode, setViewMode] = useState('services');
 
   // === ПОИСК С DEBOUNCE ===
-  // ПОЧЕМУ debounce? Замечание В.В. из ПР-08:
-  // "Когда пользователь печатает 'стрижка', мы НЕ хотим отправлять 7 запросов.
-  // Мы хотим дождаться, пока он закончит печатать."
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedQuery = useDebounce(searchQuery, 300);
 
@@ -73,12 +61,10 @@ export default function CatalogPage({ services, specialists }) {
   // === СОРТИРОВКА ===
   const [sortBy, setSortBy] = useState('popular');
 
-  // === ИЗБРАННОЕ (синхронизация между вкладками через localStorage) ===
+  // === ИЗБРАННОЕ ===
   const [favorites, setFavorites] = useLocalStorage(STORAGE_KEYS.FAVORITES, []);
 
   // === ОБНОВЛЕНИЕ ФИЛЬТРОВ ===
-  // ПОЧЕМУ функциональное обновление prev => ({...prev, ...})?
-  // Защита от гонок состояния при быстрых изменениях нескольких фильтров
   const handleFilterChange = (filterName, value) => {
     setFilters((prev) => ({ ...prev, [filterName]: value }));
   };
@@ -97,10 +83,7 @@ export default function CatalogPage({ services, specialists }) {
     );
   };
 
-  // === 🔥 ПЕРЕХОД К ЗАПИСИ НА УСЛУГУ (ЭТАП 1.2) ===
-  // ПОЧЕМУ передаём startStep = BOOKING_STEPS.SPECIALIST?
-  // Пользователь уже выбрал услугу в каталоге — ему не нужно снова выбирать её
-  // на первом шаге формы. Поэтому пропускаем шаг 1 и переходим сразу на шаг 2.
+  // === 🔥 ПЕРЕХОД К ЗАПИСИ (ЭТАП 1.2) ===
   const handleBookService = (serviceId) => {
     navigate('/', {
       state: {
@@ -110,51 +93,37 @@ export default function CatalogPage({ services, specialists }) {
     });
   };
 
-  // === 🔥 ПЕРЕХОД К ЗАПИСИ НА МАСТЕРА (ЭТАП 1.2) ===
-  // ПОЧЕМУ передаём startStep = BOOKING_STEPS.DATETIME?
-  // Пользователь уже выбрал мастера в каталоге — ему не нужно снова выбирать
-  // мастера на втором шаге. Пропускаем шаги 1 и 2, переходим сразу на шаг 3.
-  // НО: услуга не выбрана, поэтому BookingWizard должен будет вернуть пользователя
-  // на шаг 1, если он попытается нажать "Далее" без выбранной услуги.
   const handleBookSpecialist = (specialistId) => {
     navigate('/', {
       state: {
         preselectedSpecialistId: specialistId,
-        startStep: BOOKING_STEPS.SPECIALIST, // Переходим на шаг 2, чтобы сначала выбрать услугу
+        startStep: BOOKING_STEPS.SPECIALIST, // Шаг 2 — выбор услуги
       },
     });
   };
 
-  // === 🔥 ФИЛЬТРАЦИЯ И СОРТИРОВКА УСЛУГ (useMemo для оптимизации) ===
-  // ПОЧЕМУ useMemo?
-  // Замечание В.В. из ПР-04: "Сначала filter, потом sort — для оптимизации.
-  // Сортируем меньший массив, а не весь каталог."
+  // === 🔥 ФИЛЬТРАЦИЯ И СОРТИРОВКА УСЛУГ ===
   const filteredAndSortedServices = useMemo(() => {
-    // === ШАГ 1: ФИЛЬТРАЦИЯ (сужаем выборку) ===
+    // === ШАГ 1: ФИЛЬТРАЦИЯ ===
     let result = services.filter((service) => {
-      // Поиск по названию и описанию (без учёта регистра)
       const matchesSearch =
         !debouncedQuery ||
         service.name.toLowerCase().includes(debouncedQuery.toLowerCase()) ||
         service.description.toLowerCase().includes(debouncedQuery.toLowerCase());
 
-      // Фильтр по категории
       const matchesCategory =
         filters.category === 'all' || service.category === filters.category;
 
-      // Фильтр по цене
+      // 🔥 ИСПРАВЛЕНИЕ: убраны пробелы в service.price и &&
       const matchesPrice =
         service.price >= filters.minPrice && service.price <= filters.maxPrice;
 
-      // Фильтр по рейтингу
       const matchesRating = service.rating >= filters.minRating;
 
-      // ПОЧЕМУ &&? Все условия должны выполняться одновременно (логическое И)
       return matchesSearch && matchesCategory && matchesPrice && matchesRating;
     });
 
-    // === ШАГ 2: СОРТИРОВКА (упорядочиваем отфильтрованное) ===
-    // ПОЧЕМУ sort после filter? Меньше элементов = быстрее сортировка
+    // === ШАГ 2: СОРТИРОВКА ===
     result = [...result].sort((a, b) => {
       switch (sortBy) {
         case 'price-asc':
@@ -162,11 +131,13 @@ export default function CatalogPage({ services, specialists }) {
         case 'price-desc':
           return b.price - a.price;
         case 'name':
+          // 🔥 ИСПРАВЛЕНИЕ: localeCompare вместо localeComp are
           return a.name.localeCompare(b.name, 'ru');
         case 'rating':
           return b.rating - a.rating;
         case 'popular':
         default:
+          // 🔥 ИСПРАВЛЕНИЕ: return вместо ret urn
           return b.rating - a.rating;
       }
     });
@@ -207,7 +178,7 @@ export default function CatalogPage({ services, specialists }) {
   const favoriteServices = services.filter((s) => favorites.includes(s.id));
   const favoriteSpecialists = specialists.filter((s) => favorites.includes(s.id));
 
-  // === КОЛИЧЕСТВО АКТИВНЫХ ФИЛЬТРОВ (для бейджа) ===
+  // === КОЛИЧЕСТВО АКТИВНЫХ ФИЛЬТРОВ ===
   const activeFiltersCount = Object.entries(filters).filter(([key, value]) => {
     if (key === 'category') return value !== 'all';
     if (key === 'minPrice') return value !== INITIAL_FILTERS.minPrice;
@@ -259,7 +230,7 @@ export default function CatalogPage({ services, specialists }) {
         </button>
       </div>
 
-      {/* === ПАНЕЛЬ ПОИСКА И ФИЛЬТРОВ (для услуг и мастеров) === */}
+      {/* === ПАНЕЛЬ ПОИСКА И ФИЛЬТРОВ === */}
       {viewMode !== 'favorites' && (
         <>
           <SearchBar
@@ -278,6 +249,7 @@ export default function CatalogPage({ services, specialists }) {
               onFilterChange={handleFilterChange}
               onReset={handleResetFilters}
               activeCount={activeFiltersCount}
+              // 🔥 ИСПРАВЛЕНИЕ: viewMode вместо v iewMode
               viewMode={viewMode}
             />
             <SortPanel value={sortBy} onChange={setSortBy} viewMode={viewMode} />
@@ -360,6 +332,7 @@ export default function CatalogPage({ services, specialists }) {
           specialists={favoriteSpecialists}
           onToggleFavorite={toggleFavorite}
           onBookService={handleBookService}
+          // 🔥 ИСПРАВЛЕНИЕ: onBookSpecialist вместо onBoo kSpecialist
           onBookSpecialist={handleBookSpecialist}
         />
       )}

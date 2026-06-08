@@ -1,21 +1,28 @@
 /**
  * ConfirmationModal.jsx — модальное окно подтверждения записи
- *
+ * 
  * ПОЧЕМУ отдельный компонент, а не внутри BookingWizard?
  * - Single Responsibility: модалка отвечает только за отображение сводки
  * - Переиспользование: можно вызвать из админки для ручного создания
  * - Легче тестировать в изоляции
+ * 
+ * 🔥 ЭТАП 4.2: Упрощение отображения информации
+ * - Убрана категория услуги (техническая информация, не нужна клиенту)
+ * - Убрана длительность и цена из строки "Услуга:" (избегаем дублирования)
+ * - Время отображается как интервал "HH:MM-HH:MM"
+ * - Добавлена иконка Wallet к строке "К оплате:" (визуальный акцент)
  */
 
-import { Calendar, Clock, User, Phone, Mail, MessageSquare } from 'lucide-react';
+import { useMemo } from 'react';
+import { Calendar, Clock, User, Phone, Mail, MessageSquare, Wallet } from 'lucide-react';
 
 import Modal from '../UI/Modal';
 import Button from '../UI/Button';
-import Badge from '../UI/Badge';
 
-import { formatPrice, formatDuration } from '../../utils/formatters';
-import { formatDateHumanReadable } from '../../utils/timeHelpers';
-import './ConfirmationModal.css';  
+import { formatPrice } from '../../utils/formatters';
+import { formatDateHumanReadable, calculateEndTime } from '../../utils/timeHelpers';
+
+import './ConfirmationModal.css';
 
 export default function ConfirmationModal({
   isOpen,
@@ -26,6 +33,17 @@ export default function ConfirmationModal({
   service,
   specialist,
 }) {
+  // === 🔥 РАСЧЁТ ВРЕМЕНИ ОКОНЧАНИЯ (ЭТАП 4.2) ===
+  const endTime = useMemo(() => {
+    if (!draft.startTime || !service?.duration) return '';
+    return calculateEndTime(draft.startTime, service.duration);
+  }, [draft.startTime, service?.duration]);
+
+  // === ФОРМАТИРОВАНИЕ ИНТЕРВАЛА ВРЕМЕНИ ===
+  const timeInterval = endTime 
+    ? `${draft.startTime} — ${endTime}`
+    : draft.startTime || '—';
+
   return (
     <Modal
       isOpen={isOpen}
@@ -40,16 +58,11 @@ export default function ConfirmationModal({
 
         {/* === СВОДКА === */}
         <div className="confirmation-modal__summary">
-          {/* Услуга */}
+          {/* Услуга (УПРОЩЕНО) */}
           <div className="confirmation-modal__row">
             <span className="confirmation-modal__label">Услуга:</span>
             <div className="confirmation-modal__value">
-              <strong>{service?.name}</strong>
-              <div className="confirmation-modal__meta">
-                <Badge variant="default">{service?.category}</Badge>
-                <span>⏱ {formatDuration(service?.duration)}</span>
-                <span>💰 {formatPrice(service?.price)}</span>
-              </div>
+              <strong>{service?.name || '—'}</strong>
             </div>
           </div>
 
@@ -59,11 +72,11 @@ export default function ConfirmationModal({
               <User size={16} /> Мастер:
             </span>
             <span className="confirmation-modal__value">
-              {specialist?.fullName}
+              {specialist?.fullName || '—'}
             </span>
           </div>
 
-          {/* Дата и время */}
+          {/* Дата */}
           <div className="confirmation-modal__row">
             <span className="confirmation-modal__label">
               <Calendar size={16} /> Дата:
@@ -73,12 +86,13 @@ export default function ConfirmationModal({
             </span>
           </div>
 
+          {/* Время (ИНТЕРВАЛ) */}
           <div className="confirmation-modal__row">
             <span className="confirmation-modal__label">
               <Clock size={16} /> Время:
             </span>
             <span className="confirmation-modal__value">
-              {draft.startTime}
+              {timeInterval}
             </span>
           </div>
 
@@ -117,9 +131,17 @@ export default function ConfirmationModal({
             </div>
           )}
 
-          {/* ИТОГО */}
+          {/* ИТОГО (С ИКОНКОЙ) */}
           <div className="confirmation-modal__total">
-            <span>К оплате:</span>
+            <span className="confirmation-modal__total-label">
+              {/* 🔥 ИСПРАВЛЕНИЕ: MoneyBag заменён на Wallet */}
+              <Wallet 
+                size={20} 
+                className="confirmation-modal__money-icon"
+                aria-hidden="true"
+              />
+              К оплате:
+            </span>
             <strong>{formatPrice(service?.price)}</strong>
           </div>
         </div>

@@ -1,25 +1,51 @@
 /**
  * Layout.jsx — Компонент-обёртка (паттерн Wrapper Component)
- *
+ * 
  * ПОЧЕМУ используется children, а не конкретные компоненты внутри?
  * - Механизм children — это основа композиции в React
  * - Layout задаёт каркас (шапка + контент + подвал), а содержимое вставляется снаружи
  * - Избавляет от копипаста Header/Footer на каждой странице
  * - Замечание В.В. из лекции React-1-2: "Composition over Inheritance"
+ * 
+ * 🔥 ЭТАП 5.1: Добавлена ссылка "Личный кабинет" в навигацию
  */
 
 import { Link, useLocation } from 'react-router-dom';
-import { USER_ROLES, BOOKING_STATUS_LABELS } from '../../utils/constants.js';
+import { USER_ROLES } from '../../utils/constants.js';
 import './Layout.css';
 
 export default function Layout({ children, userRole, onRoleChange }) {
   const location = useLocation();
 
+  // === МЕНЮ НАВИГАЦИИ ===
+  // 🔥 ЭТАП 5.1: Добавлен пункт "Личный кабинет"
   // ПОЧЕМУ массив для меню? Легко расширять и рендерить через .map()
   const menuItems = [
-    { path: '/', label: '📝 Запись', roles: [USER_ROLES.CLIENT, USER_ROLES.ADMIN] },
-    { path: '/catalog', label: '📋 Каталог', roles: [USER_ROLES.CLIENT, USER_ROLES.ADMIN] },
-    { path: '/admin', label: '👨‍💼 Менеджер', roles: [USER_ROLES.ADMIN] }
+    { 
+      path: '/', 
+      label: '📝 Запись', 
+      roles: [USER_ROLES.CLIENT, USER_ROLES.ADMIN] 
+    },
+    { 
+      path: '/catalog', 
+      label: '📋 Каталог', 
+      roles: [USER_ROLES.CLIENT, USER_ROLES.ADMIN] 
+    },
+    { 
+      path: '/admin', 
+      label: '👨‍💼 Менеджер', 
+      roles: [USER_ROLES.ADMIN] 
+    },
+    // 🔥 НОВЫЙ ПУНКТ МЕНЮ (ЭТАП 5.1)
+    // ПОЧЕМУ только для CLIENT?
+    // - Администратор использует админ-панель для управления записями
+    // - Личный кабинет — это интерфейс клиента для просмотра своих записей
+    // - Разделение ролей: CLIENT видит "Кабинет", ADMIN видит "Менеджер"
+    { 
+      path: '/profile', 
+      label: '👤 Кабинет', 
+      roles: [USER_ROLES.CLIENT] 
+    }
   ];
 
   // ПОЧЕМУ filter? Показываем пункты меню только для текущей роли

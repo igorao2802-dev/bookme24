@@ -1,0 +1,222 @@
+/**
+ * Стили для BonusCard (карточка бонусного счёта)
+ * BEM-методология + адаптивность
+ * 
+ * 🔥 ЭТАП 5.6: Стили бонусной системы
+ * - Градиентный фон для карточки
+ * - Цветовая индикация уровня лояльности
+ * - Анимированный прогресс-бар
+ */
+
+/* === ОСНОВНАЯ КАРТОЧКА === */
+.bonus-card {
+  background: linear-gradient(
+    135deg,
+    var(--color-primary-soft, #fbf5ef) 0%,
+    var(--color-surface, #ffffff) 100%
+  );
+  border: 2px solid var(--color-primary-200, #eacfb5);
+  border-radius: var(--radius-lg, 12px);
+  padding: var(--spacing-lg, 24px);
+  box-shadow: var(--shadow-sm);
+}
+
+/* === ЗАГОЛОВОК === */
+.bonus-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-lg, 24px);
+}
+
+.bonus-card__title {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm, 8px);
+  font-size: var(--font-size-lg, 1.125rem);
+  font-weight: 600;
+  color: var(--color-text, #3d2f26);
+  margin: 0;
+}
+
+.bonus-card__level {
+  padding: 4px 12px;
+  border-radius: var(--radius-full, 9999px);
+  font-size: var(--font-size-sm, 0.875rem);
+  font-weight: 600;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* === БАЛАНС === */
+.bonus-card__balance {
+  text-align: center;
+  margin-bottom: var(--spacing-lg, 24px);
+  padding: var(--spacing-lg, 24px);
+  background: var(--color-surface, #ffffff);
+  border-radius: var(--radius-md, 8px);
+  border: 1px solid var(--color-border, #e8dcc4);
+}
+
+.bonus-card__balance-amount {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm, 8px);
+  margin-bottom: var(--spacing-xs, 4px);
+}
+
+.bonus-card__balance-icon {
+  color: var(--color-primary-600, #9c7558);
+}
+
+.bonus-card__balance-value {
+  font-size: var(--font-size-3xl, 2.25rem);
+  font-weight: 700;
+  color: var(--color-text, #3d2f26);
+}
+
+.bonus-card__balance-label {
+  font-size: var(--font-size-base, 1rem);
+  color: var(--color-text-muted, #6b5d4f);
+}
+
+.bonus-card__balance-equivalent {
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--color-text-muted, #6b5d4f);
+}
+
+/* === ПРОГРЕСС === */
+.bonus-card__progress {
+  margin-bottom: var(--spacing-lg, 24px);
+}
+
+.bonus-card__progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-sm, 8px);
+}
+
+.bonus-card__progress-label {
+  font-size: var(--font-size-sm, 0.875rem);
+  font-weight: 500;
+  color: var(--color-text, #3d2f26);
+}
+
+.bonus-card__progress-value {
+  font-size: var(--font-size-sm, 0.875rem);
+  font-weight: 600;
+  color: var(--color-primary-600, #9c7558);
+}
+
+.bonus-card__progress-bar {
+  height: 8px;
+  background: var(--color-border, #e8dcc4);
+  border-radius: var(--radius-full, 9999px);
+  overflow: hidden;
+  margin-bottom: var(--spacing-xs, 4px);
+}
+
+.bonus-card__progress-fill {
+  height: 100%;
+  border-radius: var(--radius-full, 9999px);
+  transition: width 500ms ease;
+}
+
+.bonus-card__progress-hint {
+  font-size: var(--font-size-xs, 0.75rem);
+  color: var(--color-text-muted, #6b5d4f);
+  text-align: center;
+}
+
+/* === ИСТОРИЯ === */
+.bonus-card__history {
+  border-top: 1px solid var(--color-border, #e8dcc4);
+  padding-top: var(--spacing-lg, 24px);
+}
+
+.bonus-card__history-title {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs, 4px);
+  font-size: var(--font-size-base, 1rem);
+  font-weight: 600;
+  color: var(--color-text, #3d2f26);
+  margin: 0 0 var(--spacing-md, 16px) 0;
+}
+
+.bonus-card__history-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm, 8px);
+}
+
+.bonus-card__history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-sm, 8px) var(--spacing-md, 16px);
+  background: var(--color-surface, #ffffff);
+  border-radius: var(--radius-md, 8px);
+  border: 1px solid var(--color-border, #e8dcc4);
+}
+
+.bonus-card__history-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.bonus-card__history-date {
+  font-size: var(--font-size-xs, 0.75rem);
+  color: var(--color-text-muted, #6b5d4f);
+}
+
+.bonus-card__history-service {
+  font-size: var(--font-size-sm, 0.875rem);
+  font-weight: 500;
+  color: var(--color-text, #3d2f26);
+}
+
+.bonus-card__history-amount {
+  font-size: var(--font-size-sm, 0.875rem);
+  font-weight: 600;
+}
+
+.bonus-card__history-bonus {
+  color: var(--color-success, #5f8c6d);
+}
+
+.bonus-card__history-bonus--used {
+  color: var(--color-error, #c65d52);
+}
+
+/* === ПУСТОЕ СОСТОЯНИЕ === */
+.bonus-card__empty {
+  text-align: center;
+  padding: var(--spacing-lg, 24px);
+  color: var(--color-text-muted, #6b5d4f);
+  font-size: var(--font-size-sm, 0.875rem);
+}
+
+/* === АДАПТИВНОСТЬ === */
+@media (max-width: 640px) {
+  .bonus-card {
+    padding: var(--spacing-md, 16px);
+  }
+
+  .bonus-card__balance-value {
+    font-size: var(--font-size-2xl, 1.75rem);
+  }
+
+  .bonus-card__history-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-xs, 4px);
+  }
+}

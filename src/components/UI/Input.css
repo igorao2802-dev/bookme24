@@ -133,3 +133,33 @@
 .input__message-icon {
   flex-shrink: 0;
 }
+
+/* ═══════════════════════════════════════════════
+     Достаточные размеры полей
+   ═══════════════════════════════════════════════ */
+
+/* Поле ввода должно иметь минимальную ширину */
+.input__field {
+  /* Минимальная ширина для комфортного отображения текста */
+  min-width: 180px;
+
+  /* Увеличиваем padding-right для запаса */
+  padding-right: var(--spacing-lg, 24px);
+}
+
+/* Для полей с иконкой справа — ещё больше места */
+.input__field--with-right-icon {
+  padding-right: 48px; /* 40px для иконки + 8px запас */
+}
+
+/* Placeholder не должен переноситься */
+.input__field::placeholder {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Для полей типа date — фиксированная минимальная ширина */
+.input__field[type="date"] {
+  min-width: 160px;
+}

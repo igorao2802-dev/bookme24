@@ -1,0 +1,38 @@
+/**
+ * Стили для FavoritesSection (раздел "Избранное" в Личном кабинете)
+ * BEM-методология + адаптивность
+ * 
+ * 🔥 ЭТАП 5.4: Стили секции избранного
+ * Визуально соответствует другим секциям ProfilePage
+ */
+
+/* === СЕКЦИЯ === */
+.favorites-section {
+  /* Наследует стили от .profile-page__section через родительский элемент */
+}
+
+/* === ЗАГОЛОВОК СЕКЦИИ === */
+.favorites-section__title {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm, 8px);
+  font-size: var(--font-size-xl, 1.5rem);
+  font-weight: 600;
+  color: var(--color-text, #3d2f26);
+  margin: 0 0 var(--spacing-lg, 24px) 0;
+}
+
+/* Счётчик элементов */
+.favorites-section__count {
+  font-size: var(--font-size-base, 1rem);
+  font-weight: 500;
+  color: var(--color-text-muted, #6b5d4f);
+  margin-left: var(--spacing-xs, 4px);
+}
+
+/* === АДАПТИВНОСТЬ === */
+@media (max-width: 768px) {
+  .favorites-section__title {
+    font-size: var(--font-size-lg, 1.125rem);
+  }
+}

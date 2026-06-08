@@ -108,3 +108,25 @@
   overflow-wrap: break-word;
   hyphens: auto;
 }
+
+/* ═══════════════════════════════════════════════
+    ИКОНКА "К ОПЛАТЕ" (ЭТАП 4.2)
+   Визуальный акцент на финальной сумме.
+   Терракотовый цвет соответствует бренду салона.
+   ═══════════════════════════════════════════════ */
+
+.confirmation-modal__total-label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs, 4px);
+}
+
+.confirmation-modal__money-icon {
+  color: var(--color-primary-700, #7f5e44);
+  flex-shrink: 0;
+}
+
+/* На тёмном фоне (если модалка в тёмной теме) — белый цвет */
+[data-theme="dark"] .confirmation-modal__money-icon {
+  color: var(--color-primary-200, #eacfb5);
+}

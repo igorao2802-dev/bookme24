@@ -1,0 +1,145 @@
+/**
+ * Стили для ProfileStats (статистика клиента)
+ * BEM-методология + адаптивность
+ * 
+ * 🔥 ЭТАП 5.2: Сетка карточек KPI клиента
+ * Архитектурно аналогична AdminStats.css
+ */
+
+/* === СЕТКА СТАТИСТИКИ === */
+.profile-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--spacing-md, 16px);
+}
+
+/* === КАРТОЧКА СТАТИСТИКИ === */
+.profile-stats__card {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md, 16px);
+  padding: var(--spacing-lg, 24px);
+  background: var(--color-surface, #ffffff);
+  border-radius: var(--radius-lg, 12px);
+  box-shadow: var(--shadow-sm);
+  border-left: 4px solid transparent;
+
+  transition:
+    background 300ms ease,
+    box-shadow 300ms ease;
+}
+
+/* Мягкий hover-эффект (как в админке — Этап 3.6) */
+.profile-stats__card:hover {
+  background: linear-gradient(
+    135deg,
+    var(--color-surface, #ffffff) 0%,
+    var(--color-primary-soft, #fbf5ef) 100%
+  );
+  box-shadow: var(--shadow-md);
+}
+
+/* === ВАРИАНТЫ КАРТОЧЕК === */
+.profile-stats__card--default {
+  border-left-color: var(--color-primary, #b8957a);
+}
+
+.profile-stats__card--success {
+  border-left-color: var(--color-success, #5f8c6d);
+}
+
+.profile-stats__card--danger {
+  border-left-color: var(--color-error, #c65d52);
+}
+
+/* Выделенная карточка (потрачено) — с градиентом */
+.profile-stats__card--highlight {
+  background: linear-gradient(
+    135deg,
+    var(--color-primary-600, #9c7558) 0%,
+    var(--color-primary-700, #7f5e44) 100%
+  );
+  color: white;
+  border-left-color: transparent;
+}
+
+.profile-stats__card--highlight .profile-stats__label {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.profile-stats__card--highlight .profile-stats__icon {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.profile-stats__card--highlight .profile-stats__value {
+  color: white;
+}
+
+/* Усиление градиента при наведении (Этап 3.6) */
+.profile-stats__card--highlight:hover {
+  background: linear-gradient(
+    135deg,
+    var(--color-primary-700, #7f5e44) 0%,
+    var(--color-primary-900, #3d2f26) 100%
+  );
+  box-shadow: var(--shadow-lg);
+}
+
+/* === ИКОНКА === */
+.profile-stats__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background: var(--color-primary-light, #f0d9bc);
+  color: var(--color-primary-dark, #b8895a);
+  border-radius: var(--radius-md, 8px);
+  flex-shrink: 0;
+}
+
+/* === КОНТЕНТ === */
+.profile-stats__content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.profile-stats__label {
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--color-text-muted, #6b5d4f);
+}
+
+.profile-stats__value {
+  font-size: var(--font-size-xl, 1.5rem);
+  font-weight: 700;
+  color: var(--color-text, #3d2f26);
+}
+
+/* === АДАПТИВНОСТЬ === */
+@media (max-width: 640px) {
+  .profile-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .profile-stats__card {
+    padding: var(--spacing-md, 16px);
+  }
+
+  .profile-stats__value {
+    font-size: var(--font-size-lg, 1.125rem);
+  }
+
+  .profile-stats__icon {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+@media (max-width: 400px) {
+  .profile-stats {
+    grid-template-columns: 1fr;
+  }
+}

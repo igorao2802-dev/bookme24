@@ -1,0 +1,214 @@
+/**
+ * Стили для ProfilePage (Личный кабинет)
+ * BEM-методология + адаптивность
+ * 
+ * 🔥 ЭТАП 5.1: Базовые стили для структуры личного кабинета
+ * - Заголовок с подзаголовком
+ * - Секции с placeholder-контентом
+ * - Адаптивность для мобильных устройств
+ */
+
+/* === ОСНОВНОЙ КОНТЕЙНЕР === */
+.profile-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--spacing-lg, 24px) 0;
+}
+
+/* === ЗАГОЛОВОК === */
+.profile-page__header {
+  margin-bottom: var(--spacing-xl, 32px);
+  text-align: center;
+}
+
+.profile-page__header h1 {
+  font-size: var(--font-size-2xl, 2rem);
+  margin-bottom: var(--spacing-sm, 8px);
+  color: var(--color-neutral-900, #251b14);
+}
+
+.profile-page__subtitle {
+  color: var(--color-text-muted, #6b5d4f);
+  font-size: var(--font-size-base, 1rem);
+}
+
+/* === СЕКЦИИ === */
+.profile-page__section {
+  background: var(--color-surface, #ffffff);
+  padding: var(--spacing-xl, 32px);
+  border-radius: var(--radius-lg, 12px);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--spacing-lg, 24px);
+}
+
+.profile-page__section-title {
+  font-size: var(--font-size-xl, 1.5rem);
+  margin-bottom: var(--spacing-md, 16px);
+  color: var(--color-text, #3d2f26);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm, 8px);
+}
+
+/* === PLACEHOLDER-КОНТЕНТ === */
+/* 
+  ПОЧЕМУ отдельный стиль для placeholder?
+  - Визуально отличается от реального контента (серый фон, пунктирная рамка)
+  - Пользователь понимает, что это "заготовка" для будущего функционала
+  - Легко найти и заменить на реальный контент в следующих этапах
+*/
+.profile-page__placeholder {
+  background: var(--color-bg, #fdfaf6);
+  border: 2px dashed var(--color-border, #e8dcc4);
+  border-radius: var(--radius-md, 8px);
+  padding: var(--spacing-lg, 24px);
+  color: var(--color-text-muted, #6b5d4f);
+}
+
+.profile-page__placeholder p {
+  margin-bottom: var(--spacing-sm, 8px);
+  font-weight: 500;
+}
+
+.profile-page__placeholder ul {
+  list-style: disc;
+  padding-left: var(--spacing-lg, 24px);
+  margin: 0;
+}
+
+.profile-page__placeholder li {
+  margin-bottom: var(--spacing-xs, 4px);
+  color: var(--color-text-muted, #6b5d4f);
+}
+
+/* === АДАПТИВНОСТЬ === */
+@media (max-width: 768px) {
+  .profile-page {
+    padding: var(--spacing-md, 16px) 0;
+  }
+
+  .profile-page__header h1 {
+    font-size: var(--font-size-xl, 1.5rem);
+  }
+
+  .profile-page__section {
+    padding: var(--spacing-lg, 24px);
+  }
+
+  .profile-page__section-title {
+    font-size: var(--font-size-lg, 1.125rem);
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-page__section {
+    padding: var(--spacing-md, 16px);
+  }
+
+  .profile-page__placeholder {
+    padding: var(--spacing-md, 16px);
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   🔥 КАРТОЧКА ПРОФИЛЯ (ЭТАП 5.2)
+   Аватар + информация о клиенте
+   ═══════════════════════════════════════════════ */
+
+.profile-card {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg, 24px);
+  padding: var(--spacing-lg, 24px);
+  background: linear-gradient(
+    135deg,
+    var(--color-primary-soft, #fbf5ef) 0%,
+    var(--color-surface, #ffffff) 100%
+  );
+  border: 1px solid var(--color-primary-200, #eacfb5);
+  border-radius: var(--radius-lg, 12px);
+}
+
+/* === АВАТАР С ИНИЦИАЛАМИ === */
+.profile-card__avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+
+  background: linear-gradient(
+    135deg,
+    var(--color-primary-600, #9c7558),
+    var(--color-primary-700, #7f5e44)
+  );
+  color: white;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-2xl, 2rem);
+  font-weight: 700;
+  letter-spacing: 1px;
+
+  flex-shrink: 0;
+  box-shadow: var(--shadow-md);
+}
+
+/* === ИНФОРМАЦИЯ О КЛИЕНТЕ === */
+.profile-card__info {
+  flex: 1;
+  min-width: 0; /* Защита от переполнения длинным именем */
+}
+
+.profile-card__name {
+  font-size: var(--font-size-xl, 1.5rem);
+  font-weight: 600;
+  color: var(--color-neutral-900, #251b14);
+  margin: 0 0 var(--spacing-sm, 8px) 0;
+
+  /* Обрезка длинных имён */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-card__contacts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs, 4px);
+}
+
+.profile-card__contact-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm, 8px);
+  color: var(--color-text-muted, #6b5d4f);
+  font-size: var(--font-size-sm, 0.875rem);
+}
+
+.profile-card__contact-icon {
+  color: var(--color-primary-500, #b8957a);
+  flex-shrink: 0;
+}
+
+/* === АДАПТИВНОСТЬ КАРТОЧКИ ПРОФИЛЯ === */
+@media (max-width: 640px) {
+  .profile-card {
+    flex-direction: column;
+    text-align: center;
+    gap: var(--spacing-md, 16px);
+  }
+
+  .profile-card__contacts {
+    align-items: center;
+  }
+
+  .profile-card__avatar {
+    width: 70px;
+    height: 70px;
+    font-size: var(--font-size-xl, 1.5rem);
+  }
+
+  .profile-card__name {
+    font-size: var(--font-size-lg, 1.125rem);
+  }
+}

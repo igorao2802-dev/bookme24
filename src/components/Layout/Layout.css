@@ -1,14 +1,14 @@
 /**
  * Стили для Layout
  * ПОЧЕМУ BEM-нотация (layout__header, layout__nav-link--active)?
- * - Избегаем конфликтов стилей между компонентами
- * - Читаемая структура: блок__элемент--модификатор
+ * Избегаем конфликтов стилей между компонентами
+ * Читаемая структура: блок__элемент--модификатор
  */
-/**
+
+/*
  * Стили для Layout
  * BEM-методология + гарантированная читаемость на всех состояниях
  */
-
 .layout {
   display: flex;
   flex-direction: column;
@@ -26,7 +26,6 @@
    🔝 ШАПКА
    Тёплый терракотовый градиент — премиальный вид
    ═══════════════════════════════════════════════ */
-
 .layout__header {
   background: linear-gradient(
     135deg,
@@ -85,17 +84,55 @@
   border-bottom: none;
   padding: var(--spacing-sm) var(--spacing-md);
   border-radius: var(--radius-md);
-  transition: background-color var(--transition-fast);
   font-weight: 500;
   background-color: transparent;
+
+  /* 🔥 ЭТАП 4.1: Расширенный transition для всех состояний */
+  /* ПОЧЕМУ all, а не только background-color?
+     Нужно анимировать transform (при active) и outline (при focus-visible).
+     Если оставить только background-color, эффект нажатия будет мгновенным,
+     без плавности. */
+  transition:
+    background-color var(--transition-fast, 150ms ease),
+    transform var(--transition-fast, 150ms ease),
+    outline var(--transition-fast, 150ms ease);
 }
 
+/* 🔥 ЭТАП 4.1: Состояние HOVER */
+/* ПОЧЕМУ rgba(255, 255, 255, 0.15)?
+   Полупрозрачный белый создаёт эффект "подсветки" без изменения цвета текста.
+   Это сохраняет контраст 8.5:1 и выглядит премиально. */
 .layout__nav-link:hover {
   background-color: rgba(255, 255, 255, 0.15);
   color: var(--color-text-inverse);
   border-bottom: none;
 }
 
+/* 🔥 ЭТАП 4.1: Состояние ACTIVE (нажатие мышкой) */
+/* ПОЧЕМУ scale(0.97), а не translateY(1px)?
+   scale создаёт эффект "вдавливания" во все стороны — более естественно
+   для кнопок. translateY двигает только вниз, что выглядит менее органично.
+   0.97 = уменьшение на 3%, достаточно заметно, но не резко. */
+.layout__nav-link:active {
+  transform: scale(0.97);
+  background-color: rgba(255, 255, 255, 0.25);
+  color: var(--color-text-inverse);
+  border-bottom: none;
+}
+
+/* 🔥 ЭТАП 4.1: Состояние FOCUS-VISIBLE (клавиатурная навигация) */
+/* ПОЧЕМУ :focus-visible, а не :focus?
+   :focus срабатывает и при клике мышкой, и при Tab.
+   :focus-visible срабатывает ТОЛЬКО при клавиатурной навигации (Tab).
+   Это современный стандарт A11y: фокус виден только тем, кто использует клавиатуру.
+   Пользователи мыши не видят раздражающий outline при каждом клике. */
+.layout__nav-link:focus-visible {
+  outline: 2px solid var(--color-text-inverse);
+  outline-offset: 2px;
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Активная ссылка (текущая страница) */
 .layout__nav-link--active {
   background-color: rgba(255, 255, 255, 0.25);
   font-weight: 600;
@@ -133,7 +170,6 @@
 /* ═══════════════════════════════════════════════
    📄 ОСНОВНОЙ КОНТЕНТ
    ═══════════════════════════════════════════════ */
-
 .layout__main {
   flex: 1;
   padding: var(--spacing-xl) 0;
@@ -143,7 +179,6 @@
    👣 ПОДВАЛ
    Глубокий тёплый коричневый — элегантно
    ═══════════════════════════════════════════════ */
-
 .layout__footer {
   background-color: var(--color-neutral-900);
   color: var(--color-neutral-100);
@@ -187,7 +222,6 @@
 /* ═══════════════════════════════════════════════
    📱 АДАПТИВНОСТЬ
    ═══════════════════════════════════════════════ */
-
 @media (max-width: 768px) {
   .layout__header .layout__container {
     flex-direction: column;

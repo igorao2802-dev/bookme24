@@ -1,0 +1,103 @@
+/**
+ * Стили для BookingHistory (история записей клиента)
+ * BEM-методология + адаптивность
+ * 
+ * 🔥 ЭТАП 5.3: Табы фильтрации и список записей
+ */
+
+/* === ОСНОВНОЙ КОНТЕЙНЕР === */
+.booking-history {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg, 24px);
+}
+
+/* === ТАБЫ ФИЛЬТРАЦИИ === */
+.booking-history__tabs {
+  display: flex;
+  gap: var(--spacing-sm, 8px);
+  flex-wrap: wrap;
+  padding: var(--spacing-sm, 8px);
+  background: var(--color-bg, #fdfaf6);
+  border-radius: var(--radius-lg, 12px);
+}
+
+.booking-history__tab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs, 4px);
+  padding: var(--spacing-sm, 8px) var(--spacing-md, 16px);
+  min-height: 40px;
+
+  background: transparent;
+  border: 1.5px solid transparent;
+  border-radius: var(--radius-md, 8px);
+
+  font-size: var(--font-size-sm, 0.875rem);
+  font-weight: 500;
+  color: var(--color-text-muted, #6b5d4f);
+
+  cursor: pointer;
+  transition: all var(--transition-fast, 150ms ease);
+}
+
+.booking-history__tab:hover {
+  background: var(--color-surface, #ffffff);
+  color: var(--color-text, #3d2f26);
+}
+
+.booking-history__tab:focus-visible {
+  outline: 2px solid var(--color-primary, #b8957a);
+  outline-offset: 2px;
+}
+
+/* === АКТИВНЫЙ ТАБ === */
+.booking-history__tab--active {
+  background: var(--color-surface, #ffffff);
+  border-color: var(--color-primary-400, #c9a88c);
+  color: var(--color-primary-700, #7f5e44);
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+}
+
+.booking-history__tab--active:hover {
+  background: var(--color-primary-soft, #fbf5ef);
+  color: var(--color-primary-700, #7f5e44);
+}
+
+.booking-history__tab-icon {
+  display: inline-flex;
+  align-items: center;
+}
+
+.booking-history__tab-label {
+  white-space: nowrap;
+}
+
+/* === СПИСОК ЗАПИСЕЙ === */
+.booking-history__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md, 16px);
+}
+
+/* === АДАПТИВНОСТЬ === */
+@media (max-width: 640px) {
+  .booking-history__tabs {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .booking-history__tab {
+    flex-shrink: 0;
+  }
+
+  .booking-history__tab-label {
+    display: none; /* На мобильных показываем только иконки */
+  }
+
+  .booking-history__tab--active .booking-history__tab-label {
+    display: inline; /* Активный таб показывает текст */
+  }
+}

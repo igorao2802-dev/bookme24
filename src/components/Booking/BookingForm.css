@@ -1,3 +1,12 @@
+/**
+ * Стили для BookingForm (Шаг 4: Контактные данные)
+ * 
+ * 🔥 ЭТАП 3.1: Оптимизация раскладки
+ * - Убран max-width: 600px — форма использует всю ширину
+ * - Добавлен grid для строки Телефон/Email (2 колонки)
+ * - Адаптивность: на мобильных (≤640px) все поля в одну колонку
+ */
+
 .booking-form__header {
   margin-bottom: var(--spacing-lg, 24px);
 }
@@ -5,25 +14,57 @@
 .booking-form__header h2 {
   font-size: var(--font-size-xl, 1.5rem);
   margin-bottom: var(--spacing-xs, 4px);
+  color: var(--color-neutral-900, #251b14);
 }
 
 .booking-form__description {
   color: var(--color-text-muted, #6b5d4f);
 }
 
+/* 
+  🔥 ЭТАП 3.1: Убран max-width: 600px
+  ПОЧЕМУ? Форма должна использовать всё доступное пространство.
+  Раньше справа оставалось большое пустое поле.
+*/
 .booking-form__fields {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md, 16px);
-  max-width: 600px;
+  width: 100%; /* Форма занимает всю ширину родителя */
 }
 
+/* Обёртка для полей, которые должны быть в одну колонку (textarea) */
 .booking-form__field {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-xs, 4px);
 }
 
+/* 
+  🔥 ЭТАП 3.1: СТРОКА С ДВУМЯ КОЛОНКАМИ (Телефон + Email)
+  ПОЧЕМУ CSS Grid, а не flex?
+  Grid гарантирует одинаковую ширину колонок (1fr 1fr)
+  и правильное выравнивание полей по высоте.
+*/
+.booking-form__row-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-md, 16px);
+}
+
+/* 
+  На мобильных устройствах (≤640px) переключаем в одну колонку.
+  ПОЧЕМУ 640px, а не 480px?
+  На экранах 480-640px (большие телефоны, маленькие планшеты)
+  два поля в ряд выглядят слишком узкими и неудобными для ввода.
+*/
+@media (max-width: 640px) {
+  .booking-form__row-2col {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* === TEXTAREA === */
 .input__field--textarea {
   width: 100%;
   min-height: 100px;
@@ -52,6 +93,7 @@
   background-color: #fff5f5;
 }
 
+/* === ФУТЕР КОММЕНТАРИЯ === */
 .booking-form__comment-footer {
   display: flex;
   justify-content: space-between;

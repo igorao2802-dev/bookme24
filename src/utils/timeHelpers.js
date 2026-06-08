@@ -1,5 +1,5 @@
 /**
- * Утилиты для работы с датами, временем и слотами записи
+ * Утилиты для работы с датами, временем и окнами записи
  *
  * ПОЧЕМУ отдельный модуль?
  * - Логика работы с датами нужна в 5+ компонентах
@@ -46,7 +46,7 @@ export function parseTimeToMinutes(timeString) {
 }
 
 /**
- * Генерирует массив временных слотов в рамках рабочих часов
+ * Генерирует массив временных окон в рамках рабочих часов
  * @param {Object} workingHours - { start: "09:00", end: "18:00" }
  * @param {number} stepMinutes - шаг генерации (по умолчанию 30)
  * @returns {string[]} - массив "HH:MM"
@@ -58,7 +58,7 @@ export function generateTimeSlots(
   stepMinutes = BUSINESS_CONFIG.SLOT_STEP_MINUTES,
 ) {
   if (!workingHours || !workingHours.start || !workingHours.end) {
-    return []; // Выходной день — слотов нет
+    return []; // Выходной день — окон нет
   }
 
   const startMinutes = parseTimeToMinutes(workingHours.start);

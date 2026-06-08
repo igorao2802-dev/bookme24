@@ -64,6 +64,9 @@ export const STORAGE_KEYS = {
   BOOKING_DRAFT: "bookme24_booking_draft",
   USER_ROLE: "bookme24_user_role",
   LAST_FILTER: "bookme24_last_filter",
+  USER_SETTINGS: "bookme24_user_settings",
+  BONUS_BALANCE: "bookme24_bonus_balance",
+  BONUS_HISTORY: "bookme24_bonus_history",
 };
 
 // === БИЗНЕС-КОНСТАНТЫ ===
@@ -71,7 +74,7 @@ export const STORAGE_KEYS = {
 // "Почему буфер 15 минут? Что если для разных услуг разные интервалы?"
 export const BUSINESS_CONFIG = {
   BUFFER_MINUTES: 15, // Буфер между записями (уборка, дезинфекция)
-  SLOT_STEP_MINUTES: 30, // Шаг слотов времени
+  SLOT_STEP_MINUTES: 30, // Шаг окон времени
   MIN_ADVANCE_HOURS: 2, // Минимум часов до записи (нельзя записаться "через час")
   MAX_BOOKING_DAYS: 30, // Горизонт записи (на 30 дней вперёд)
   SALON_OPEN_HOUR: 9, // Салон открыт с 9:00
