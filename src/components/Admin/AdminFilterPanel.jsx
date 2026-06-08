@@ -5,21 +5,20 @@
  * Презентационный компонент. НЕ владеет состоянием фильтров.
  * Сообщает об изменениях родителю через onFilterChange и onSortChange.
  * 
- *  ЭТАП 1.4: Валидация дат (запрет нелогичных периодов)
+ * ЭТАП 1.4: Валидация дат (запрет нелогичных периодов)
  * 🔥 ЭТАП 3.2: Разделение на три секции: Поиск, Сортировка, Фильтры
  * 🔥 ЭТАП 3.4: Явный заголовок "Сортировка" над полем
  * 🔥 ЭТАП 3.5: Лейблы для всех полей фильтров (Статус, Специалист, С, По)
+ * 🔥 ЭТАП 7.6: Полная локализация всех текстов
  */
 
 import { Filter, RotateCcw, Search, ArrowUpDown } from 'lucide-react';
-
 import Input from '../UI/Input';
 import Select from '../UI/Select';
 import Badge from '../UI/Badge';
 import Toast from '../UI/Toast';
-
-import { BOOKING_STATUS, BOOKING_STATUS_LABELS } from '../../utils/constants';
-
+import { BOOKING_STATUS } from '../../utils/constants';
+import { useLanguage } from '../../hooks/useLanguage'; // 🔥 ЭТАП 7.6
 import './AdminFilterPanel.css';
 
 export default function AdminFilterPanel({
@@ -31,18 +30,23 @@ export default function AdminFilterPanel({
   onReset,
   activeCount = 0,
 }) {
+  const { t } = useLanguage(); // 🔥 ЭТАП 7.6
+
   // === ОПЦИИ СТАТУСОВ ===
+  // 🔥 ЭТАП 7.6: label берётся через t('status.' + status) вместо BOOKING_STATUS_LABELS
+  // ПОЧЕМУ так? BOOKING_STATUS_LABELS — хардкод в constants.js.
+  // Использование t() позволяет переводить статусы без изменения constants.js
   const statusOptions = [
-    { value: 'all', label: 'Все статусы' },
+    { value: 'all', label: t('admin.filters.allStatuses') },
     ...Object.values(BOOKING_STATUS).map((status) => ({
       value: status,
-      label: BOOKING_STATUS_LABELS[status],
+      label: t(`status.${status}`),
     })),
   ];
 
   // === ОПЦИИ МАСТЕРОВ ===
   const specialistOptions = [
-    { value: 'all', label: 'Все мастера' },
+    { value: 'all', label: t('admin.filters.allSpecialists') },
     ...specialists.map((spec) => ({
       value: spec.id,
       label: spec.fullName,
@@ -50,39 +54,36 @@ export default function AdminFilterPanel({
   ];
 
   // === ОПЦИИ СОРТИРОВКИ ===
+  // 🔥 ЭТАП 7.6: все label через t()
   const sortOptions = [
-    { value: 'date-desc', label: 'Дата (новые → старые)' },
-    { value: 'date-asc', label: 'Дата (старые → новые)' },
-    { value: 'service', label: 'По услуге' },
-    { value: 'specialist', label: 'По мастеру' },
-    { value: 'client', label: 'По клиенту' },
+    { value: 'date-desc', label: t('admin.sort.dateDesc') },
+    { value: 'date-asc', label: t('admin.sort.dateAsc') },
+    { value: 'service', label: t('admin.sort.service') },
+    { value: 'specialist', label: t('admin.sort.specialist') },
+    { value: 'client', label: t('admin.sort.client') },
   ];
 
   // === 🔥 ОБРАБОТЧИК ИЗМЕНЕНИЯ ДАТЫ "ОТ" (ЭТАП 1.4) ===
   const handleDateFromChange = (e) => {
     const newDateFrom = e.target.value;
-    
     if (filters.dateTo && newDateFrom > filters.dateTo) {
       onFilterChange('dateTo', '');
-      Toast.info('Дата окончания сброшена, так как она раньше даты начала', {
+      Toast.info(t('admin.filters.dateFromResetWarning'), {
         duration: 3000,
       });
     }
-    
     onFilterChange('dateFrom', newDateFrom);
   };
 
   // === 🔥 ОБРАБОТЧИК ИЗМЕНЕНИЯ ДАТЫ "ДО" (ЭТАП 1.4) ===
   const handleDateToChange = (e) => {
     const newDateTo = e.target.value;
-    
     if (filters.dateFrom && newDateTo < filters.dateFrom) {
       onFilterChange('dateFrom', '');
-      Toast.info('Дата начала сброшена, так как она позже даты окончания', {
+      Toast.info(t('admin.filters.dateToResetWarning'), {
         duration: 3000,
       });
     }
-    
     onFilterChange('dateTo', newDateTo);
   };
 
@@ -92,7 +93,7 @@ export default function AdminFilterPanel({
       <div className="admin-filter-panel__header">
         <h3 className="admin-filter-panel__title">
           <Filter size={18} />
-          Фильтры и поиск
+          {t('admin.filters.title')}
           {activeCount > 0 && (
             <Badge variant="warning" size="sm">{activeCount}</Badge>
           )}
@@ -105,7 +106,7 @@ export default function AdminFilterPanel({
             onClick={onReset}
           >
             <RotateCcw size={14} />
-            Сбросить
+            {t('common.reset')}
           </button>
         )}
       </div>
@@ -114,10 +115,10 @@ export default function AdminFilterPanel({
       <div className="admin-filter-panel__section admin-filter-panel__section--search">
         <h4 className="admin-filter-panel__section-title">
           <Search size={16} />
-          Поиск
+          {t('admin.filters.search')}
         </h4>
         <Input
-          placeholder="Поиск по ФИО или телефону клиента..."
+          placeholder={t('admin.filters.searchPlaceholder')}
           value={filters.searchQuery}
           onChange={(e) => onFilterChange('searchQuery', e.target.value)}
           leftIcon={<Search size={18} />}
@@ -125,16 +126,10 @@ export default function AdminFilterPanel({
       </div>
 
       {/* === 🔥 СЕКЦИЯ 2: СОРТИРОВКА (ЭТАП 3.2 + 3.4) === */}
-      {/* 
-        ПОЧЕМУ заголовок "Сортировка" здесь, а не внутри Select?
-        - Заголовок секции описывает НАЗНАЧЕНИЕ всей секции
-        - Лейбл внутри Select описывает КОНКРЕТНОЕ поле
-        - Это разные уровни иерархии информации
-      */}
       <div className="admin-filter-panel__section admin-filter-panel__section--sort">
         <h4 className="admin-filter-panel__section-title">
           <ArrowUpDown size={16} />
-          Сортировка
+          {t('admin.filters.sort')}
         </h4>
         <Select
           value={sortBy}
@@ -147,21 +142,13 @@ export default function AdminFilterPanel({
       <div className="admin-filter-panel__section admin-filter-panel__section--filters">
         <h4 className="admin-filter-panel__section-title">
           <Filter size={16} />
-          Фильтры
+          {t('admin.filters.filters')}
         </h4>
-        
+
         <div className="admin-filter-panel__filters-grid">
-          {/* 
-            🔥 ЭТАП 3.5: Каждое поле имеет явный label
-            ПОЧЕМУ label передаётся через prop, а не пишется вручную?
-            - Компоненты Input и Select сами рендерят <label htmlFor="...">
-            - Это гарантирует связь label ↔ input через id (A11y)
-            - Скринридеры правильно озвучивают назначение поля
-          */}
-          
           {/* Статус */}
           <Select
-            label="Статус"
+            label={t('admin.filters.status')}
             value={filters.status}
             onChange={(e) => onFilterChange('status', e.target.value)}
             options={statusOptions}
@@ -169,7 +156,7 @@ export default function AdminFilterPanel({
 
           {/* Специалист */}
           <Select
-            label="Специалист"
+            label={t('admin.filters.specialist')}
             value={filters.specialistId}
             onChange={(e) => onFilterChange('specialistId', e.target.value)}
             options={specialistOptions}
@@ -178,31 +165,35 @@ export default function AdminFilterPanel({
           {/* Дата от */}
           <Input
             type="date"
-            label="С (дата начала)"
+            label={t('admin.filters.dateFrom')}
             value={filters.dateFrom}
             onChange={handleDateFromChange}
             max={filters.dateTo || undefined}
             helperText={
               filters.dateTo
-                ? `Не позже ${new Date(filters.dateTo).toLocaleDateString('ru-RU')}`
-                : 'Выберите начальную дату периода'
+                ? `${t('admin.filters.notLaterThan')} ${new Date(filters.dateTo).toLocaleDateString(
+                    t('common.locale') === 'en' ? 'en-US' : 'ru-RU'
+                  )}`
+                : t('admin.filters.selectStartDate')
             }
-            title="Выберите начальную дату периода фильтрации"
+            title={t('admin.filters.selectStartDate')}
           />
 
           {/* Дата до */}
           <Input
             type="date"
-            label="По (дата окончания)"
+            label={t('admin.filters.dateTo')}
             value={filters.dateTo}
             onChange={handleDateToChange}
             min={filters.dateFrom || undefined}
             helperText={
               filters.dateFrom
-                ? `Не раньше ${new Date(filters.dateFrom).toLocaleDateString('ru-RU')}`
-                : 'Выберите конечную дату периода'
+                ? `${t('admin.filters.notEarlierThan')} ${new Date(filters.dateFrom).toLocaleDateString(
+                    t('common.locale') === 'en' ? 'en-US' : 'ru-RU'
+                  )}`
+                : t('admin.filters.selectEndDate')
             }
-            title="Выберите конечную дату периода фильтрации"
+            title={t('admin.filters.selectEndDate')}
           />
         </div>
       </div>

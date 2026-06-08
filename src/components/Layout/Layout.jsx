@@ -1,54 +1,66 @@
 /**
  * Layout.jsx — Компонент-обёртка (паттерн Wrapper Component)
  * 
+ * 🔥 ЭТАП 7.2: Интеграция LanguageToggle рядом с ThemeToggle
+ * 🔥 ЭТАП 7.3: Полная интеграция с локализацией
+ * 
+ * Порядок в шапке: Логотип | Навигация | [ThemeToggle | LanguageToggle | RoleSwitcher]
+ * Перевод пунктов меню через функцию t()
+ * 
  * ПОЧЕМУ используется children, а не конкретные компоненты внутри?
  * - Механизм children — это основа композиции в React
  * - Layout задаёт каркас (шапка + контент + подвал), а содержимое вставляется снаружи
  * - Избавляет от копипаста Header/Footer на каждой странице
- * - Замечание В.В. из лекции React-1-2: "Composition over Inheritance"
- * 
- * 🔥 ЭТАП 5.1: Добавлена ссылка "Личный кабинет" в навигацию
  */
 
 import { Link, useLocation } from 'react-router-dom';
 import { USER_ROLES } from '../../utils/constants.js';
+
+// === ИМПОРТ ПЕРЕКЛЮЧАТЕЛЕЙ ===
+import ThemeToggle from '../UI/ThemeToggle';
+import LanguageToggle from '../UI/LanguageToggle';
+
+// === ИМПОРТ ХУКА ЛОКАЛИЗАЦИИ ===
+import { useLanguage } from '../../hooks/useLanguage';
+
 import './Layout.css';
 
 export default function Layout({ children, userRole, onRoleChange }) {
   const location = useLocation();
+  
+  // 🔥 ЭТАП 7.2: получаем функцию перевода
+  const { t } = useLanguage();
 
   // === МЕНЮ НАВИГАЦИИ ===
-  // 🔥 ЭТАП 5.1: Добавлен пункт "Личный кабинет"
-  // ПОЧЕМУ массив для меню? Легко расширять и рендерить через .map()
+  // ПОЧЕМУ переводим label через t()?
+  // - При смене языка меню мгновенно обновляется
+  // - Ключи (nav.booking) — единый источник истины в ru.json/en.json
+  // - Не нужно вручную менять строки при добавлении нового языка
   const menuItems = [
     { 
       path: '/', 
-      label: '📝 Запись', 
+      label: t('nav.booking'), 
       roles: [USER_ROLES.CLIENT, USER_ROLES.ADMIN] 
     },
     { 
       path: '/catalog', 
-      label: '📋 Каталог', 
+      label: t('nav.catalog'), 
       roles: [USER_ROLES.CLIENT, USER_ROLES.ADMIN] 
     },
     { 
       path: '/admin', 
-      label: '👨‍💼 Менеджер', 
+      label: t('nav.manager'), 
       roles: [USER_ROLES.ADMIN] 
     },
-    // 🔥 НОВЫЙ ПУНКТ МЕНЮ (ЭТАП 5.1)
-    // ПОЧЕМУ только для CLIENT?
-    // - Администратор использует админ-панель для управления записями
-    // - Личный кабинет — это интерфейс клиента для просмотра своих записей
-    // - Разделение ролей: CLIENT видит "Кабинет", ADMIN видит "Менеджер"
     { 
       path: '/profile', 
-      label: '👤 Кабинет', 
+      label: t('nav.profile'), 
       roles: [USER_ROLES.CLIENT] 
-    }
+    },
   ];
 
   // ПОЧЕМУ filter? Показываем пункты меню только для текущей роли
+  // Клиент не видит "Менеджер", админ не видит "Кабинет"
   const visibleMenu = menuItems.filter(item => item.roles.includes(userRole));
 
   return (
@@ -63,7 +75,10 @@ export default function Layout({ children, userRole, onRoleChange }) {
           </div>
 
           {/* ПОЧЕМУ <nav>? Семантический тег для навигации — важно для SEO и A11y */}
-          <nav className="layout__nav" aria-label="Главная навигация">
+          <nav 
+            className="layout__nav" 
+            aria-label={t('common.mainNavigation') || 'Главная навигация'}
+          >
             {visibleMenu.map(item => (
               <Link
                 key={item.path}
@@ -77,19 +92,39 @@ export default function Layout({ children, userRole, onRoleChange }) {
             ))}
           </nav>
 
-          {/* === ПЕРЕКЛЮЧАТЕЛЬ РОЛИ (упрощённо, без авторизации) === */}
-          <div className="layout__role-switcher">
-            <label className="layout__role-label">
-              Роль:
-              <select
-                value={userRole}
-                onChange={(e) => onRoleChange(e.target.value)}
-                className="layout__role-select"
-              >
-                <option value={USER_ROLES.CLIENT}>Клиент</option>
-                <option value={USER_ROLES.ADMIN}>Менеджер</option>
-              </select>
-            </label>
+          {/* === 🔥 ГРУППА ПЕРЕКЛЮЧАТЕЛЕЙ (ЭТАП 7.2 + 7.3) === */}
+          {/* 
+            ПОЧЕМУ отдельный контейнер layout__controls?
+            - Группирует все переключатели вместе (тема, язык, роль)
+            - На мобильных — переносится на новую строку как единый блок
+            - Визуально отделяет "утилиты" от навигации
+            - margin-left: auto прижимает группу к правому краю
+          */}
+          <div className="layout__controls">
+            {/* Переключатель темы (солнце/луна) */}
+            <ThemeToggle />
+
+            {/* 🔥 Переключатель языка (RU/EN) */}
+            <LanguageToggle />
+
+            {/* Переключатель роли (для разработки) */}
+            <div className="layout__role-switcher">
+              <label className="layout__role-label">
+                {t('common.role') || 'Роль'}:
+                <select
+                  value={userRole}
+                  onChange={(e) => onRoleChange(e.target.value)}
+                  className="layout__role-select"
+                >
+                  <option value={USER_ROLES.CLIENT}>
+                    {t('common.client') || 'Клиент'}
+                  </option>
+                  <option value={USER_ROLES.ADMIN}>
+                    {t('common.manager') || 'Менеджер'}
+                  </option>
+                </select>
+              </label>
+            </div>
           </div>
         </div>
       </header>

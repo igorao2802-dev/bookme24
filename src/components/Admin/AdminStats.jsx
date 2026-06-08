@@ -1,14 +1,6 @@
 /**
  * AdminStats.jsx — блок ключевых показателей эффективности (KPI)
  * 
- * НАЗНАЧЕНИЕ:
- * Отображает сводную статистику по записям:
- * - Всего записей
- * - Записей сегодня
- * - Активных (не завершённых и не отменённых)
- * - Отменённых
- * - Выручка (сумма по подтверждённым и завершённым)
- * 
  * АРХИТЕКТУРНАЯ РОЛЬ:
  * Чисто презентационный компонент — получает готовые данные через props.
  * НЕ владеет состоянием, НЕ делает вычислений (всё считает useBookings).
@@ -17,13 +9,19 @@
  * DollarSign ($) заменён на Wallet (кошелёк)
  * Причина: знак доллара не соответствует белорусской валюте BYN.
  * Wallet семантически корректнее: "выручка" = деньги.
+ * 
+ * 🔥 ЭТАП 7.6: Полная локализация всех текстов
+ * - Названия карточек через t('admin.stats.*')
  */
 
 import { Calendar, TrendingUp, CheckCircle, XCircle, Wallet } from 'lucide-react';
 import { formatPrice } from '../../utils/formatters';
+import { useLanguage } from '../../hooks/useLanguage'; // 🔥 ЭТАП 7.6
 import './AdminStats.css';
 
 export default function AdminStats({ stats, bookings }) {
+  const { t } = useLanguage(); // 🔥 ЭТАП 7.6
+
   // === РАСШИРЕННАЯ СТАТИСТИКА ===
   // ПОЧЕМУ считаем здесь, а не в useBookings?
   // Эти показатели специфичны для UI админки, не нужны в других местах
@@ -42,35 +40,35 @@ export default function AdminStats({ stats, bookings }) {
 
   // === МАССИВ КАРТОЧЕК СТАТИСТИКИ ===
   // ПОЧЕМУ массив? Легко рендерить через .map() и расширять
+  // 🔥 ЭТАП 7.6: label берётся через t() вместо хардкода
   const statsCards = [
     {
-      label: 'Всего записей',
+      label: t('admin.stats.totalBookings'),
       value: stats.total,
       icon: <Calendar size={24} />,
       variant: 'default',
     },
     {
-      label: 'Сегодня',
+      label: t('admin.stats.today'),
       value: todayBookings,
       icon: <TrendingUp size={24} />,
       variant: 'info',
     },
     {
-      label: 'Активных',
+      label: t('admin.stats.active'),
       value: stats.active,
       icon: <CheckCircle size={24} />,
       variant: 'success',
     },
     {
-      label: 'Отменённых',
+      label: t('admin.stats.cancelled'),
       value: stats.cancelled,
       icon: <XCircle size={24} />,
       variant: 'danger',
     },
     {
-      label: 'Выручка',
+      label: t('admin.stats.revenue'),
       value: formatPrice(revenue),
-      // 🔥 ИСПРАВЛЕНИЕ: MoneyBag заменён на Wallet
       icon: <Wallet size={24} />,
       variant: 'highlight',
     },

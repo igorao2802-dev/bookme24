@@ -6,24 +6,16 @@
  * фильтрует записи и передаёт их в HistoryCard.
  * 
  * 🔥 ЭТАП 5.3: Реализация полноценной истории записей
- * - Табы: Все / Предстоящие / Завершенные / Отмененные
- * - Кнопки действий: Отменить (для предстоящих), Повторить (для завершенных)
- * - Пустые состояния для каждого фильтра
- * 
- * ПОЧЕМУ отдельный компонент, а не внутри ProfilePage?
- * - Single Responsibility: ProfilePage отвечает за профиль и статистику
- * - BookingHistory отвечает только за историю записей
- * - Легче тестировать и переиспользовать
+ * 🔥 ЭТАП 7.7: Локализация табов и EmptyState
  */
 
 import { useState, useMemo } from 'react';
 import { Calendar, CheckCircle, XCircle, List } from 'lucide-react';
-
-import { BOOKING_STATUS, BOOKING_STATUS_LABELS } from '../../utils/constants';
+import { BOOKING_STATUS } from '../../utils/constants';
+import { useLanguage } from '../../hooks/useLanguage'; // 🔥 ЭТАП 7.7
 import HistoryCard from './HistoryCard';
 import EmptyState from '../UI/EmptyState';
 import Badge from '../UI/Badge';
-
 import './BookingHistory.css';
 
 export default function BookingHistory({
@@ -33,35 +25,27 @@ export default function BookingHistory({
   onCancel,
   onRebook,
 }) {
+  const { t } = useLanguage(); // 🔥 ЭТАП 7.7
+
   // === АКТИВНЫЙ ТАБ ===
-  // ПОЧЕМУ useState, а не prop?
-  // Это локальное состояние UI — не нужно поднимать до ProfilePage
   const [activeTab, setActiveTab] = useState('all');
 
   // === ТАБЫ ФИЛЬТРАЦИИ ===
-  // ПОЧЕМУ массив объектов, а не просто строки?
-  // - Легко рендерить через .map()
-  // - Можно добавить иконки, счётчики
-  // - Единая точка правды о доступных табах
+  // 🔥 ЭТАП 7.7: label берётся через t()
   const tabs = [
-    { id: 'all', label: 'Все', icon: <List size={16} /> },
-    { id: 'upcoming', label: 'Предстоящие', icon: <Calendar size={16} /> },
-    { id: 'completed', label: 'Завершенные', icon: <CheckCircle size={16} /> },
-    { id: 'cancelled', label: 'Отмененные', icon: <XCircle size={16} /> },
+    { id: 'all', label: t('profile.history.tabs.all'), icon: <List size={16} /> },
+    { id: 'upcoming', label: t('profile.history.tabs.upcoming'), icon: <Calendar size={16} /> },
+    { id: 'completed', label: t('profile.history.tabs.completed'), icon: <CheckCircle size={16} /> },
+    { id: 'cancelled', label: t('profile.history.tabs.cancelled'), icon: <XCircle size={16} /> },
   ];
 
-  // === 🔥 ФИЛЬТРАЦИЯ ЗАПИСЕЙ ПО ТАБУ (useMemo) ===
-  // ПОЧЕМУ useMemo?
-  // - Фильтрация может быть дорогой при большом количестве записей
-  // - Пересчитываем только при изменении bookings или activeTab
-  // - Избегаем лишних вычислений при каждом рендере
+  // === ФИЛЬТРАЦИЯ ЗАПИСЕЙ ПО ТАБУ ===
   const filteredBookings = useMemo(() => {
     const now = new Date();
-    now.setHours(0, 0, 0, 0); // Обнуляем время для корректного сравнения дат
+    now.setHours(0, 0, 0, 0);
 
     switch (activeTab) {
       case 'upcoming':
-        // Предстоящие: дата >= сегодня И статус не отменен
         return bookings
           .filter((b) => {
             const bookingDate = new Date(b.date);
@@ -74,20 +58,17 @@ export default function BookingHistory({
           .sort((a, b) => new Date(a.date) - new Date(b.date));
 
       case 'completed':
-        // Завершенные: статус completed
         return bookings
           .filter((b) => b.status === BOOKING_STATUS.COMPLETED)
           .sort((a, b) => new Date(b.date) - new Date(a.date));
 
       case 'cancelled':
-        // Отмененные: статус cancelled
         return bookings
           .filter((b) => b.status === BOOKING_STATUS.CANCELLED)
           .sort((a, b) => new Date(b.date) - new Date(a.date));
 
       case 'all':
       default:
-        // Все записи: сортировка по дате (новые сверху)
         return [...bookings].sort(
           (a, b) => new Date(b.date) - new Date(a.date)
         );
@@ -95,9 +76,6 @@ export default function BookingHistory({
   }, [bookings, activeTab]);
 
   // === СЧЁТЧИКИ ДЛЯ ТАБОВ ===
-  // ПОЧЕМУ считаем здесь, а не в каждом табе?
-  // - Единая точка вычисления
-  // - Можно показать счётчики в табах (например, "Предстоящие (3)")
   const counts = useMemo(() => {
     const now = new Date();
     now.setHours(0, 0, 0, 0);
@@ -115,25 +93,23 @@ export default function BookingHistory({
   }, [bookings]);
 
   // === ПУСТЫЕ СОСТОЯНИЯ ДЛЯ КАЖДОГО ТАБА ===
-  // ПОЧЕМУ отдельный объект?
-  // - Легко расширять
-  // - Единая точка правды о текстах
+  // 🔥 ЭТАП 7.7: Локализованные тексты
   const emptyStates = {
     all: {
-      title: 'У вас пока нет записей',
-      description: 'Создайте первую запись, чтобы увидеть её здесь',
+      title: t('profile.history.empty.all'),
+      description: t('profile.history.empty.allDescription'),
     },
     upcoming: {
-      title: 'Нет предстоящих записей',
-      description: 'Все ваши записи либо завершены, либо отменены',
+      title: t('profile.history.empty.upcoming'),
+      description: t('profile.history.empty.upcomingDescription'),
     },
     completed: {
-      title: 'Нет завершенных записей',
-      description: 'Ваши завершенные записи появятся здесь',
+      title: t('profile.history.empty.completed'),
+      description: t('profile.history.empty.completedDescription'),
     },
     cancelled: {
-      title: 'Нет отмененных записей',
-      description: 'Ваши отмененные записи появятся здесь',
+      title: t('profile.history.empty.cancelled'),
+      description: t('profile.history.empty.cancelledDescription'),
     },
   };
 

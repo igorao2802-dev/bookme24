@@ -11,41 +11,42 @@
  * - Подтверждено (зелёная — успех)
  * - Отменено (красная — внимание)
  * - Потрачено (золотая — акцент на финансах)
+ * 
+ * 🔥 ЭТАП 7.7: Локализация всех текстов
  */
 
 import { Calendar, CheckCircle, XCircle, Wallet } from 'lucide-react';
 import { formatPrice } from '../../utils/formatters';
+import { useLanguage } from '../../hooks/useLanguage'; // 🔥 ЭТАП 7.7
 import './ProfileStats.css';
 
 export default function ProfileStats({ stats }) {
+  const { t } = useLanguage(); // 🔥 ЭТАП 7.7
+
   // === МАССИВ КАРТОЧЕК СТАТИСТИКИ ===
-  // ПОЧЕМУ массив, а не 4 отдельных компонента?
-  // - Легко рендерить через .map()
-  // - Единый стиль для всех карточек
-  // - Просто добавить новую метрику в будущем
+  // ПОЧЕМУ массив? Легко рендерить через .map() и расширять
   const statsCards = [
     {
-      label: 'Всего записей',
+      label: t('profile.stats.total'), // 🔥 ЭТАП 7.7
       value: stats.total,
       icon: <Calendar size={24} />,
       variant: 'default',
     },
     {
-      label: 'Подтверждено',
+      label: t('profile.stats.confirmed'), // 🔥 ЭТАП 7.7
       value: stats.confirmed,
       icon: <CheckCircle size={24} />,
       variant: 'success',
     },
     {
-      label: 'Отменено',
+      label: t('profile.stats.cancelled'), // 🔥 ЭТАП 7.7
       value: stats.cancelled,
       icon: <XCircle size={24} />,
       variant: 'danger',
     },
     {
-      label: 'Потрачено',
+      label: t('profile.stats.spent'), // 🔥 ЭТАП 7.7
       value: formatPrice(stats.spent),
-      // 🔥 ИСПРАВЛЕНИЕ: MoneyBag заменён на Wallet
       icon: <Wallet size={24} />,
       variant: 'highlight',
     },

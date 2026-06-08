@@ -1,12 +1,16 @@
 /**
  * SpecialistCard.jsx — карточка специалиста
- *
+ * 
  * ОСОБЕННОСТЬ:
  * Показывает услуги, которые оказывает мастер (тегами).
  * Это помогает клиенту понять специализацию мастера.
+ * 
+ * 🔥 ЭТАП 7.5: Локализация всех текстов
  */
 
 import { Award, Star, Heart, Calendar } from 'lucide-react';
+
+import { useLanguage } from '../../hooks/useLanguage'; // 🔥 ЭТАП 7.5
 
 import Button from '../UI/Button';
 import Badge from '../UI/Badge';
@@ -20,6 +24,8 @@ export default function SpecialistCard({
   onToggleFavorite,
   onBook,
 }) {
+  const { t } = useLanguage(); // 🔥 ЭТАП 7.5
+
   // === ПОЛУЧАЕМ УСЛУГИ МАСТЕРА ===
   const specialistServices = services.filter((s) =>
     specialist.serviceIds.includes(s.id)
@@ -45,7 +51,11 @@ export default function SpecialistCard({
           e.stopPropagation();
           onToggleFavorite();
         }}
-        aria-label={isFavorite ? 'Убрать из избранного' : 'Добавить в избранное'}
+        aria-label={
+          isFavorite
+            ? t('catalog.buttons.removeFromFavorites')
+            : t('catalog.buttons.addToFavorites')
+        }
       >
         <Heart size={18} fill={isFavorite ? 'currentColor' : 'none'} />
       </button>
@@ -61,7 +71,7 @@ export default function SpecialistCard({
       <div className="specialist-card__meta">
         <span className="specialist-card__meta-item">
           <Award size={14} />
-          Стаж {specialist.experience} лет
+          {t('catalog.specialist.experience', { years: specialist.experience })}
         </span>
         <span className="specialist-card__meta-item">
           <Star size={14} className="specialist-card__star" />
@@ -91,7 +101,7 @@ export default function SpecialistCard({
         onClick={onBook}
         className="specialist-card__book-btn"
       >
-        Записаться
+        {t('catalog.buttons.book')}
       </Button>
     </article>
   );

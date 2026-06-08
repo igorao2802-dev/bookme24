@@ -7,24 +7,17 @@
  * - Повторить (для завершенных/отмененных)
  * 
  * 🔥 ЭТАП 5.3: Карточка с кнопками действий
- * - Статус через Badge
- * - Интервал времени (начало — конец)
- * - Кнопки зависят от статуса записи
- * 
- * ПОЧЕМУ отдельный компонент, а не BookingCard?
- * - BookingCard используется в BookingList (после создания записи)
- * - HistoryCard специфичен для кабинета (с кнопками действий)
- * - Разные требования к отображению
+ * 🔥 ЭТАП 7.7: Локализация всех текстов и window.confirm
  */
 
-import { useMemo } from 'react'; // 🔥 ИСПРАВЛЕНИЕ: добавлен импорт useMemo
+import { useMemo } from 'react';
 import { Calendar, Clock, User, RotateCcw, XCircle } from 'lucide-react';
 import { BOOKING_STATUS, BOOKING_STATUS_LABELS } from '../../utils/constants';
 import { formatPrice, formatDateShort } from '../../utils/formatters';
 import { calculateEndTime } from '../../utils/timeHelpers';
+import { useLanguage } from '../../hooks/useLanguage'; // 🔥 ЭТАП 7.7
 import Badge from '../UI/Badge';
 import Button from '../UI/Button';
-
 import './HistoryCard.css';
 
 export default function HistoryCard({
@@ -34,43 +27,31 @@ export default function HistoryCard({
   onCancel,
   onRebook,
 }) {
+  const { t } = useLanguage(); // 🔥 ЭТАП 7.7
+
   // === ВЫЧИСЛЕНИЕ ВРЕМЕНИ ОКОНЧАНИЯ ===
-  // ПОЧЕМУ useMemo?
-  // - Пересчёт только при изменении startTime или duration
-  // - Избегаем лишних вычислений при каждом рендере
   const endTime = useMemo(() => {
     if (!booking.startTime || !booking.duration) return null;
     return calculateEndTime(booking.startTime, booking.duration);
   }, [booking.startTime, booking.duration]);
 
   // === МОЖНО ЛИ ОТМЕНИТЬ ЗАПИСЬ? ===
-  // ПОЧЕМУ только pending и confirmed?
-  // - completed — уже завершена, отменять нечего
-  // - cancelled — уже отменена
-  // - in-progress — клиент в салоне, отмена невозможна
   const canCancel =
     booking.status === BOOKING_STATUS.PENDING ||
     booking.status === BOOKING_STATUS.CONFIRMED;
 
   // === МОЖНО ЛИ ПОВТОРИТЬ ЗАПИСЬ? ===
-  // ПОЧЕМУ completed и cancelled?
-  // - completed — клиент был доволен, хочет записаться снова
-  // - cancelled — клиент отменил, но может захотеть записаться позже
-  // - pending/confirmed — запись ещё активна, повтор не нужен
-  // - in-progress — клиент в салоне
   const canRebook =
     booking.status === BOOKING_STATUS.COMPLETED ||
     booking.status === BOOKING_STATUS.CANCELLED;
 
   // === ОБРАБОТЧИК ОТМЕНЫ ===
   const handleCancel = () => {
-    // ПОЧЕМУ window.confirm?
-    // - Простой способ получить подтверждение без модалки
-    // - Соответствует паттерну из админки (AdminBookingsTable)
+    // 🔥 ЭТАП 7.7: Локализованный window.confirm
     const confirmed = window.confirm(
-      `Вы уверены, что хотите отменить запись?\n\n` +
-        `Услуга: ${service?.name || 'Неизвестно'}\n` +
-        `Дата: ${formatDateShort(booking.date)} в ${booking.startTime}`
+      `${t('profile.bookings.confirmCancel')}\n\n` +
+        `${t('booking.confirmation.service')} ${service?.name || t('common.unknown')}\n` +
+        `${t('booking.confirmation.date')} ${formatDateShort(booking.date)} ${t('booking.confirmation.time')} ${booking.startTime}`
     );
 
     if (confirmed && onCancel) {
@@ -90,7 +71,7 @@ export default function HistoryCard({
       {/* === ЗАГОЛОВОК: УСЛУГА И СТАТУС === */}
       <div className="history-card__header">
         <h3 className="history-card__title">
-          {service?.name || 'Услуга не найдена'}
+          {service?.name || t('common.serviceNotFound')} {/* 🔥 ЭТАП 7.7 */}
         </h3>
         <Badge variant={booking.status}>
           {BOOKING_STATUS_LABELS[booking.status]}
@@ -101,7 +82,7 @@ export default function HistoryCard({
       <div className="history-card__info">
         <div className="history-card__info-item">
           <User size={14} />
-          <span>{specialist?.fullName || 'Мастер не указан'}</span>
+          <span>{specialist?.fullName || t('common.specialistNotSpecified')}</span> {/* 🔥 ЭТАП 7.7 */}
         </div>
 
         <div className="history-card__info-item">
@@ -140,7 +121,7 @@ export default function HistoryCard({
               leftIcon={<XCircle size={14} />}
               onClick={handleCancel}
             >
-              Отменить
+              {t('profile.history.buttons.cancel')} {/* 🔥 ЭТАП 7.7 */}
             </Button>
           )}
 
@@ -151,7 +132,7 @@ export default function HistoryCard({
               leftIcon={<RotateCcw size={14} />}
               onClick={handleRebook}
             >
-              Повторить
+              {t('profile.history.buttons.rebook')} {/* 🔥 ЭТАП 7.7 */}
             </Button>
           )}
         </div>

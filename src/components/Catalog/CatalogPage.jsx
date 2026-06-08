@@ -1,13 +1,8 @@
 /**
  * CatalogPage.jsx — Вкладка №2: Каталог услуг и специалистов
  * 
- * АРХИТЕКТУРНАЯ РОЛЬ:
- * Это "дирижёр" всего каталога. Владеет состоянием фильтров, поиска и сортировки.
- * Дочерние компоненты получают данные через props, события отправляют через callbacks.
- * 
- * 🔥 ИСПРАВЛЕНИЯ:
- * - Добавлен импорт BOOKING_STEPS из constants
- * - Исправлены опечатки: service.price, localeCompare, return, viewMode, onBookSpecialist
+ * 🔥 ЭТАП 7.5: Полная локализация всех пользовательских текстов
+ * 🔥 ИСПРАВЛЕНО: Опечатки (service.price, localeCompare, viewMode, onBookSpecialist, resetFilter s)
  */
 
 import { useState, useMemo } from 'react';
@@ -30,10 +25,10 @@ import FavoritesList from './FavoritesList';
 // === ХУКИ ===
 import { useLocalStorage } from '../../hooks/useLocalStorage';
 import { useDebounce } from '../../hooks/useDebounce';
+import { useLanguage } from '../../hooks/useLanguage'; // 🔥 ЭТАП 7.5
 
 // === КОНСТАНТЫ ===
-// 🔥 ИСПРАВЛЕНИЕ: добавлен BOOKING_STEPS в импорт
-import { STORAGE_KEYS, SERVICE_CATEGORIES, BOOKING_STEPS } from '../../utils/constants';
+import { STORAGE_KEYS, BOOKING_STEPS } from '../../utils/constants';
 
 import './CatalogPage.css';
 
@@ -47,6 +42,7 @@ const INITIAL_FILTERS = {
 
 export default function CatalogPage({ services, specialists }) {
   const navigate = useNavigate();
+  const { t } = useLanguage(); // 🔥 ЭТАП 7.5
 
   // === РЕЖИМ ОТОБРАЖЕНИЯ ===
   const [viewMode, setViewMode] = useState('services');
@@ -83,12 +79,12 @@ export default function CatalogPage({ services, specialists }) {
     );
   };
 
-  // === 🔥 ПЕРЕХОД К ЗАПИСИ (ЭТАП 1.2) ===
+  // === ПЕРЕХОД К ЗАПИСИ ===
   const handleBookService = (serviceId) => {
     navigate('/', {
       state: {
         preselectedServiceId: serviceId,
-        startStep: BOOKING_STEPS.SPECIALIST, // Переход сразу на шаг 2
+        startStep: BOOKING_STEPS.SPECIALIST,
       },
     });
   };
@@ -97,14 +93,13 @@ export default function CatalogPage({ services, specialists }) {
     navigate('/', {
       state: {
         preselectedSpecialistId: specialistId,
-        startStep: BOOKING_STEPS.SPECIALIST, // Шаг 2 — выбор услуги
+        startStep: BOOKING_STEPS.SPECIALIST,
       },
     });
   };
 
   // === 🔥 ФИЛЬТРАЦИЯ И СОРТИРОВКА УСЛУГ ===
   const filteredAndSortedServices = useMemo(() => {
-    // === ШАГ 1: ФИЛЬТРАЦИЯ ===
     let result = services.filter((service) => {
       const matchesSearch =
         !debouncedQuery ||
@@ -114,7 +109,6 @@ export default function CatalogPage({ services, specialists }) {
       const matchesCategory =
         filters.category === 'all' || service.category === filters.category;
 
-      // 🔥 ИСПРАВЛЕНИЕ: убраны пробелы в service.price и &&
       const matchesPrice =
         service.price >= filters.minPrice && service.price <= filters.maxPrice;
 
@@ -123,7 +117,6 @@ export default function CatalogPage({ services, specialists }) {
       return matchesSearch && matchesCategory && matchesPrice && matchesRating;
     });
 
-    // === ШАГ 2: СОРТИРОВКА ===
     result = [...result].sort((a, b) => {
       switch (sortBy) {
         case 'price-asc':
@@ -131,13 +124,11 @@ export default function CatalogPage({ services, specialists }) {
         case 'price-desc':
           return b.price - a.price;
         case 'name':
-          // 🔥 ИСПРАВЛЕНИЕ: localeCompare вместо localeComp are
           return a.name.localeCompare(b.name, 'ru');
         case 'rating':
           return b.rating - a.rating;
         case 'popular':
         default:
-          // 🔥 ИСПРАВЛЕНИЕ: return вместо ret urn
           return b.rating - a.rating;
       }
     });
@@ -191,9 +182,12 @@ export default function CatalogPage({ services, specialists }) {
     <div className="catalog-page">
       {/* === ЗАГОЛОВОК === */}
       <div className="catalog-page__header">
-        <h1>📋 Каталог услуг и специалистов</h1>
+        <h1>{t('catalog.title')}</h1>
         <p className="catalog-page__subtitle">
-          {services.length} услуг • {specialists.length} мастеров • салон «Здоровье и красота»
+          {t('catalog.subtitle', {
+            services: services.length,
+            specialists: specialists.length,
+          })}
         </p>
       </div>
 
@@ -205,7 +199,7 @@ export default function CatalogPage({ services, specialists }) {
           onClick={() => setViewMode('services')}
         >
           <Scissors size={18} />
-          Услуги
+          {t('catalog.tabs.services')}
           <Badge variant="default" size="sm">{services.length}</Badge>
         </button>
 
@@ -215,7 +209,7 @@ export default function CatalogPage({ services, specialists }) {
           onClick={() => setViewMode('specialists')}
         >
           <Users size={18} />
-          Специалисты
+          {t('catalog.tabs.specialists')}
           <Badge variant="default" size="sm">{specialists.length}</Badge>
         </button>
 
@@ -225,7 +219,7 @@ export default function CatalogPage({ services, specialists }) {
           onClick={() => setViewMode('favorites')}
         >
           <Heart size={18} />
-          Избранное
+          {t('catalog.tabs.favorites')}
           <Badge variant="default" size="sm">{favorites.length}</Badge>
         </button>
       </div>
@@ -238,8 +232,8 @@ export default function CatalogPage({ services, specialists }) {
             onChange={setSearchQuery}
             placeholder={
               viewMode === 'services'
-                ? 'Поиск по названию услуги...'
-                : 'Поиск по имени мастера...'
+                ? t('catalog.search.service')
+                : t('catalog.search.specialist')
             }
           />
 
@@ -249,7 +243,6 @@ export default function CatalogPage({ services, specialists }) {
               onFilterChange={handleFilterChange}
               onReset={handleResetFilters}
               activeCount={activeFiltersCount}
-              // 🔥 ИСПРАВЛЕНИЕ: viewMode вместо v iewMode
               viewMode={viewMode}
             />
             <SortPanel value={sortBy} onChange={setSortBy} viewMode={viewMode} />
@@ -261,19 +254,21 @@ export default function CatalogPage({ services, specialists }) {
       {viewMode === 'services' && (
         <section className="catalog-page__section">
           <div className="catalog-page__section-header">
-            <h2>Услуги ({filteredAndSortedServices.length})</h2>
+            <h2>
+              {t('catalog.tabs.services')} ({filteredAndSortedServices.length})
+            </h2>
             {activeFiltersCount > 0 && (
               <Button variant="ghost" size="sm" onClick={handleResetFilters}>
-                Сбросить фильтры
+                {t('catalog.buttons.resetFilters')}
               </Button>
             )}
           </div>
 
           {filteredAndSortedServices.length === 0 ? (
             <EmptyState
-              title="Услуги не найдены"
-              description="Попробуйте изменить параметры поиска или выбрать другую категорию"
-              actionLabel="Сбросить фильтры"
+              title={t('catalog.empty.services')}
+              description={t('catalog.empty.servicesDescription')}
+              actionLabel={t('catalog.buttons.resetFilters')}
               onAction={handleResetFilters}
               variant="info"
             />
@@ -297,14 +292,16 @@ export default function CatalogPage({ services, specialists }) {
       {viewMode === 'specialists' && (
         <section className="catalog-page__section">
           <div className="catalog-page__section-header">
-            <h2>Специалисты ({filteredAndSortedSpecialists.length})</h2>
+            <h2>
+              {t('catalog.tabs.specialists')} ({filteredAndSortedSpecialists.length})
+            </h2>
           </div>
 
           {filteredAndSortedSpecialists.length === 0 ? (
             <EmptyState
-              title="Специалисты не найдены"
-              description="Попробуйте изменить параметры поиска"
-              actionLabel="Сбросить фильтры"
+              title={t('catalog.empty.specialists')}
+              description={t('catalog.empty.specialistsDescription')}
+              actionLabel={t('catalog.buttons.resetFilters')}
               onAction={handleResetFilters}
               variant="info"
             />
@@ -332,7 +329,6 @@ export default function CatalogPage({ services, specialists }) {
           specialists={favoriteSpecialists}
           onToggleFavorite={toggleFavorite}
           onBookService={handleBookService}
-          // 🔥 ИСПРАВЛЕНИЕ: onBookSpecialist вместо onBoo kSpecialist
           onBookSpecialist={handleBookSpecialist}
         />
       )}

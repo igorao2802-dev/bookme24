@@ -1,0 +1,147 @@
+/**
+ * Стили для AdminServicesList
+ * BEM-методология + адаптивность
+ * 
+ * 🔥 ЭТАП 6.3: Таблица услуг с CRUD-действиями
+ */
+
+.admin-services-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg, 24px);
+}
+
+/* === ЗАГОЛОВОК === */
+.admin-services-list__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-md, 16px);
+  flex-wrap: wrap;
+}
+
+.admin-services-list__header h2 {
+  font-size: var(--font-size-xl, 1.5rem);
+  font-weight: 600;
+  color: var(--color-text, #3d2f26);
+  margin: 0;
+}
+
+/* === ОБЁРТКА ТАБЛИЦЫ (для горизонтального скролла) === */
+.admin-services-list__table-wrapper {
+  overflow-x: auto;
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #e8dcc4);
+  border-radius: var(--radius-lg, 12px);
+  box-shadow: var(--shadow-sm);
+}
+
+/* === ТАБЛИЦА === */
+.admin-services-list__table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 800px;
+}
+
+.admin-services-list__table th {
+  text-align: left;
+  padding: var(--spacing-md, 16px);
+  background: var(--color-bg, #fdfaf6);
+  color: var(--color-text-muted, #6b5d4f);
+  font-size: var(--font-size-sm, 0.875rem);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid var(--color-border, #e8dcc4);
+}
+
+.admin-services-list__table td {
+  padding: var(--spacing-md, 16px);
+  border-bottom: 1px solid var(--color-border, #e8dcc4);
+  font-size: var(--font-size-base, 1rem);
+  color: var(--color-text, #3d2f26);
+  vertical-align: middle;
+}
+
+.admin-services-list__table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.admin-services-list__table tbody tr:hover {
+  background: var(--color-primary-soft, #fbf5ef);
+}
+
+/* === НАЗВАНИЕ УСЛУГИ === */
+.admin-services-list__name {
+  font-weight: 600;
+  color: var(--color-neutral-900, #251b14);
+}
+
+/* === ЦЕНА === */
+.admin-services-list__price {
+  font-weight: 600;
+  color: var(--color-primary-700, #7f5e44);
+}
+
+/* === РЕЙТИНГ === */
+.admin-services-list__rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 500;
+}
+
+/* === КНОПКИ ДЕЙСТВИЙ === */
+.admin-services-list__actions {
+  display: flex;
+  gap: var(--spacing-xs, 4px);
+}
+
+.admin-services-list__action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border: 1px solid var(--color-border, #e8dcc4);
+  border-radius: var(--radius-md, 8px);
+  color: var(--color-text-muted, #6b5d4f);
+  cursor: pointer;
+  transition: all var(--transition-fast, 150ms ease);
+}
+
+.admin-services-list__action-btn:hover:not(:disabled) {
+  background: var(--color-primary-soft, #fbf5ef);
+  border-color: var(--color-primary-400, #c9a88c);
+  color: var(--color-primary-700, #7f5e44);
+}
+
+.admin-services-list__action-btn--danger:hover:not(:disabled) {
+  background: var(--color-error-light, #fceae8);
+  border-color: var(--color-error, #c65d52);
+  color: var(--color-error, #c65d52);
+}
+
+.admin-services-list__action-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.admin-services-list__action-btn:focus-visible {
+  outline: 2px solid var(--color-primary, #b8957a);
+  outline-offset: 2px;
+}
+
+/* === АДАПТИВНОСТЬ === */
+@media (max-width: 768px) {
+  .admin-services-list__header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-services-list__header button {
+    width: 100%;
+    justify-content: center;
+  }
+}

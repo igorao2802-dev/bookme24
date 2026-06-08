@@ -1,272 +1,214 @@
 /**
- * AdminDashboard.jsx — Вкладка №3: Панель менеджера-администратора
- *
+ * AdminDashboard.jsx — главная панель администратора
+ * 
  * АРХИТЕКТУРНАЯ РОЛЬ:
- * Это "дирижёр" всей админ-панели. Владеет состоянием фильтров, сортировки
- * и поиска. Координирует работу статистики, таблицы и модалки редактирования.
- *
- * ПОЧЕМУ именно здесь живут фильтры?
- * Замечание В.В. из лекции React-1-2: "App.js — начальник, хранит State.
- * Компоненты-сотрудники просто рисуют то, что приказали через props."
- * AdminFilterPanel — это "сотрудник", он не принимает решений,
- * он только сообщает о выборе через callback.
- *
- * ПРИНЦИП ОДНОНАПРАВЛЕННОГО ПОТОКА:
- * Данные (bookings, services, specialists) → вниз через props
- * События (изменение фильтра, редактирование) → вверх через callbacks
+ * Дирижёр админки. Содержит:
+ * - Блок статистики (AdminStats) — всегда виден
+ * - Систему табов для переключения между разделами:
+ *   * "Записи" — фильтрация и управление записями
+ *   * "Услуги" — CRUD каталога услуг
+ *   * "Специалисты" — CRUD списка мастеров
+ * 
+ * 🔥 ЭТАП 6.3: Интеграция CRUD для услуг и специалистов
+ * 🔥 ЭТАП 7.6: Локализация табов через t()
+ * 
+ * ПОЧЕМУ табы, а не отдельные страницы?
+ * - Админ должен быстро переключаться между разделами
+ * - Нет необходимости в дополнительных роутах
+ * - Все данные уже загружены в App.jsx
  */
 
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
+import { Calendar, Scissors, Users } from 'lucide-react';
 
-// === КОМПОНЕНТЫ АДМИНКИ ===
 import AdminStats from './AdminStats';
 import AdminFilterPanel from './AdminFilterPanel';
 import AdminBookingsTable from './AdminBookingsTable';
-import BookingEditModal from './BookingEditModal';
+import AdminServicesList from './AdminServicesList';
+import AdminSpecialistsList from './AdminSpecialistsList';
 
-// === UI ===
-import EmptyState from '../UI/EmptyState';
-import Toast from '../UI/Toast';
-
-// === КОНСТАНТЫ ===
-import { BOOKING_STATUS } from '../../utils/constants';
+import { useLanguage } from '../../hooks/useLanguage'; // 🔥 ЭТАП 7.6
 
 import './AdminDashboard.css';
 
-// === НАЧАЛЬНЫЕ ФИЛЬТРЫ ===
-// ПОЧЕМУ вынесено в константу? Используется в 2 местах: инициализация и сброс
-const INITIAL_FILTERS = {
-  status: 'all',           // all | pending | confirmed | in-progress | completed | cancelled
-  specialistId: 'all',     // 'all' или ID мастера
-  dateFrom: '',            // ISO-строка
-  dateTo: '',              // ISO-строка
-  searchQuery: '',         // поиск по ФИО клиента или телефону
-};
-
 export default function AdminDashboard({
+  // Данные
   bookings,
   services,
   specialists,
   stats,
+  // CRUD записей
   onUpdateBooking,
   onCancelBooking,
+  // 🔥 ЭТАП 6.3: CRUD услуг
+  onAddService,
+  onUpdateService,
+  onDeleteService,
+  // 🔥 ЭТАП 6.3: CRUD специалистов
+  onAddSpecialist,
+  onUpdateSpecialist,
+  onDeleteSpecialist,
 }) {
-  // === СОСТОЯНИЕ ФИЛЬТРОВ ===
-  const [filters, setFilters] = useState(INITIAL_FILTERS);
+  const { t } = useLanguage(); // 🔥 ЭТАП 7.6
 
-  // === СОСТОЯНИЕ СОРТИРОВКИ ===
-  const [sortBy, setSortBy] = useState('date-desc'); // date-asc | date-desc | service | specialist | client
+  // === АКТИВНЫЙ ТАБ ===
+  const [activeTab, setActiveTab] = useState('bookings');
 
-  // === СОСТОЯНИЕ МОДАЛКИ РЕДАКТИРОВАНИЯ ===
-  const [editingBooking, setEditingBooking] = useState(null);
+  // === СОСТОЯНИЕ ФИЛЬТРОВ (для раздела "Записи") ===
+  const [filters, setFilters] = useState({
+    searchQuery: '',
+    status: 'all',
+    specialistId: 'all',
+    dateFrom: '',
+    dateTo: '',
+  });
+  const [sortBy, setSortBy] = useState('date-desc');
 
-  // === ОБНОВЛЕНИЕ ФИЛЬТРА ===
-  // ПОЧЕМУ функциональное обновление prev => ({...prev, ...})?
-  // Защита от гонок состояния при быстрых изменениях нескольких фильтров
-  const handleFilterChange = (filterName, value) => {
-    setFilters((prev) => ({ ...prev, [filterName]: value }));
+  // === 🔥 КОНФИГУРАЦИЯ ТАБОВ (ЭТАП 7.6: локализация) ===
+  // ПОЧЕМУ вычисляется внутри компонента, а не как константа?
+  // - label зависит от t(), которая вызывается через useLanguage()
+  // - Константа не может использовать хуки React
+  // - Вычисление происходит при каждом рендере, что нормально (быстрая операция)
+  const ADMIN_TABS = [
+    { id: 'bookings', label: t('admin.tabs.bookings'), icon: Calendar },
+    { id: 'services', label: t('admin.tabs.services'), icon: Scissors },
+    { id: 'specialists', label: t('admin.tabs.specialists'), icon: Users },
+  ];
+
+  // === ОБРАБОТЧИКИ ФИЛЬТРОВ ===
+  const handleFilterChange = (name, value) => {
+    setFilters((prev) => ({ ...prev, [name]: value }));
   };
 
-  // === СБРОС ФИЛЬТРОВ ===
   const handleResetFilters = () => {
-    setFilters(INITIAL_FILTERS);
+    setFilters({
+      searchQuery: '',
+      status: 'all',
+      specialistId: 'all',
+      dateFrom: '',
+      dateTo: '',
+    });
     setSortBy('date-desc');
   };
 
-  // === 🔥 ФИЛЬТРАЦИЯ И СОРТИРОВКА (useMemo для оптимизации) ===
-  // ПОЧЕМУ useMemo?
-  // Замечание В.В. из ПР-04: "Сначала filter, потом sort — для оптимизации.
-  // Сортируем меньший массив, а не все записи."
-  const filteredAndSortedBookings = useMemo(() => {
-    // === ШАГ 1: ФИЛЬТРАЦИЯ ===
-    let result = bookings.filter((booking) => {
-      // Фильтр по статусу
-      const matchesStatus =
-        filters.status === 'all' || booking.status === filters.status;
+  // === ФИЛЬТРАЦИЯ И СОРТИРОВКА ЗАПИСЕЙ ===
+  // ПОЧЕМУ здесь, а не в AdminBookingsTable?
+  // - AdminDashboard владеет состоянием фильтров
+  // - AdminBookingsTable — презентационный, только отображает данные
+  const filteredBookings = bookings.filter((b) => {
+    const matchesSearch =
+      !filters.searchQuery ||
+      b.clientName?.toLowerCase().includes(filters.searchQuery.toLowerCase()) ||
+      b.clientPhone?.includes(filters.searchQuery);
 
-      // Фильтр по мастеру
-      const matchesSpecialist =
-        filters.specialistId === 'all' ||
-        booking.specialistId === filters.specialistId;
+    const matchesStatus =
+      filters.status === 'all' || b.status === filters.status;
 
-      // Фильтр по диапазону дат
-      const matchesDateFrom =
-        !filters.dateFrom || booking.date >= filters.dateFrom;
-      const matchesDateTo =
-        !filters.dateTo || booking.date <= filters.dateTo;
+    const matchesSpecialist =
+      filters.specialistId === 'all' ||
+      b.specialistId === filters.specialistId;
 
-      // Поиск по ФИО клиента или телефону
-      const query = filters.searchQuery.toLowerCase().trim();
-      const matchesSearch =
-        !query ||
-        booking.clientName.toLowerCase().includes(query) ||
-        booking.clientPhone.replace(/\D/g, '').includes(query.replace(/\D/g, ''));
+    const matchesDateFrom = !filters.dateFrom || b.date >= filters.dateFrom;
+    const matchesDateTo = !filters.dateTo || b.date <= filters.dateTo;
 
-      return (
-        matchesStatus &&
-        matchesSpecialist &&
-        matchesDateFrom &&
-        matchesDateTo &&
-        matchesSearch
-      );
-    });
-
-    // === ШАГ 2: СОРТИРОВКА ===
-    // ПОЧЕМУ [...result]? sort() мутирует массив, создаём копию для иммутабельности
-    result = [...result].sort((a, b) => {
-      switch (sortBy) {
-        case 'date-asc':
-          return (
-            new Date(`${a.date}T${a.startTime}`) -
-            new Date(`${b.date}T${b.startTime}`)
-          );
-        case 'date-desc':
-          return (
-            new Date(`${b.date}T${b.startTime}`) -
-            new Date(`${a.date}T${a.startTime}`)
-          );
-        case 'service': {
-          const serviceA = services.find((s) => s.id === a.serviceId)?.name || '';
-          const serviceB = services.find((s) => s.id === b.serviceId)?.name || '';
-          return serviceA.localeCompare(serviceB, 'ru');
-        }
-        case 'specialist': {
-          const specA = specialists.find((s) => s.id === a.specialistId)?.fullName || '';
-          const specB = specialists.find((s) => s.id === b.specialistId)?.fullName || '';
-          return specA.localeCompare(specB, 'ru');
-        }
-        case 'client':
-          return a.clientName.localeCompare(b.clientName, 'ru');
-        default:
-          return 0;
-      }
-    });
-
-    return result;
-  }, [bookings, filters, sortBy, services, specialists]);
-
-  // === ОТКРЫТИЕ МОДАЛКИ РЕДАКТИРОВАНИЯ ===
-  const handleOpenEdit = (booking) => {
-    setEditingBooking(booking);
-  };
-
-  // === ЗАКРЫТИЕ МОДАЛКИ ===
-  const handleCloseEdit = () => {
-    setEditingBooking(null);
-  };
-
-  // === СОХРАНЕНИЕ ИЗМЕНЕНИЙ ===
-  const handleSaveEdit = (id, updates) => {
-    const result = onUpdateBooking(id, updates);
-
-    if (result.success) {
-      Toast.success('Запись успешно обновлена');
-      handleCloseEdit();
-    } else {
-      // ПОЧЕМУ именно result.error? useBookings возвращает понятное сообщение
-      Toast.error(result.error || 'Не удалось обновить запись');
-    }
-  };
-
-  // === ОТМЕНА ЗАПИСИ (с подтверждением) ===
-  const handleCancel = (id) => {
-    // ПОЧЕМУ window.confirm? Простой способ получить подтверждение без модалки
-    const confirmed = window.confirm(
-      'Вы уверены, что хотите отменить эту запись?\n\n' +
-        'Запись будет перемещена в архив со статусом «Отменена».'
+    return (
+      matchesSearch &&
+      matchesStatus &&
+      matchesSpecialist &&
+      matchesDateFrom &&
+      matchesDateTo
     );
+  });
 
-    if (!confirmed) return;
-
-    const result = onCancelBooking(id);
-
-    if (result.success) {
-      Toast.success('Запись отменена');
-    } else {
-      Toast.error(result.error || 'Не удалось отменить запись');
+  const sortedBookings = [...filteredBookings].sort((a, b) => {
+    switch (sortBy) {
+      case 'date-asc':
+        return new Date(a.date) - new Date(b.date);
+      case 'date-desc':
+      default:
+        return new Date(b.date) - new Date(a.date);
+      case 'service':
+        return (a.serviceId || '').localeCompare(b.serviceId || '');
+      case 'specialist':
+        return (a.specialistId || '').localeCompare(b.specialistId || '');
+      case 'client':
+        return (a.clientName || '').localeCompare(b.clientName || '');
     }
-  };
+  });
 
-  // === ПОДСЧЁТ АКТИВНЫХ ФИЛЬТРОВ ===
   const activeFiltersCount = Object.entries(filters).filter(([key, value]) => {
     if (key === 'status' || key === 'specialistId') return value !== 'all';
-    if (key === 'searchQuery') return value.trim() !== '';
-    return value !== '';
+    return value !== '' && value !== null && value !== undefined;
   }).length;
 
   return (
     <div className="admin-dashboard">
-      {/* === ЗАГОЛОВОК === */}
-      <div className="admin-dashboard__header">
-        <h1>👨‍💼 Панель менеджера</h1>
-        <p className="admin-dashboard__subtitle">
-          Управление записями, статистика и контроль салона
-        </p>
-      </div>
-
-      {/* === СТАТИСТИКА === */}
+      {/* === СТАТИСТИКА (ВСЕГДА ВИДНА) === */}
       <AdminStats stats={stats} bookings={bookings} />
 
-      {/* === ФИЛЬТРЫ === */}
-      <AdminFilterPanel
-        filters={filters}
-        sortBy={sortBy}
-        specialists={specialists}
-        onFilterChange={handleFilterChange}
-        onSortChange={setSortBy}
-        onReset={handleResetFilters}
-        activeCount={activeFiltersCount}
-      />
+      {/* === СИСТЕМА ТАБОВ === */}
+      <div className="admin-dashboard__tabs">
+        {ADMIN_TABS.map(({ id, label, icon: Icon }) => (
+          <button
+            key={id}
+            type="button"
+            className={`admin-dashboard__tab ${
+              activeTab === id ? 'admin-dashboard__tab--active' : ''
+            }`}
+            onClick={() => setActiveTab(id)}
+            aria-pressed={activeTab === id}
+          >
+            <Icon size={18} />
+            <span>{label}</span>
+          </button>
+        ))}
+      </div>
 
-      {/* === ТАБЛИЦА ЗАПИСЕЙ === */}
-      <section className="admin-dashboard__section">
-        <div className="admin-dashboard__section-header">
-          <h2>
-            Записи ({filteredAndSortedBookings.length} из {bookings.length})
-          </h2>
-          {activeFiltersCount > 0 && (
-            <span className="admin-dashboard__filter-badge">
-              Фильтров: {activeFiltersCount}
-            </span>
-          )}
-        </div>
+      {/* === КОНТЕНТ АКТИВНОГО ТАБА === */}
+      <div className="admin-dashboard__content">
+        {/* --- ТАБ: ЗАПИСИ --- */}
+        {activeTab === 'bookings' && (
+          <>
+            <AdminFilterPanel
+              filters={filters}
+              sortBy={sortBy}
+              specialists={specialists}
+              onFilterChange={handleFilterChange}
+              onSortChange={setSortBy}
+              onReset={handleResetFilters}
+              activeCount={activeFiltersCount}
+            />
+            <AdminBookingsTable
+              bookings={sortedBookings}
+              services={services}
+              specialists={specialists}
+              onUpdateBooking={onUpdateBooking}
+              onCancelBooking={onCancelBooking}
+            />
+          </>
+        )}
 
-        {filteredAndSortedBookings.length === 0 ? (
-          <EmptyState
-            title={
-              bookings.length === 0
-                ? 'Записей пока нет'
-                : 'Записи не найдены'
-            }
-            description={
-              bookings.length === 0
-                ? 'Создайте первую запись на вкладке «Запись»'
-                : 'Попробуйте изменить параметры фильтрации'
-            }
-            actionLabel={bookings.length > 0 ? 'Сбросить фильтры' : null}
-            onAction={bookings.length > 0 ? handleResetFilters : null}
-            variant="info"
-          />
-        ) : (
-          <AdminBookingsTable
-            bookings={filteredAndSortedBookings}
+        {/* --- ТАБ: УСЛУГИ --- */}
+        {activeTab === 'services' && (
+          <AdminServicesList
             services={services}
-            specialists={specialists}
-            onEdit={handleOpenEdit}
-            onCancel={handleCancel}
+            onAdd={onAddService}
+            onUpdate={onUpdateService}
+            onDelete={onDeleteService}
           />
         )}
-      </section>
 
-      {/* === МОДАЛКА РЕДАКТИРОВАНИЯ === */}
-      <BookingEditModal
-        booking={editingBooking}
-        services={services}
-        specialists={specialists}
-        bookings={bookings}
-        onClose={handleCloseEdit}
-        onSave={handleSaveEdit}
-      />
+        {/* --- ТАБ: СПЕЦИАЛИСТЫ --- */}
+        {activeTab === 'specialists' && (
+          <AdminSpecialistsList
+            specialists={specialists}
+            services={services}
+            onAdd={onAddSpecialist}
+            onUpdate={onUpdateSpecialist}
+            onDelete={onDeleteSpecialist}
+          />
+        )}
+      </div>
     </div>
   );
 }

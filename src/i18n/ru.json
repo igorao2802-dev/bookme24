@@ -1,0 +1,280 @@
+{
+  "nav": {
+    "booking": "Запись",
+    "catalog": "Каталог",
+    "manager": "Менеджер",
+    "profile": "Кабинет"
+  },
+  "common": {
+    "save": "Сохранить",
+    "cancel": "Отмена",
+    "delete": "Удалить",
+    "edit": "Редактировать",
+    "close": "Закрыть",
+    "back": "Назад",
+    "next": "Далее",
+    "confirm": "Подтвердить",
+    "search": "Поиск",
+    "reset": "Сбросить",
+    "resetFilters": "Сбросить фильтры",
+    "loading": "Загрузка...",
+    "noData": "Нет данных",
+    "error": "Ошибка",
+    "success": "Успешно",
+    "warning": "Внимание",
+    "info": "Информация",
+    "yes": "Да",
+    "no": "Нет",
+    "or": "или",
+    "and": "и",
+    "all": "Все",
+    "none": "Ничего",
+    "role": "Роль",
+    "client": "Клиент",
+    "manager": "Менеджер",
+    "mainNavigation": "Главная навигация",
+    "locale": "ru-RU",
+    "serviceNotFound": "Услуга не найдена",
+    "specialistNotSpecified": "Мастер не указан",
+    "unknown": "Неизвестно"
+  },
+  "status": {
+    "pending": "Ожидает",
+    "confirmed": "Подтверждена",
+    "inProgress": "В процессе",
+    "completed": "Завершена",
+    "cancelled": "Отменена"
+  },
+  "booking": {
+    "title": "📝 Запись на услугу",
+    "subtitle": "Запишитесь за 5 простых шагов — это займёт не более 2 минут",
+    "serviceSelected": "Выбрана услуга: {name}",
+    "serviceNotFound": "Выбранная услуга не найдена",
+    "specialistSelected": "Выбран специалист: {name}",
+    "steps": {
+      "service": "Услуга",
+      "specialist": "Мастер",
+      "datetime": "Дата и время",
+      "contacts": "Контакты",
+      "confirm": "Подтверждение"
+    },
+    "buttons": {
+      "next": "Далее",
+      "back": "Назад",
+      "confirm": "Подтвердить запись",
+      "selectTime": "Выбрать время",
+      "selectDate": "Выбрать дату",
+      "newBooking": "Новая запись"
+    },
+    "validation": {
+      "selectService": "Пожалуйста, выберите услугу",
+      "selectSpecialist": "Пожалуйста, выберите специалиста",
+      "selectDateTime": "Пожалуйста, выберите дату и время"
+    },
+    "confirmation": {
+      "title": "Подтверждение записи",
+      "intro": "Проверьте данные перед подтверждением:",
+      "service": "Услуга:",
+      "specialist": "Мастер:",
+      "date": "Дата:",
+      "time": "Время:",
+      "client": "Клиент:",
+      "phone": "Телефон:",
+      "email": "Email:",
+      "comment": "Комментарий:",
+      "total": "К оплате:",
+      "success": "Запись создана! {service}, {time}",
+      "failed": "Не удалось создать запись",
+      "error": "Произошла ошибка при создании записи"
+    },
+    "draft": {
+      "restored": "Черновик формы восстановлен"
+    },
+    "myBookings": {
+      "title": "📋 Мои записи",
+      "upcoming": "Предстоящие",
+      "history": "История",
+      "empty": "У вас пока нет предстоящих записей",
+      "emptyDescription": "Запишитесь на первую услугу салона «Здоровье и красота»",
+      "bookNow": "Записаться сейчас",
+      "created": "Запись успешно создана!"
+    }
+  },
+  "catalog": {
+    "title": "📋 Каталог услуг и специалистов",
+    "subtitle": "{services} услуг • {specialists} мастеров • салон «Здоровье и красота»",
+    "tabs": {
+      "services": "Услуги",
+      "specialists": "Специалисты",
+      "favorites": "Избранное"
+    },
+    "search": {
+      "service": "Поиск по названию услуги...",
+      "specialist": "Поиск по имени мастера...",
+      "placeholder": "Поиск по названию..."
+    },
+    "empty": {
+      "services": "Услуги не найдены",
+      "servicesDescription": "Попробуйте изменить параметры поиска или выбрать другую категорию",
+      "specialists": "Специалисты не найдены",
+      "specialistsDescription": "Попробуйте изменить параметры поиска"
+    },
+    "buttons": {
+      "book": "Записаться",
+      "addToFavorites": "Добавить в избранное",
+      "removeFromFavorites": "Убрать из избранного",
+      "resetFilters": "Сбросить фильтры"
+    },
+    "specialist": {
+      "experience": "Стаж {years} лет",
+      "services": "Услуги мастера"
+    },
+    "favorites": {
+      "empty": "В избранном пока пусто",
+      "emptyDescription": "Добавляйте услуги и специалистов в избранное, чтобы быстро находить их позже",
+      "services": "Избранные услуги",
+      "specialists": "Избранные специалисты"
+    },
+    "categories": {
+      "all": "Все категории",
+      "hair": "Волосы",
+      "nails": "Ногти",
+      "massage": "Массаж",
+      "cosmetology": "Косметология",
+      "spa": "SPA"
+    }
+  },
+  "admin": {
+    "title": "Панель администратора",
+    "tabs": {
+      "bookings": "Записи",
+      "services": "Услуги",
+      "specialists": "Специалисты"
+    },
+    "stats": {
+      "totalBookings": "Всего записей",
+      "today": "Сегодня",
+      "active": "Активных",
+      "cancelled": "Отменённых",
+      "revenue": "Выручка"
+    },
+    "filters": {
+      "title": "Фильтры и поиск",
+      "search": "Поиск",
+      "sort": "Сортировка",
+      "filters": "Фильтры",
+      "searchPlaceholder": "Поиск по ФИО или телефону клиента...",
+      "status": "Статус",
+      "specialist": "Специалист",
+      "allStatuses": "Все статусы",
+      "allSpecialists": "Все мастера",
+      "dateFrom": "С (дата начала)",
+      "dateTo": "По (дата окончания)",
+      "reset": "Сбросить",
+      "notLaterThan": "Не позже",
+      "notEarlierThan": "Не раньше",
+      "selectStartDate": "Выберите начальную дату периода",
+      "selectEndDate": "Выберите конечную дату периода",
+      "dateFromResetWarning": "Дата окончания сброшена, так как она раньше даты начала",
+      "dateToResetWarning": "Дата начала сброшена, так как она позже даты окончания"
+    },
+    "sort": {
+      "dateDesc": "Дата (новые → старые)",
+      "dateAsc": "Дата (старые → новые)",
+      "service": "По услуге",
+      "specialist": "По мастеру",
+      "client": "По клиенту"
+    }
+  },
+  "profile": {
+    "title": "👤 Личный кабинет",
+    "subtitle": "Управление вашими записями и настройками",
+    "sections": {
+      "profile": "📋 Профиль",
+      "stats": "📊 Статистика",
+      "bookings": "📅 Мои записи",
+      "favorites": "❤️ Избранное",
+      "settings": "⚙️ Настройки"
+    },
+    "profile": {
+      "defaultName": "Клиент",
+      "name": "ФИО",
+      "phone": "Телефон",
+      "email": "Email"
+    },
+    "stats": {
+      "total": "Всего записей",
+      "upcoming": "Предстоящих",
+      "confirmed": "Подтверждено",
+      "cancelled": "Отменено",
+      "spent": "Потрачено"
+    },
+    "empty": {
+      "title": "У вас пока нет записей",
+      "description": "Создайте первую запись, чтобы увидеть свой профиль и статистику",
+      "action": "Создать запись"
+    },
+    "bookings": {
+      "cancelSuccess": "Запись отменена",
+      "cancelError": "Не удалось отменить запись",
+      "confirmCancel": "Вы уверены, что хотите отменить запись?"
+    },
+    "history": {
+      "tabs": {
+        "all": "Все",
+        "upcoming": "Предстоящие",
+        "completed": "Завершенные",
+        "cancelled": "Отмененные"
+      },
+      "buttons": {
+        "cancel": "Отменить",
+        "rebook": "Повторить"
+      },
+      "empty": {
+        "all": "У вас пока нет записей",
+        "allDescription": "Создайте первую запись, чтобы увидеть её здесь",
+        "upcoming": "Нет предстоящих записей",
+        "upcomingDescription": "Все ваши записи либо завершены, либо отменены",
+        "completed": "Нет завершенных записей",
+        "completedDescription": "Ваши завершенные записи появятся здесь",
+        "cancelled": "Нет отмененных записей",
+        "cancelledDescription": "Ваши отмененные записи появятся здесь"
+      }
+    },
+    "settings": {
+      "contacts": "Контактные данные",
+      "phone": "Телефон",
+      "email": "Email",
+      "notifications": "Способ уведомлений",
+      "sms": "SMS-напоминания",
+      "emailNotifications": "Email-напоминания",
+      "doNotDisturb": "Не беспокоить",
+      "save": "Сохранить настройки",
+      "clearHistory": "Очистить историю",
+      "logout": "Выйти из аккаунта",
+      "saveSuccess": "Настройки сохранены",
+      "validationError": "Пожалуйста, исправьте ошибки в форме",
+      "clearHistoryInfo": "Функция очистки истории будет реализована через API",
+      "clearHistoryConfirm": "Вы уверены, что хотите удалить все записи старше 30 дней?",
+      "clearHistoryWarning": "Это действие нельзя отменить.",
+      "clearHistorySuccess": "История очищена",
+      "logoutConfirm": "Вы уверены, что хотите выйти из аккаунта?",
+      "logoutWarning": "Вам придётся выбрать роль заново.",
+      "logoutSuccess": "Вы вышли из аккаунта"
+    }
+  },
+  "validation": {
+    "required": "Это поле обязательно",
+    "email": "Некорректный формат email",
+    "phone": "Некорректный формат телефона",
+    "minLength": "Минимальная длина: {min} символов",
+    "maxLength": "Максимальная длина: {max} символов"
+  },
+  "time": {
+    "today": "Сегодня",
+    "tomorrow": "Завтра",
+    "yesterday": "Вчера",
+    "free": "Свободно",
+    "busy": "Занято"
+  }
+}

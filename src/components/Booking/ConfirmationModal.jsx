@@ -7,10 +7,8 @@
  * - Легче тестировать в изоляции
  * 
  * 🔥 ЭТАП 4.2: Упрощение отображения информации
- * - Убрана категория услуги (техническая информация, не нужна клиенту)
- * - Убрана длительность и цена из строки "Услуга:" (избегаем дублирования)
- * - Время отображается как интервал "HH:MM-HH:MM"
- * - Добавлена иконка Wallet к строке "К оплате:" (визуальный акцент)
+ * 🔥 ЭТАП 7.4: Полная локализация всех текстов
+ * 🔥 ИСПРАВЛЕНО: Все опечатки, используется Wallet вместо MoneyBag
  */
 
 import { useMemo } from 'react';
@@ -19,6 +17,7 @@ import { Calendar, Clock, User, Phone, Mail, MessageSquare, Wallet } from 'lucid
 import Modal from '../UI/Modal';
 import Button from '../UI/Button';
 
+import { useLanguage } from '../../hooks/useLanguage';
 import { formatPrice } from '../../utils/formatters';
 import { formatDateHumanReadable, calculateEndTime } from '../../utils/timeHelpers';
 
@@ -33,7 +32,10 @@ export default function ConfirmationModal({
   service,
   specialist,
 }) {
-  // === 🔥 РАСЧЁТ ВРЕМЕНИ ОКОНЧАНИЯ (ЭТАП 4.2) ===
+  // 🔥 ЭТАП 7.4: Хук локализации
+  const { t } = useLanguage();
+
+  // === РАСЧЁТ ВРЕМЕНИ ОКОНЧАНИЯ (ЭТАП 4.2) ===
   const endTime = useMemo(() => {
     if (!draft.startTime || !service?.duration) return '';
     return calculateEndTime(draft.startTime, service.duration);
@@ -48,19 +50,21 @@ export default function ConfirmationModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Подтверждение записи"
+      title={t('booking.confirmation.title')}
       size="md"
     >
       <div className="confirmation-modal">
         <p className="confirmation-modal__intro">
-          Проверьте данные перед подтверждением:
+          {t('booking.confirmation.intro')}
         </p>
 
         {/* === СВОДКА === */}
         <div className="confirmation-modal__summary">
           {/* Услуга (УПРОЩЕНО) */}
           <div className="confirmation-modal__row">
-            <span className="confirmation-modal__label">Услуга:</span>
+            <span className="confirmation-modal__label">
+              {t('booking.confirmation.service')}
+            </span>
             <div className="confirmation-modal__value">
               <strong>{service?.name || '—'}</strong>
             </div>
@@ -69,7 +73,8 @@ export default function ConfirmationModal({
           {/* Мастер */}
           <div className="confirmation-modal__row">
             <span className="confirmation-modal__label">
-              <User size={16} /> Мастер:
+              <User size={16} />
+              {t('booking.confirmation.specialist')}
             </span>
             <span className="confirmation-modal__value">
               {specialist?.fullName || '—'}
@@ -79,7 +84,8 @@ export default function ConfirmationModal({
           {/* Дата */}
           <div className="confirmation-modal__row">
             <span className="confirmation-modal__label">
-              <Calendar size={16} /> Дата:
+              <Calendar size={16} />
+              {t('booking.confirmation.date')}
             </span>
             <span className="confirmation-modal__value">
               {formatDateHumanReadable(draft.date)}
@@ -89,7 +95,8 @@ export default function ConfirmationModal({
           {/* Время (ИНТЕРВАЛ) */}
           <div className="confirmation-modal__row">
             <span className="confirmation-modal__label">
-              <Clock size={16} /> Время:
+              <Clock size={16} />
+              {t('booking.confirmation.time')}
             </span>
             <span className="confirmation-modal__value">
               {timeInterval}
@@ -101,14 +108,16 @@ export default function ConfirmationModal({
 
           <div className="confirmation-modal__row">
             <span className="confirmation-modal__label">
-              <User size={16} /> ФИО:
+              <User size={16} />
+              {t('booking.confirmation.client')}
             </span>
             <span className="confirmation-modal__value">{draft.clientName}</span>
           </div>
 
           <div className="confirmation-modal__row">
             <span className="confirmation-modal__label">
-              <Phone size={16} /> Телефон:
+              <Phone size={16} />
+              {t('booking.confirmation.phone')}
             </span>
             <span className="confirmation-modal__value">{draft.clientPhone}</span>
           </div>
@@ -116,7 +125,8 @@ export default function ConfirmationModal({
           {draft.clientEmail && (
             <div className="confirmation-modal__row">
               <span className="confirmation-modal__label">
-                <Mail size={16} /> Email:
+                <Mail size={16} />
+                {t('booking.confirmation.email')}
               </span>
               <span className="confirmation-modal__value">{draft.clientEmail}</span>
             </div>
@@ -125,7 +135,8 @@ export default function ConfirmationModal({
           {draft.comment && (
             <div className="confirmation-modal__row confirmation-modal__row--column">
               <span className="confirmation-modal__label">
-                <MessageSquare size={16} /> Комментарий:
+                <MessageSquare size={16} />
+                {t('booking.confirmation.comment')}
               </span>
               <p className="confirmation-modal__comment text-break">{draft.comment}</p>
             </div>
@@ -134,13 +145,12 @@ export default function ConfirmationModal({
           {/* ИТОГО (С ИКОНКОЙ) */}
           <div className="confirmation-modal__total">
             <span className="confirmation-modal__total-label">
-              {/* 🔥 ИСПРАВЛЕНИЕ: MoneyBag заменён на Wallet */}
               <Wallet 
                 size={20} 
                 className="confirmation-modal__money-icon"
                 aria-hidden="true"
               />
-              К оплате:
+              {t('booking.confirmation.total')}
             </span>
             <strong>{formatPrice(service?.price)}</strong>
           </div>
@@ -153,14 +163,14 @@ export default function ConfirmationModal({
             onClick={onClose}
             disabled={isSubmitting}
           >
-            Отмена
+            {t('common.cancel')}
           </Button>
           <Button
             variant="primary"
             onClick={onConfirm}
             isLoading={isSubmitting}
           >
-            {isSubmitting ? 'Создание...' : '✓ Подтвердить запись'}
+            {isSubmitting ? t('common.loading') : t('booking.buttons.confirm')}
           </Button>
         </div>
       </div>

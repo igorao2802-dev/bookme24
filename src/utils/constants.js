@@ -67,6 +67,13 @@ export const STORAGE_KEYS = {
   USER_SETTINGS: "bookme24_user_settings",
   BONUS_BALANCE: "bookme24_bonus_balance",
   BONUS_HISTORY: "bookme24_bonus_history",
+  // 🔥 ЭТАП 6.3: Кастомные данные администратора
+  // ПОЧЕМУ отдельные ключи, а не перезапись SERVICES/SPECIALISTS?
+  // - JSON-данные остаются неизменными (источник истины)
+  // - При обновлении приложения JSON не потеряется
+  // - Легко откатить изменения администратора (удалить ключ)
+  CUSTOM_SERVICES: "bookme24_custom_services",
+  CUSTOM_SPECIALISTS: "bookme24_custom_specialists",
 };
 
 // === БИЗНЕС-КОНСТАНТЫ ===

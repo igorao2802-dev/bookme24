@@ -1,14 +1,16 @@
 /**
  * Стили для Layout
+ * 
  * ПОЧЕМУ BEM-нотация (layout__header, layout__nav-link--active)?
- * Избегаем конфликтов стилей между компонентами
- * Читаемая структура: блок__элемент--модификатор
+ * - Избегаем конфликтов стилей между компонентами
+ * - Читаемая структура: блок__элемент--модификатор
+ * 
+ * 🔥 ЭТАП 4.1: Hover/Active/Focus-visible для навигации
+ * 🔥 ЭТАП 7.2: Группа переключателей (тема + язык + роль)
+ * 🔥 ЭТАП 7.3: Полная интеграция с локализацией
  */
 
-/*
- * Стили для Layout
- * BEM-методология + гарантированная читаемость на всех состояниях
- */
+/* === ОСНОВНОЙ КОНТЕЙНЕР === */
 .layout {
   display: flex;
   flex-direction: column;
@@ -18,7 +20,7 @@
 .layout__container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 var(--spacing-md);
+  padding: 0 var(--spacing-md, 16px);
   width: 100%;
 }
 
@@ -29,11 +31,11 @@
 .layout__header {
   background: linear-gradient(
     135deg,
-    var(--color-primary-600) 0%,
-    var(--color-primary-700) 100%
+    var(--color-primary-600, #9c7558) 0%,
+    var(--color-primary-700, #7f5e44) 100%
   );
-  color: var(--color-text-inverse);
-  padding: var(--spacing-md) 0;
+  color: var(--color-text-inverse, #ffffff);
+  padding: var(--spacing-md, 16px) 0;
   box-shadow: var(--shadow-md);
   position: sticky;
   top: 0;
@@ -44,54 +46,59 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: var(--spacing-md);
+  gap: var(--spacing-md, 16px);
   flex-wrap: wrap;
 }
 
-/* Логотип */
+/* === ЛОГОТИП === */
 .layout__logo {
-  font-size: var(--font-size-xl);
+  font-size: var(--font-size-xl, 1.5rem);
   font-weight: 700;
-  color: var(--color-text-inverse);
+  color: var(--color-text-inverse, #ffffff);
   text-decoration: none;
   border-bottom: none;
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
-  transition: opacity var(--transition-fast);
+  gap: var(--spacing-sm, 8px);
+  transition: opacity var(--transition-fast, 150ms ease);
 }
 
 .layout__logo:hover {
-  color: var(--color-text-inverse);
+  color: var(--color-text-inverse, #ffffff);
   opacity: 0.9;
   border-bottom: none;
 }
 
-/* Навигация */
+/* === НАВИГАЦИЯ === */
 .layout__nav {
   display: flex;
-  gap: var(--spacing-sm);
+  gap: var(--spacing-sm, 8px);
   align-items: center;
+  flex: 1;
+  justify-content: center;
 }
 
-/* ПОЧЕМУ такие цвета ссылок?
-   Белый текст на тёмном терракотовом — контраст 8.5:1.
-   При ховере добавляем полупрозрачную подложку, а НЕ меняем цвет текста.
-   Так текст никогда не «пропадёт». */
+/* 
+  ПОЧЕМУ такие цвета ссылок?
+  Белый текст на тёмном терракотовом — контраст 8.5:1 (WCAG AAA).
+  При ховере добавляем полупрозрачную подложку, а НЕ меняем цвет текста.
+  Так текст никогда не «пропадёт».
+*/
 .layout__nav-link {
-  color: var(--color-text-inverse);
+  color: var(--color-text-inverse, #ffffff);
   text-decoration: none;
   border-bottom: none;
-  padding: var(--spacing-sm) var(--spacing-md);
-  border-radius: var(--radius-md);
+  padding: var(--spacing-sm, 8px) var(--spacing-md, 16px);
+  border-radius: var(--radius-md, 8px);
   font-weight: 500;
   background-color: transparent;
+  white-space: nowrap;
 
-  /* 🔥 ЭТАП 4.1: Расширенный transition для всех состояний */
-  /* ПОЧЕМУ all, а не только background-color?
-     Нужно анимировать transform (при active) и outline (при focus-visible).
-     Если оставить только background-color, эффект нажатия будет мгновенным,
-     без плавности. */
+  /* 
+    ПОЧЕМУ transition для нескольких свойств?
+    Нужно анимировать background-color (hover), 
+    transform (active) и outline (focus-visible).
+  */
   transition:
     background-color var(--transition-fast, 150ms ease),
     transform var(--transition-fast, 150ms ease),
@@ -99,35 +106,23 @@
 }
 
 /* 🔥 ЭТАП 4.1: Состояние HOVER */
-/* ПОЧЕМУ rgba(255, 255, 255, 0.15)?
-   Полупрозрачный белый создаёт эффект "подсветки" без изменения цвета текста.
-   Это сохраняет контраст 8.5:1 и выглядит премиально. */
 .layout__nav-link:hover {
   background-color: rgba(255, 255, 255, 0.15);
-  color: var(--color-text-inverse);
+  color: var(--color-text-inverse, #ffffff);
   border-bottom: none;
 }
 
 /* 🔥 ЭТАП 4.1: Состояние ACTIVE (нажатие мышкой) */
-/* ПОЧЕМУ scale(0.97), а не translateY(1px)?
-   scale создаёт эффект "вдавливания" во все стороны — более естественно
-   для кнопок. translateY двигает только вниз, что выглядит менее органично.
-   0.97 = уменьшение на 3%, достаточно заметно, но не резко. */
 .layout__nav-link:active {
   transform: scale(0.97);
   background-color: rgba(255, 255, 255, 0.25);
-  color: var(--color-text-inverse);
+  color: var(--color-text-inverse, #ffffff);
   border-bottom: none;
 }
 
 /* 🔥 ЭТАП 4.1: Состояние FOCUS-VISIBLE (клавиатурная навигация) */
-/* ПОЧЕМУ :focus-visible, а не :focus?
-   :focus срабатывает и при клике мышкой, и при Tab.
-   :focus-visible срабатывает ТОЛЬКО при клавиатурной навигации (Tab).
-   Это современный стандарт A11y: фокус виден только тем, кто использует клавиатуру.
-   Пользователи мыши не видят раздражающий outline при каждом клике. */
 .layout__nav-link:focus-visible {
-  outline: 2px solid var(--color-text-inverse);
+  outline: 2px solid var(--color-text-inverse, #ffffff);
   outline-offset: 2px;
   background-color: rgba(255, 255, 255, 0.15);
 }
@@ -138,33 +133,50 @@
   font-weight: 600;
 }
 
-/* Переключатель роли */
+/* ═══════════════════════════════════════════════
+   🔥 ГРУППА ПЕРЕКЛЮЧАТЕЛЕЙ (ЭТАП 7.2 + 7.3)
+   Контейнер для ThemeToggle + LanguageToggle + RoleSwitcher
+   ═══════════════════════════════════════════════ */
+.layout__controls {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm, 8px);
+  margin-left: auto; /* Прижимает группу к правому краю */
+}
+
+/* === ПЕРЕКЛЮЧАТЕЛЬ РОЛИ === */
 .layout__role-switcher {
   display: flex;
   align-items: center;
 }
 
 .layout__role-label {
-  color: var(--color-text-inverse);
-  font-size: var(--font-size-sm);
+  color: var(--color-text-inverse, #ffffff);
+  font-size: var(--font-size-sm, 0.875rem);
   display: flex;
   align-items: center;
-  gap: var(--spacing-xs);
+  gap: var(--spacing-xs, 4px);
+  white-space: nowrap;
 }
 
 .layout__role-select {
-  padding: var(--spacing-xs) var(--spacing-sm);
-  border-radius: var(--radius-md);
+  padding: var(--spacing-xs, 4px) var(--spacing-sm, 8px);
+  border-radius: var(--radius-md, 8px);
   border: 1px solid rgba(255, 255, 255, 0.3);
   background-color: rgba(255, 255, 255, 0.95);
-  color: var(--color-text);
-  font-size: var(--font-size-sm);
+  color: var(--color-text, #2d2419);
+  font-size: var(--font-size-sm, 0.875rem);
   cursor: pointer;
-  transition: border-color var(--transition-fast);
+  transition: border-color var(--transition-fast, 150ms ease);
 }
 
 .layout__role-select:hover {
   border-color: rgba(255, 255, 255, 0.7);
+}
+
+.layout__role-select:focus-visible {
+  outline: 2px solid var(--color-text-inverse, #ffffff);
+  outline-offset: 2px;
 }
 
 /* ═══════════════════════════════════════════════
@@ -172,7 +184,7 @@
    ═══════════════════════════════════════════════ */
 .layout__main {
   flex: 1;
-  padding: var(--spacing-xl) 0;
+  padding: var(--spacing-xl, 32px) 0;
 }
 
 /* ═══════════════════════════════════════════════
@@ -180,60 +192,123 @@
    Глубокий тёплый коричневый — элегантно
    ═══════════════════════════════════════════════ */
 .layout__footer {
-  background-color: var(--color-neutral-900);
-  color: var(--color-neutral-100);
-  padding: var(--spacing-2xl) 0 var(--spacing-xl);
+  background-color: var(--color-neutral-900, #251b14);
+  color: var(--color-neutral-100, #f2ebe0);
+  padding: var(--spacing-2xl, 48px) 0 var(--spacing-xl, 32px);
   margin-top: auto;
 }
 
 .layout__footer-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: var(--spacing-lg);
+  gap: var(--spacing-lg, 24px);
 }
 
 .layout__footer-col h4 {
-  margin-bottom: var(--spacing-sm);
-  font-size: var(--font-size-lg);
-  color: var(--color-text-inverse);
+  margin-bottom: var(--spacing-sm, 8px);
+  font-size: var(--font-size-lg, 1.125rem);
+  color: var(--color-text-inverse, #ffffff);
 }
 
-/* ПОЧЕМУ не чисто белый?
-   На тёмно-коричневом чистый белый «режет» глаза.
-   Кремовый #F2EBE0 даёт контраст 12.8:1 — читается отлично,
-   но выглядит теплее и премиальнее. */
+/* 
+  ПОЧЕМУ не чисто белый текст?
+  На тёмно-коричневом чистый белый «режет» глаза.
+  Кремовый #F2EBE0 даёт контраст 12.8:1 — читается отлично,
+  но выглядит теплее и премиальнее.
+*/
 .layout__footer-col p {
-  color: var(--color-neutral-100);
-  font-size: var(--font-size-sm);
-  margin-bottom: var(--spacing-xs);
+  color: var(--color-neutral-100, #f2ebe0);
+  font-size: var(--font-size-sm, 0.875rem);
+  margin-bottom: var(--spacing-xs, 4px);
   opacity: 0.85;
 }
 
 .layout__footer-col a {
-  color: var(--color-primary-200);
+  color: var(--color-primary-200, #eacfb5);
   border-bottom: none;
+  text-decoration: none;
 }
 
 .layout__footer-col a:hover {
-  color: var(--color-primary-100);
-  border-bottom: 1px solid var(--color-primary-100);
+  color: var(--color-primary-100, #f5e6d3);
+  border-bottom: 1px solid var(--color-primary-100, #f5e6d3);
 }
 
 /* ═══════════════════════════════════════════════
    📱 АДАПТИВНОСТЬ
    ═══════════════════════════════════════════════ */
+
+/* === ПЛАНШЕТЫ И МАЛЕНЬКИЕ ДЕСКТОПЫ === */
 @media (max-width: 768px) {
   .layout__header .layout__container {
     flex-direction: column;
     align-items: stretch;
   }
 
+  .layout__brand {
+    text-align: center;
+    margin-bottom: var(--spacing-sm, 8px);
+  }
+
+  .layout__logo {
+    justify-content: center;
+  }
+
   .layout__nav {
     justify-content: center;
     flex-wrap: wrap;
+    margin-bottom: var(--spacing-sm, 8px);
+  }
+
+  /* Группа переключателей переносится на новую строку */
+  .layout__controls {
+    width: 100%;
+    justify-content: center;
+    margin-left: 0;
+    margin-top: var(--spacing-sm, 8px);
+    padding-top: var(--spacing-sm, 8px);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* === МОБИЛЬНЫЕ УСТРОЙСТВА === */
+@media (max-width: 480px) {
+  .layout__nav-link {
+    padding: var(--spacing-xs, 4px) var(--spacing-sm, 8px);
+    font-size: var(--font-size-sm, 0.875rem);
+  }
+
+  /* Переключатели переносятся вертикально */
+  .layout__controls {
+    flex-wrap: wrap;
+    gap: var(--spacing-xs, 4px);
   }
 
   .layout__role-switcher {
+    width: 100%;
     justify-content: center;
+  }
+
+  .layout__role-label {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .layout__footer-grid {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+}
+
+/* === ДОСТУПНОСТЬ: prefers-reduced-motion === */
+@media (prefers-reduced-motion: reduce) {
+  .layout__nav-link,
+  .layout__logo,
+  .layout__role-select {
+    transition: none;
+  }
+
+  .layout__nav-link:active {
+    transform: none;
   }
 }

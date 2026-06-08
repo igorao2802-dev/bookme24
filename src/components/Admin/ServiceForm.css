@@ -1,0 +1,80 @@
+/**
+ * Стили для ServiceForm (форма услуги)
+ * BEM-методология + адаптивность
+ * 
+ * 🔥 ЭТАП 6.3: Стили формы добавления/редактирования услуги
+ */
+
+/* === ОСНОВНОЙ КОНТЕЙНЕР === */
+.service-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md, 16px);
+  padding: var(--spacing-lg, 24px);
+}
+
+/* === ЗАГОЛОВОК === */
+.service-form__title {
+  font-size: var(--font-size-xl, 1.5rem);
+  font-weight: 600;
+  color: var(--color-text, #3d2f26);
+  margin: 0 0 var(--spacing-sm, 8px) 0;
+  padding-bottom: var(--spacing-sm, 8px);
+  border-bottom: 1px solid var(--color-border, #e8dcc4);
+}
+
+/* === ПОЛЕ С TEXTAREA === */
+.service-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs, 4px);
+}
+
+/* === СЧЁТЧИК СИМВОЛОВ === */
+.service-form__counter {
+  font-size: var(--font-size-xs, 0.75rem);
+  color: var(--color-text-muted, #6b5d4f);
+  text-align: right;
+}
+
+/* === СТРОКА С ДВУМЯ ПОЛЯМИ === */
+/* ПОЧЕМУ grid, а не flex?
+   - Grid гарантирует одинаковую ширину (1fr 1fr)
+   - Автоматический перенос на мобильных (через media query)
+*/
+.service-form__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-md, 16px);
+}
+
+/* === КНОПКИ ДЕЙСТВИЙ === */
+.service-form__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-sm, 8px);
+  padding-top: var(--spacing-md, 16px);
+  border-top: 1px solid var(--color-border, #e8dcc4);
+  margin-top: var(--spacing-sm, 8px);
+}
+
+/* === АДАПТИВНОСТЬ === */
+@media (max-width: 640px) {
+  .service-form {
+    padding: var(--spacing-md, 16px);
+  }
+
+  /* На мобильных — поля в одну колонку */
+  .service-form__row {
+    grid-template-columns: 1fr;
+  }
+
+  /* Кнопки на всю ширину */
+  .service-form__actions {
+    flex-direction: column-reverse;
+  }
+
+  .service-form__actions button {
+    width: 100%;
+  }
+}

@@ -12,17 +12,14 @@
  * - В личном кабинете — это отдельная секция среди других (профиль, статистика, записи)
  * - Разный UX: в кабинете нужен заголовок секции и своё EmptyState
  * 
- *  ЭТАП 5.4: Реализация раздела избранного в личном кабинете
- * - Синхронизация с каталогом через общий ключ localStorage
- * - Кнопки "Записаться" ведут на нужный шаг BookingWizard
- * - Кнопка "Удалить из избранного" (сердечко) работает через onToggleFavorite
+ * 🔥 ЭТАП 5.4: Реализация раздела избранного в личном кабинете
+ * 🔥 ЭТАП 7.7: Локализация всех текстов
  */
 
 import { Heart } from 'lucide-react';
-
+import { useLanguage } from '../../hooks/useLanguage'; // 🔥 ЭТАП 7.7
 import FavoritesList from '../Catalog/FavoritesList';
 import EmptyState from '../UI/EmptyState';
-
 import './FavoritesSection.css';
 
 export default function FavoritesSection({
@@ -33,11 +30,9 @@ export default function FavoritesSection({
   onBookService,
   onBookSpecialist,
 }) {
+  const { t } = useLanguage(); // 🔥 ЭТАП 7.7
+
   // === ФИЛЬТРАЦИЯ ИЗБРАННЫХ ЭЛЕМЕНТОВ ===
-  // ПОЧЕМУ useMemo не используем?
-  // - Фильтрация быстрая (массив services обычно < 50 элементов)
-  // - favorites меняется нечасто
-  // - useMemo добавит сложности без заметной выгоды
   const favoriteServices = services.filter((s) => favorites.includes(s.id));
   const favoriteSpecialists = specialists.filter((s) => favorites.includes(s.id));
 
@@ -45,21 +40,17 @@ export default function FavoritesSection({
   const totalCount = favoriteServices.length + favoriteSpecialists.length;
 
   // === ПУСТОЕ СОСТОЯНИЕ ===
-  // ПОЧЕМУ своё EmptyState, а не из FavoritesList?
-  // - В личном кабинете другой контекст: пользователь уже знает про избранное
-  // - Нужно объяснить, ГДЕ добавлять в избранное (в каталоге)
-  // - Визуально должно соответствовать другим секциям ProfilePage
   if (isEmpty) {
     return (
       <section className="favorites-section">
         <h2 className="favorites-section__title">
           <Heart size={24} />
-          Избранное
+          {t('profile.sections.favorites')} {/* 🔥 ЭТАП 7.7 */}
         </h2>
         <EmptyState
           icon={<Heart size={48} />}
-          title="В избранном пока пусто"
-          description="Перейдите в каталог и нажмите на сердечко у понравившихся услуг или мастеров"
+          title={t('catalog.favorites.empty')} {/* 🔥 ЭТАП 7.7 */}
+          description={t('catalog.favorites.emptyDescription')} {/* 🔥 ЭТАП 7.7 */}
           variant="info"
         />
       </section>
@@ -71,7 +62,7 @@ export default function FavoritesSection({
     <section className="favorites-section">
       <h2 className="favorites-section__title">
         <Heart size={24} />
-        Избранное
+        {t('profile.sections.favorites')} {/* 🔥 ЭТАП 7.7 */}
         <span className="favorites-section__count">
           ({totalCount})
         </span>

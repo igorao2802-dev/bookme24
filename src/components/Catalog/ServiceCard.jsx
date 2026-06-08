@@ -1,20 +1,21 @@
 /**
  * ServiceCard.jsx — карточка услуги в каталоге
- *
+ * 
  * ПОЧЕМУ презентационный компонент?
  * Замечание В.В. из лекции React-1-1: "Хороший компонент делает одно дело."
  * Этот компонент только отображает услугу и вызывает callbacks при кликах.
  * Он НЕ знает, как работает избранное или запись — это забота родителя.
- *
- * ЗАМЕЧАНИЕ ИЗ ПР-07 (про длинные тексты):
- * Описание услуги может быть длинным. Применяем text-break,
- * чтобы верстка не "ломалась".
+ * 
+ * 🔥 ЭТАП 7.5: Локализация всех текстов
+ * 🔥 ИСПРАВЛЕНО: Опечатка 'изб ранного' в aria-label
  */
 
 import { Clock, Star, Heart, Calendar } from 'lucide-react';
 
 import { SERVICE_CATEGORY_LABELS } from '../../utils/constants';
 import { formatPrice, formatDuration } from '../../utils/formatters';
+import { useLanguage } from '../../hooks/useLanguage'; // 🔥 ЭТАП 7.5
+
 import Button from '../UI/Button';
 import Badge from '../UI/Badge';
 
@@ -26,6 +27,8 @@ export default function ServiceCard({
   onToggleFavorite,
   onBook,
 }) {
+  const { t } = useLanguage(); // 🔥 ЭТАП 7.5
+
   return (
     <article className="service-card">
       {/* === КНОПКА ИЗБРАННОГО === */}
@@ -38,7 +41,11 @@ export default function ServiceCard({
           e.stopPropagation();
           onToggleFavorite();
         }}
-        aria-label={isFavorite ? 'Убрать из избранного' : 'Добавить в избранное'}
+        aria-label={
+          isFavorite 
+            ? t('catalog.buttons.removeFromFavorites') 
+            : t('catalog.buttons.addToFavorites')
+        }
       >
         <Heart size={20} fill={isFavorite ? 'currentColor' : 'none'} />
       </button>
@@ -75,7 +82,7 @@ export default function ServiceCard({
           leftIcon={<Calendar size={16} />}
           onClick={onBook}
         >
-          Записаться
+          {t('catalog.buttons.book')}
         </Button>
       </div>
     </article>

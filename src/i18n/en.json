@@ -1,0 +1,280 @@
+{
+  "nav": {
+    "booking": "Booking",
+    "catalog": "Catalog",
+    "manager": "Manager",
+    "profile": "Profile"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "confirm": "Confirm",
+    "search": "Search",
+    "reset": "Reset",
+    "resetFilters": "Reset Filters",
+    "loading": "Loading...",
+    "noData": "No data",
+    "error": "Error",
+    "success": "Success",
+    "warning": "Warning",
+    "info": "Info",
+    "yes": "Yes",
+    "no": "No",
+    "or": "or",
+    "and": "and",
+    "all": "All",
+    "none": "None",
+    "role": "Role",
+    "client": "Client",
+    "manager": "Manager",
+    "mainNavigation": "Main navigation",
+    "locale": "en-US",
+    "serviceNotFound": "Service not found",
+    "specialistNotSpecified": "Specialist not specified",
+    "unknown": "Unknown"
+  },
+  "status": {
+    "pending": "Pending",
+    "confirmed": "Confirmed",
+    "inProgress": "In Progress",
+    "completed": "Completed",
+    "cancelled": "Cancelled"
+  },
+  "booking": {
+    "title": "📝 Book a Service",
+    "subtitle": "Book in 5 simple steps — it will take no more than 2 minutes",
+    "serviceSelected": "Service selected: {name}",
+    "serviceNotFound": "Selected service not found",
+    "specialistSelected": "Specialist selected: {name}",
+    "steps": {
+      "service": "Service",
+      "specialist": "Specialist",
+      "datetime": "Date & Time",
+      "contacts": "Contacts",
+      "confirm": "Confirmation"
+    },
+    "buttons": {
+      "next": "Next",
+      "back": "Back",
+      "confirm": "Confirm Booking",
+      "selectTime": "Select Time",
+      "selectDate": "Select Date",
+      "newBooking": "New Booking"
+    },
+    "validation": {
+      "selectService": "Please select a service",
+      "selectSpecialist": "Please select a specialist",
+      "selectDateTime": "Please select date and time"
+    },
+    "confirmation": {
+      "title": "Booking Confirmation",
+      "intro": "Please check your details before confirming:",
+      "service": "Service:",
+      "specialist": "Specialist:",
+      "date": "Date:",
+      "time": "Time:",
+      "client": "Client:",
+      "phone": "Phone:",
+      "email": "Email:",
+      "comment": "Comment:",
+      "total": "Total:",
+      "success": "Booking created! {service}, {time}",
+      "failed": "Failed to create booking",
+      "error": "An error occurred while creating the booking"
+    },
+    "draft": {
+      "restored": "Form draft restored"
+    },
+    "myBookings": {
+      "title": "📋 My Bookings",
+      "upcoming": "Upcoming",
+      "history": "History",
+      "empty": "You have no upcoming bookings",
+      "emptyDescription": "Book your first service at Health & Beauty salon",
+      "bookNow": "Book Now",
+      "created": "Booking successfully created!"
+    }
+  },
+  "catalog": {
+    "title": "📋 Services & Specialists Catalog",
+    "subtitle": "{services} services • {specialists} specialists • Health & Beauty salon",
+    "tabs": {
+      "services": "Services",
+      "specialists": "Specialists",
+      "favorites": "Favorites"
+    },
+    "search": {
+      "service": "Search by service name...",
+      "specialist": "Search by specialist name...",
+      "placeholder": "Search by name..."
+    },
+    "empty": {
+      "services": "No services found",
+      "servicesDescription": "Try changing search parameters or selecting a different category",
+      "specialists": "No specialists found",
+      "specialistsDescription": "Try changing search parameters"
+    },
+    "buttons": {
+      "book": "Book Now",
+      "addToFavorites": "Add to favorites",
+      "removeFromFavorites": "Remove from favorites",
+      "resetFilters": "Reset Filters"
+    },
+    "specialist": {
+      "experience": "{years} years exp.",
+      "services": "Services"
+    },
+    "favorites": {
+      "empty": "Your favorites list is empty",
+      "emptyDescription": "Add services and specialists to favorites to find them quickly later",
+      "services": "Favorite services",
+      "specialists": "Favorite specialists"
+    },
+    "categories": {
+      "all": "All categories",
+      "hair": "Hair",
+      "nails": "Nails",
+      "massage": "Massage",
+      "cosmetology": "Cosmetology",
+      "spa": "SPA"
+    }
+  },
+  "admin": {
+    "title": "Admin Dashboard",
+    "tabs": {
+      "bookings": "Bookings",
+      "services": "Services",
+      "specialists": "Specialists"
+    },
+    "stats": {
+      "totalBookings": "Total Bookings",
+      "today": "Today",
+      "active": "Active",
+      "cancelled": "Cancelled",
+      "revenue": "Revenue"
+    },
+    "filters": {
+      "title": "Filters & Search",
+      "search": "Search",
+      "sort": "Sort",
+      "filters": "Filters",
+      "searchPlaceholder": "Search by name or phone...",
+      "status": "Status",
+      "specialist": "Specialist",
+      "allStatuses": "All statuses",
+      "allSpecialists": "All specialists",
+      "dateFrom": "From (start date)",
+      "dateTo": "To (end date)",
+      "reset": "Reset",
+      "notLaterThan": "Not later than",
+      "notEarlierThan": "Not earlier than",
+      "selectStartDate": "Select start date",
+      "selectEndDate": "Select end date",
+      "dateFromResetWarning": "End date has been reset because it is earlier than start date",
+      "dateToResetWarning": "Start date has been reset because it is later than end date"
+    },
+    "sort": {
+      "dateDesc": "Date (newest → oldest)",
+      "dateAsc": "Date (oldest → newest)",
+      "service": "By service",
+      "specialist": "By specialist",
+      "client": "By client"
+    }
+  },
+  "profile": {
+    "title": "👤 Personal Profile",
+    "subtitle": "Manage your bookings and settings",
+    "sections": {
+      "profile": "📋 Profile",
+      "stats": "📊 Statistics",
+      "bookings": "📅 My Bookings",
+      "favorites": "❤️ Favorites",
+      "settings": "⚙️ Settings"
+    },
+    "profile": {
+      "defaultName": "Client",
+      "name": "Full Name",
+      "phone": "Phone",
+      "email": "Email"
+    },
+    "stats": {
+      "total": "Total Bookings",
+      "upcoming": "Upcoming",
+      "confirmed": "Confirmed",
+      "cancelled": "Cancelled",
+      "spent": "Spent"
+    },
+    "empty": {
+      "title": "You have no bookings yet",
+      "description": "Create your first booking to see your profile and statistics",
+      "action": "Create Booking"
+    },
+    "bookings": {
+      "cancelSuccess": "Booking cancelled",
+      "cancelError": "Failed to cancel booking",
+      "confirmCancel": "Are you sure you want to cancel this booking?"
+    },
+    "history": {
+      "tabs": {
+        "all": "All",
+        "upcoming": "Upcoming",
+        "completed": "Completed",
+        "cancelled": "Cancelled"
+      },
+      "buttons": {
+        "cancel": "Cancel",
+        "rebook": "Rebook"
+      },
+      "empty": {
+        "all": "You have no bookings yet",
+        "allDescription": "Create your first booking to see it here",
+        "upcoming": "No upcoming bookings",
+        "upcomingDescription": "All your bookings are either completed or cancelled",
+        "completed": "No completed bookings",
+        "completedDescription": "Your completed bookings will appear here",
+        "cancelled": "No cancelled bookings",
+        "cancelledDescription": "Your cancelled bookings will appear here"
+      }
+    },
+    "settings": {
+      "contacts": "Contact Information",
+      "phone": "Phone",
+      "email": "Email",
+      "notifications": "Notification Preferences",
+      "sms": "SMS Reminders",
+      "emailNotifications": "Email Reminders",
+      "doNotDisturb": "Do Not Disturb",
+      "save": "Save Settings",
+      "clearHistory": "Clear History",
+      "logout": "Log Out",
+      "saveSuccess": "Settings saved",
+      "validationError": "Please fix the errors in the form",
+      "clearHistoryInfo": "History clearing feature will be implemented via API",
+      "clearHistoryConfirm": "Are you sure you want to delete all bookings older than 30 days?",
+      "clearHistoryWarning": "This action cannot be undone.",
+      "clearHistorySuccess": "History cleared",
+      "logoutConfirm": "Are you sure you want to log out?",
+      "logoutWarning": "You will need to select your role again.",
+      "logoutSuccess": "You have logged out"
+    }
+  },
+  "validation": {
+    "required": "This field is required",
+    "email": "Invalid email format",
+    "phone": "Invalid phone format",
+    "minLength": "Minimum length: {min} characters",
+    "maxLength": "Maximum length: {max} characters"
+  },
+  "time": {
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "yesterday": "Yesterday",
+    "free": "Free",
+    "busy": "Busy"
+  }
+}

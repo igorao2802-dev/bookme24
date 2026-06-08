@@ -6,35 +6,17 @@
  * Получает данные через props, отправляет изменения через callbacks.
  * 
  * 🔥 ЭТАП 5.5: Реализация раздела настроек
- * - Изменение телефона и email с валидацией
- * - Выбор способа уведомлений (SMS / Email / Не беспокоить)
- * - Очистка истории просмотров
- * - Выход из аккаунта (сброс роли)
- * 
- * ПОЧЕМУ презентационный, а не умный?
- * - Состояние настроек живёт в ProfilePage (через useLocalStorage)
- * - SettingsForm только отображает и вызывает callbacks
- * - Легче тестировать и переиспользовать
+ * 🔥 ЭТАП 7.7: Локализация всех текстов, полей, кнопок и window.confirm
  */
 
 import { useState, useEffect } from 'react';
 import { Phone, Mail, Bell, BellOff, Trash2, LogOut, Save } from 'lucide-react';
-
+import { useLanguage } from '../../hooks/useLanguage'; // 🔥 ЭТАП 7.7
 import Input from '../UI/Input';
 import Button from '../UI/Button';
 import Toast from '../UI/Toast';
-
 import { validatePhone, validateEmail } from '../../utils/validators';
-
 import './SettingsForm.css';
-
-// === ВАРИАНТЫ УВЕДОМЛЕНИЙ ===
-// ПОЧЕМУ массив объектов? Легко рендерить через .map() и расширять
-const NOTIFICATION_OPTIONS = [
-  { value: 'sms', label: 'SMS-напоминания', icon: <Bell size={16} /> },
-  { value: 'email', label: 'Email-напоминания', icon: <Mail size={16} /> },
-  { value: 'none', label: 'Не беспокоить', icon: <BellOff size={16} /> },
-];
 
 export default function SettingsForm({
   settings,
@@ -42,22 +24,26 @@ export default function SettingsForm({
   onClearHistory,
   onLogout,
 }) {
+  const { t } = useLanguage(); // 🔥 ЭТАП 7.7
+
+  // === ВАРИАНТЫ УВЕДОМЛЕНИЙ ===
+  // 🔥 ЭТАП 7.7: label берётся через t()
+  const NOTIFICATION_OPTIONS = [
+    { value: 'sms', label: t('profile.settings.sms'), icon: <Bell size={16} /> },
+    { value: 'email', label: t('profile.settings.emailNotifications'), icon: <Mail size={16} /> },
+    { value: 'none', label: t('profile.settings.doNotDisturb'), icon: <BellOff size={16} /> },
+  ];
+
   // === ЛОКАЛЬНОЕ СОСТОЯНИЕ ФОРМЫ ===
-  // ПОЧЕМУ локальный state, а не прямое редактирование props?
-  // - Пользователь может отменить изменения (кнопка "Отмена")
-  // - Валидация происходит до сохранения
-  // - Изменения применяются только после клика "Сохранить"
   const [formData, setFormData] = useState({
     phone: settings.phone || '',
     email: settings.email || '',
     notification: settings.notification || 'sms',
   });
 
-  // === СОСТОЯНИЕ ОШИБОК ВАЛИДАЦИИ ===
   const [errors, setErrors] = useState({});
 
   // === СИНХРОНИЗАЦИЯ ПРИ ИЗМЕНЕНИИ PROPS ===
-  // ПОЧЕМУ useEffect? Если родитель обновит settings, форма должна обновиться
   useEffect(() => {
     setFormData({
       phone: settings.phone || '',
@@ -69,24 +55,20 @@ export default function SettingsForm({
   // === ОБРАБОТЧИК ИЗМЕНЕНИЯ ПОЛЕЙ ===
   const handleChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    // Очищаем ошибку при изменении поля
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: null }));
     }
   };
 
   // === ВАЛИДАЦИЯ ФОРМЫ ===
-  // ПОЧЕМУ отдельная функция? Переиспользуется в handleSave
   const validate = () => {
     const newErrors = {};
 
-    // Валидация телефона
     const phoneResult = validatePhone(formData.phone);
     if (!phoneResult.isValid) {
       newErrors.phone = phoneResult.error;
     }
 
-    // Валидация email
     const emailResult = validateEmail(formData.email);
     if (!emailResult.isValid) {
       newErrors.email = emailResult.error;
@@ -99,32 +81,34 @@ export default function SettingsForm({
   // === ОБРАБОТЧИК СОХРАНЕНИЯ ===
   const handleSave = () => {
     if (!validate()) {
-      Toast.error('Пожалуйста, исправьте ошибки в форме');
+      Toast.error(t('profile.settings.validationError')); // 🔥 ЭТАП 7.7
       return;
     }
 
     onSave(formData);
-    Toast.success('Настройки сохранены');
+    Toast.success(t('profile.settings.saveSuccess')); // 🔥 ЭТАП 7.7
   };
 
   // === ОБРАБОТЧИК ОЧИСТКИ ИСТОРИИ ===
   const handleClearHistory = () => {
+    // 🔥 ЭТАП 7.7: Локализованный window.confirm
     const confirmed = window.confirm(
-      'Вы уверены, что хотите удалить все записи старше 30 дней?\n\n' +
-      'Это действие нельзя отменить.'
+      `${t('profile.settings.clearHistoryConfirm')}\n\n` +
+        `${t('profile.settings.clearHistoryWarning')}`
     );
 
     if (confirmed) {
       onClearHistory();
-      Toast.success('История очищена');
+      Toast.success(t('profile.settings.clearHistorySuccess')); // 🔥 ЭТАП 7.7
     }
   };
 
   // === ОБРАБОТЧИК ВЫХОДА ===
   const handleLogout = () => {
+    // 🔥 ЭТАП 7.7: Локализованный window.confirm
     const confirmed = window.confirm(
-      'Вы уверены, что хотите выйти из аккаунта?\n\n' +
-      'Вам придётся выбрать роль заново.'
+      `${t('profile.settings.logoutConfirm')}\n\n` +
+        `${t('profile.settings.logoutWarning')}`
     );
 
     if (confirmed) {
@@ -138,11 +122,11 @@ export default function SettingsForm({
       <section className="settings-form__section">
         <h3 className="settings-form__section-title">
           <Phone size={18} />
-          Контактные данные
+          {t('profile.settings.contacts')} {/* 🔥 ЭТАП 7.7 */}
         </h3>
 
         <Input
-          label="Телефон"
+          label={t('profile.settings.phone')} {/* 🔥 ЭТАП 7.7 */}
           name="phone"
           type="tel"
           value={formData.phone}
@@ -154,7 +138,7 @@ export default function SettingsForm({
         />
 
         <Input
-          label="Email"
+          label={t('profile.settings.email')} {/* 🔥 ЭТАП 7.7 */}
           name="email"
           type="email"
           value={formData.email}
@@ -169,7 +153,7 @@ export default function SettingsForm({
       <section className="settings-form__section">
         <h3 className="settings-form__section-title">
           <Bell size={18} />
-          Способ уведомлений
+          {t('profile.settings.notifications')} {/* 🔥 ЭТАП 7.7 */}
         </h3>
 
         <div className="settings-form__radio-group">
@@ -199,17 +183,15 @@ export default function SettingsForm({
 
       {/* === СЕКЦИЯ 3: ДЕЙСТВИЯ === */}
       <section className="settings-form__section settings-form__actions">
-        {/* Кнопка сохранения — основная */}
         <Button
           variant="primary"
           leftIcon={<Save size={16} />}
           onClick={handleSave}
           className="settings-form__btn-save"
         >
-          Сохранить настройки
+          {t('profile.settings.save')} {/* 🔥 ЭТАП 7.7 */}
         </Button>
 
-        {/* Кнопки опасных действий — второстепенные */}
         <div className="settings-form__danger-actions">
           <Button
             variant="outline"
@@ -217,7 +199,7 @@ export default function SettingsForm({
             onClick={handleClearHistory}
             className="settings-form__btn-danger"
           >
-            Очистить историю
+            {t('profile.settings.clearHistory')} {/* 🔥 ЭТАП 7.7 */}
           </Button>
 
           <Button
@@ -226,7 +208,7 @@ export default function SettingsForm({
             onClick={handleLogout}
             className="settings-form__btn-danger"
           >
-            Выйти из аккаунта
+            {t('profile.settings.logout')} {/* 🔥 ЭТАП 7.7 */}
           </Button>
         </div>
       </section>

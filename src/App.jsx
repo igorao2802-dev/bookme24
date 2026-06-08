@@ -13,45 +13,66 @@
  * 🔥 ЭТАП 5.1: Добавлен маршрут /profile для Личного кабинета
  * 🔥 ЭТАП 5.2: Передача onNewBooking в ProfilePage
  * 🔥 ЭТАП 5.3: Передача onCancelBooking в ProfilePage
+ * 🔥 ЭТАП 5.5: Передача onRoleChange для выхода из аккаунта
+ * 🔥 ЭТАП 6.1: Интеграция ThemeProvider для переключения тем
+ * 🔥 ЭТАП 6.3: Интеграция хуков useServices и useSpecialists для CRUD
+ * 🔥 ЭТАП 7.1: Интеграция LanguageProvider для локализации
+ * 🔥 ИСПРАВЛЕНО: Опечатки onUpdateBooking, onUpdateSpecialist
  */
 
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 
+// === ПРОВАЙДЕРЫ КОНТЕКСТА ===
+import { ThemeProvider } from './contexts/ThemeContext';
+import { LanguageProvider } from './contexts/LanguageContext';
+
+// === КОМПОНЕНТЫ СТРАНИЦ ===
 import Layout from './components/Layout/Layout';
 import BookingWizard from './components/Booking/BookingWizard';
 import CatalogPage from './components/Catalog/CatalogPage';
 import AdminDashboard from './components/Admin/AdminDashboard';
-import ProfilePage from './components/Profile/ProfilePage'; // 🔥 ЭТАП 5.1
+import ProfilePage from './components/Profile/ProfilePage';
 
+// === ХУКИ ===
 import { useBookings } from './hooks/useBookings';
 import { useLocalStorage } from './hooks/useLocalStorage';
+import { useServices } from './hooks/useServices';
+import { useSpecialists } from './hooks/useSpecialists';
+
+// === КОНСТАНТЫ ===
 import { STORAGE_KEYS, USER_ROLES } from './utils/constants';
 
-function App() {
-  // === НАВИГАЦИЯ (для onNewBooking) ===
-  // 🔥 ЭТАП 5.2: useNavigate нужен для перенаправления на главную
-  // при клике "Создать запись" из Личного кабинета
+/**
+ * AppContent — внутренний компонент с бизнес-логикой и роутингом
+ * 
+ * ПОЧЕМУ отдельный компонент?
+ * - useNavigate() требует, чтобы BrowserRouter был выше в дереве
+ * - Провайдеры (ThemeProvider, LanguageProvider) оборачивают всё приложение
+ * - Разделение упрощает тестирование и избегает вложенных хуков
+ */
+function AppContent() {
   const navigate = useNavigate();
 
   // === ЗАГРУЗКА ДАННЫХ ИЗ JSON ===
-  const [services, setServices] = useState([]);
-  const [specialists, setSpecialists] = useState([]);
+  const [jsonServices, setJsonServices] = useState([]);
+  const [jsonSpecialists, setJsonSpecialists] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        // Загружаем услуги
-        const servicesResponse = await fetch('/data/services.json');
+        // ПОЧЕМУ Promise.all? Параллельная загрузка ускоряет старт в ~2 раза
+        const [servicesResponse, specialistsResponse] = await Promise.all([
+          fetch('/data/services.json'),
+          fetch('/data/specialists.json'),
+        ]);
+
         const servicesData = await servicesResponse.json();
-        
-        // Загружаем мастеров
-        const specialistsResponse = await fetch('/data/specialists.json');
         const specialistsData = await specialistsResponse.json();
 
-        setServices(servicesData.services);
-        setSpecialists(specialistsData.specialists);
+        setJsonServices(servicesData.services);
+        setJsonSpecialists(specialistsData.specialists);
       } catch (error) {
         console.error('Ошибка загрузки данных:', error);
       } finally {
@@ -61,6 +82,21 @@ function App() {
 
     loadData();
   }, []);
+
+  // === 🔥 ХУКИ ДЛЯ CRUD УСЛУГ И СПЕЦИАЛИСТОВ (ЭТАП 6.3) ===
+  const {
+    services,
+    addService,
+    updateService,
+    deleteService,
+  } = useServices(jsonServices);
+
+  const {
+    specialists,
+    addSpecialist,
+    updateSpecialist,
+    deleteSpecialist,
+  } = useSpecialists(jsonSpecialists);
 
   // === ГЛАВНЫЙ ХУК — CRUD ЗАПИСЕЙ ===
   const {
@@ -126,6 +162,14 @@ function App() {
                 stats={stats}
                 onUpdateBooking={updateBooking}
                 onCancelBooking={cancelBooking}
+                // 🔥 ЭТАП 6.3: CRUD для услуг
+                onAddService={addService}
+                onUpdateService={updateService}
+                onDeleteService={deleteService}
+                // 🔥 ЭТАП 6.3: CRUD для специалистов
+                onAddSpecialist={addSpecialist}
+                onUpdateSpecialist={updateSpecialist}
+                onDeleteSpecialist={deleteSpecialist}
               />
             ) : (
               <Navigate to="/" replace />
@@ -133,14 +177,7 @@ function App() {
           }
         />
 
-        {/* === 🔥 ЛИЧНЫЙ КАБИНЕТ (ЭТАП 5.1 + 5.2 + 5.3) === */}
-        {/* 
-          ПОЧЕМУ проверка роли здесь, а не только в ProfilePage?
-          - Двойная защита: если пользователь вручную введёт /profile в URL,
-            он будет перенаправлен на главную
-          - ProfilePage тоже проверяет роль (защита в глубине)
-          - Это стандартный паттерн "defence in depth" (многоуровневая защита)
-        */}
+        {/* === 🔥 ЛИЧНЫЙ КАБИНЕТ (ЭТАП 5.1 + 5.2 + 5.3 + 5.5) === */}
         <Route
           path="/profile"
           element={
@@ -150,9 +187,7 @@ function App() {
                 bookings={bookings}
                 services={services}
                 specialists={specialists}
-                // 🔥 ЭТАП 5.2: callback для перехода к созданию записи
                 onNewBooking={() => navigate('/')}
-                // 🔥 ЭТАП 5.3: callback для отмены записи
                 onCancelBooking={cancelBooking}
                 onRoleChange={setUserRole}
               />
@@ -169,4 +204,24 @@ function App() {
   );
 }
 
-export default App;
+/**
+ * App — главный компонент с провайдерами контекста
+ * 
+ * ПОЧЕМУ именно такой порядок провайдеров?
+ * 1. ThemeProvider — самый внешний (тема применяется ко всему)
+ * 2. LanguageProvider — внутри темы (локализация зависит от темы)
+ * 3. AppContent — самый внутренний (бизнес-логика и роутинг)
+ * 
+ * ПОЧЕМУ BrowserRouter не здесь?
+ * - BrowserRouter должен быть в index.js или main.jsx
+ * - Это позволяет использовать useNavigate внутри AppContent
+ */
+export default function App() {
+  return (
+    <ThemeProvider>
+      <LanguageProvider>
+        <AppContent />
+      </LanguageProvider>
+    </ThemeProvider>
+  );
+}

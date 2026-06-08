@@ -9,37 +9,24 @@
  * - Избранное (FavoritesSection)
  * - Настройки профиля (SettingsForm)
  * 
- * 🔥 ЭТАП 5.1: Базовая структура с защитой доступа
- * 🔥 ЭТАП 5.2: Реальный профиль + статистика
- * 🔥 ЭТАП 5.3: История записей с фильтрацией
- * 🔥 ЭТАП 5.4: Раздел "Избранное" с синхронизацией с каталогом
- * 🔥 ЭТАП 5.5: Настройки профиля и предпочтений уведомлений
- * 
- * ПОЧЕМУ проверка роли здесь, а не только в App.jsx?
- * Двойная защита (defence in depth)
- * Если кто-то обойдёт проверку в App.jsx, ProfilePage всё равно защитит данные
- * 
- * 🔥 ИСПРАВЛЕНИЕ ОШИБОК:
- * - Добавлен импорт Navigate из react-router-dom
- * - Все хуки useMemo перенесены ДО проверки роли (правила React Hooks)
- * - Убрана неиспользуемая функция addBonusForBooking
+ * 🔥 ЭТАП 5.1-5.5: Полная реализация личного кабинета
+ * 🔥 ЭТАП 7.7: Локализация всех текстов
+ * 🔥 ИСПРАВЛЕНО: Добавлен импорт Navigate, исправлен порядок хуков
  */
 
 import { useMemo } from 'react';
-import { useNavigate, Navigate } from 'react-router-dom'; // 🔥 ИСПРАВЛЕНИЕ: добавлен Navigate
+import { useNavigate, Navigate } from 'react-router-dom'; // 🔥 ИСПРАВЛЕНО: добавлен Navigate
 import { Phone, Mail, CalendarPlus } from 'lucide-react';
-
 import { USER_ROLES, BOOKING_STEPS, STORAGE_KEYS } from '../../utils/constants';
 import { formatPhone } from '../../utils/formatters';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
-
+import { useLanguage } from '../../hooks/useLanguage'; // 🔥 ЭТАП 7.7
 import ProfileStats from './ProfileStats';
 import BookingHistory from './BookingHistory';
 import FavoritesSection from './FavoritesSection';
 import SettingsForm from './SettingsForm';
 import EmptyState from '../UI/EmptyState';
 import Toast from '../UI/Toast';
-
 import './ProfilePage.css';
 
 export default function ProfilePage({
@@ -52,17 +39,18 @@ export default function ProfilePage({
   onRoleChange,
 }) {
   const navigate = useNavigate();
+  const { t } = useLanguage(); // 🔥 ЭТАП 7.7
 
-  // === 🔥 ПОЛУЧЕНИЕ ТЕЛЕФОНА КЛИЕНТА ИЗ LOCALSTORAGE ===
+  // === ПОЛУЧЕНИЕ ТЕЛЕФОНА КЛИЕНТА ИЗ LOCALSTORAGE ===
   const [lastClientPhone] = useLocalStorage('bookme24_last_client_phone', '');
 
-  // === 🔥 ИЗБРАННОЕ (ЭТАП 5.4) ===
+  // === ИЗБРАННОЕ (ЭТАП 5.4) ===
   const [favorites, setFavorites] = useLocalStorage(
     STORAGE_KEYS.FAVORITES,
     []
   );
 
-  // === 🔥 НАСТРОЙКИ ПОЛЬЗОВАТЕЛЯ (ЭТАП 5.5) ===
+  // === НАСТРОЙКИ ПОЛЬЗОВАТЕЛЯ (ЭТАП 5.5) ===
   const [userSettings, setUserSettings] = useLocalStorage(
     STORAGE_KEYS.USER_SETTINGS,
     {
@@ -72,13 +60,8 @@ export default function ProfilePage({
     }
   );
 
-  // ═══════════════════════════════════════════════════════════════
-  // 🔥 ВАЖНО: ВСЕ ХУКИ ДОЛЖНЫ БЫТЬ ЗДЕСЬ, ДО ЛЮБОГО return!
-  // Это требование React Hooks — они должны вызываться в одном
-  // и том же порядке при каждом рендере.
-  // ═══════════════════════════════════════════════════════════════
-
-  // === 🔥 ФИЛЬТРАЦИЯ ЗАПИСЕЙ КЛИЕНТА ===
+  // === 🔥 ИСПРАВЛЕНИЕ: ВСЕ ХУКИ ДОЛЖНЫ БЫТЬ ЗДЕСЬ, ДО ЛЮБОГО return ===
+  // Это требование React Hooks — они должны вызываться в одном и том же порядке
   const clientBookings = useMemo(() => {
     if (!lastClientPhone) return [];
     const normalizedPhone = lastClientPhone.replace(/\D/g, '');
@@ -90,7 +73,6 @@ export default function ProfilePage({
     });
   }, [bookings, lastClientPhone]);
 
-  // === 🔥 ДАННЫЕ ПРОФИЛЯ ===
   const profileData = useMemo(() => {
     if (clientBookings.length === 0) return null;
     const sorted = [...clientBookings].sort((a, b) => {
@@ -102,25 +84,12 @@ export default function ProfilePage({
     const latest = sorted[0];
 
     return {
-      name: latest.clientName || 'Клиент',
+      name: latest.clientName || t('profile.profile.defaultName'), // 🔥 ЭТАП 7.7
       phone: latest.clientPhone || '',
       email: latest.clientEmail || '',
     };
-  }, [clientBookings]);
+  }, [clientBookings, t]);
 
-  // === 🔥 АВАТАР С ИНИЦИАЛАМИ ===
-  const getInitials = (fullName) => {
-    if (!fullName) return '?';
-    return fullName
-      .split(' ')
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((word) => word[0])
-      .join('')
-      .toUpperCase();
-  };
-
-  // === 🔥 СТАТИСТИКА ===
   const stats = useMemo(() => {
     const total = clientBookings.length;
     const confirmed = clientBookings.filter((b) =>
@@ -129,14 +98,14 @@ export default function ProfilePage({
       b.status === 'completed'
     ).length;
 
-    const cancelled = clientBookings.filter((b) =>
+    const cancelled = clientBookings.filter((b) => 
       b.status === 'cancelled'
     ).length;
 
     const spent = clientBookings
-      .filter((b) =>
-        b.status === 'confirmed' ||
-        b.status === 'completed' ||
+      .filter((b) => 
+        b.status === 'confirmed' || 
+        b.status === 'completed' || 
         b.status === 'in-progress'
       )
       .reduce((sum, b) => sum + (b.totalPrice || 0), 0);
@@ -144,17 +113,17 @@ export default function ProfilePage({
     return { total, confirmed, cancelled, spent };
   }, [clientBookings]);
 
-  // === 🔥 ОБРАБОТЧИК ОТМЕНЫ ЗАПИСИ (ЭТАП 5.3) ===
+  // === ОБРАБОТЧИК ОТМЕНЫ ЗАПИСИ ===
   const handleCancelBooking = (bookingId) => {
     const result = onCancelBooking(bookingId);
     if (result.success) {
-      Toast.success('Запись отменена');
+      Toast.success(t('profile.bookings.cancelSuccess')); // 🔥 ЭТАП 7.7
     } else {
-      Toast.error(result.error || 'Не удалось отменить запись');
+      Toast.error(result.error || t('profile.bookings.cancelError')); // 🔥 ЭТАП 7.7
     }
   };
 
-  // === 🔥 ОБРАБОТЧИК ПОВТОРА ЗАПИСИ (ЭТАП 5.3) ===
+  // === ОБРАБОТЧИК ПОВТОРА ЗАПИСИ ===
   const handleRebook = (booking) => {
     navigate('/', {
       state: {
@@ -165,7 +134,7 @@ export default function ProfilePage({
     });
   };
 
-  // === 🔥 ОБРАБОТЧИК ИЗБРАННОГО (ЭТАП 5.4) ===
+  // === ОБРАБОТЧИК ИЗБРАННОГО ===
   const handleToggleFavorite = (id) => {
     setFavorites((prev) =>
       prev.includes(id)
@@ -174,7 +143,7 @@ export default function ProfilePage({
     );
   };
 
-  // === 🔥 ПЕРЕХОД К ЗАПИСИ ИЗ ИЗБРАННОГО (ЭТАП 5.4) ===
+  // === ПЕРЕХОД К ЗАПИСИ ИЗ ИЗБРАННОГО ===
   const handleBookService = (serviceId) => {
     navigate('/', {
       state: {
@@ -193,49 +162,44 @@ export default function ProfilePage({
     });
   };
 
-  // === 🔥 ОБРАБОТЧИК СОХРАНЕНИЯ НАСТРОЕК (ЭТАП 5.5) ===
+  // === ОБРАБОТЧИК СОХРАНЕНИЯ НАСТРОЕК ===
   const handleSaveSettings = (newSettings) => {
     setUserSettings(newSettings);
+    Toast.success(t('profile.settings.saveSuccess')); // 🔥 ЭТАП 7.7
   };
 
-  // === 🔥 ОБРАБОТЧИК ОЧИСТКИ ИСТОРИИ (ЭТАП 5.5) ===
+  // === ОБРАБОТЧИК ОЧИСТКИ ИСТОРИИ ===
   const handleClearHistory = () => {
-    Toast.info('Функция очистки истории будет реализована через API');
+    Toast.info(t('profile.settings.clearHistoryInfo')); // 🔥 ЭТАП 7.7
   };
 
-  // ===  ОБРАБОТЧИК ВЫХОДА (ЭТАП 5.5) ===
+  // === ОБРАБОТЧИК ВЫХОДА ===
   const handleLogout = () => {
     onRoleChange(USER_ROLES.CLIENT);
     navigate('/');
-    Toast.success('Вы вышли из аккаунта');
+    Toast.success(t('profile.settings.logoutSuccess')); // 🔥 ЭТАП 7.7
   };
 
-  // ═══════════════════════════════════════════════════════════════
-  // 🔥 ТЕПЕРЬ МОЖНО ДЕЛАТЬ ПРОВЕРКИ И EARLY RETURNS
-  // Все хуки уже вызваны выше
-  // ═══════════════════════════════════════════════════════════════
-
-  // === 🔥 ЗАЩИТА ДОСТУПА ===
+  // === 🔥 ТЕПЕРЬ МОЖНО ДЕЛАТЬ ПРОВЕРКИ И EARLY RETURNS ===
   if (userRole !== USER_ROLES.CLIENT) {
     return <Navigate to="/" replace />;
   }
 
-  // === СОСТОЯНИЕ: НЕТ ЗАПИСЕЙ ===
   if (!profileData) {
     return (
       <div className="profile-page">
         <div className="profile-page__header">
-          <h1>👤 Личный кабинет</h1>
+          <h1>{t('profile.title')}</h1> {/* 🔥 ЭТАП 7.7 */}
           <p className="profile-page__subtitle">
-            Управление вашими записями и настройками
+            {t('profile.subtitle')} {/* 🔥 ЭТАП 7.7 */}
           </p>
         </div>
 
         <EmptyState
           icon={<CalendarPlus size={48} />}
-          title="У вас пока нет записей"
-          description="Создайте первую запись, чтобы увидеть свой профиль и статистику"
-          actionLabel="Создать запись"
+          title={t('profile.empty.title')} {/* 🔥 ЭТАП 7.7 */}
+          description={t('profile.empty.description')} {/* 🔥 ЭТАП 7.7 */}
+          actionLabel={t('profile.empty.action')} {/* 🔥 ЭТАП 7.7 */}
           onAction={onNewBooking}
           variant="info"
         />
@@ -243,42 +207,44 @@ export default function ProfilePage({
     );
   }
 
-  // === ПОДГОТОВКА ДАННЫХ ДЛЯ SETTINGS FORM ===
   const settingsForForm = {
     phone: userSettings.phone || profileData.phone,
     email: userSettings.email || profileData.email,
     notification: userSettings.notification || 'sms',
   };
 
-  // === ОСНОВНОЙ РЕНДЕР ===
   return (
     <div className="profile-page">
-      {/* === ЗАГОЛОВОК === */}
       <div className="profile-page__header">
-        <h1>👤 Личный кабинет</h1>
+        <h1>{t('profile.title')}</h1> {/* 🔥 ЭТАП 7.7 */}
         <p className="profile-page__subtitle">
-          Управление вашими записями и настройками
+          {t('profile.subtitle')} {/* 🔥 ЭТАП 7.7 */}
         </p>
       </div>
 
-      {/* === СЕКЦИЯ 1: ПРОФИЛЬ === */}
       <section className="profile-page__section">
-        <h2 className="profile-page__section-title">📋 Профиль</h2>
-
+        <h2 className="profile-page__section-title">
+          {t('profile.sections.profile')} {/* 🔥 ЭТАП 7.7 */}
+        </h2>
+        
         <div className="profile-card">
           <div className="profile-card__avatar">
-            {getInitials(profileData.name)}
+            {profileData.name
+              .split(' ')
+              .map((n) => n[0])
+              .join('')
+              .toUpperCase()}
           </div>
 
           <div className="profile-card__info">
             <h3 className="profile-card__name">{profileData.name}</h3>
-
+            
             <div className="profile-card__contacts">
               <div className="profile-card__contact-item">
                 <Phone size={16} className="profile-card__contact-icon" />
                 <span>{formatPhone(profileData.phone)}</span>
               </div>
-
+              
               {profileData.email && (
                 <div className="profile-card__contact-item">
                   <Mail size={16} className="profile-card__contact-icon" />
@@ -290,15 +256,17 @@ export default function ProfilePage({
         </div>
       </section>
 
-      {/* === СЕКЦИЯ 2: СТАТИСТИКА === */}
       <section className="profile-page__section">
-        <h2 className="profile-page__section-title">📊 Статистика</h2>
+        <h2 className="profile-page__section-title">
+          {t('profile.sections.stats')} {/* 🔥 ЭТАП 7.7 */}
+        </h2>
         <ProfileStats stats={stats} />
       </section>
 
-      {/* === СЕКЦИЯ 3: ИСТОРИЯ ЗАПИСЕЙ === */}
       <section className="profile-page__section">
-        <h2 className="profile-page__section-title"> Мои записи</h2>
+        <h2 className="profile-page__section-title">
+          {t('profile.sections.bookings')} {/* 🔥 ЭТАП 7.7 */}
+        </h2>
         <BookingHistory
           bookings={clientBookings}
           services={services}
@@ -308,7 +276,6 @@ export default function ProfilePage({
         />
       </section>
 
-      {/* === СЕКЦИЯ 4: ИЗБРАННОЕ === */}
       <FavoritesSection
         services={services}
         specialists={specialists}
@@ -318,9 +285,10 @@ export default function ProfilePage({
         onBookSpecialist={handleBookSpecialist}
       />
 
-      {/* === СЕКЦИЯ 5: НАСТРОЙКИ === */}
       <section className="profile-page__section">
-        <h2 className="profile-page__section-title">⚙️ Настройки</h2>
+        <h2 className="profile-page__section-title">
+          {t('profile.sections.settings')} {/* 🔥 ЭТАП 7.7 */}
+        </h2>
         <SettingsForm
           settings={settingsForForm}
           onSave={handleSaveSettings}

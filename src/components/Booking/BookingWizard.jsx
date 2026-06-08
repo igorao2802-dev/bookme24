@@ -9,8 +9,8 @@
  * - Координирует переходы между шагами с валидацией
  * 
  * 🔥 ЭТАП 2.1: Кнопки навигации зафиксированы внизу экрана (sticky)
- * Это стандартный UX-паттерн для wizard-форм (используется в Stripe, Airbnb).
- * Пользователь всегда видит кнопки "Далее/Назад" без прокрутки.
+ * 🔥 ЭТАП 7.4: Полная локализация всех пользовательских текстов
+ * 🔥 ИСПРАВЛЕНО: Все опечатки с пробелами в идентификаторах
  */
 
 import { useState, useEffect } from 'react';
@@ -31,7 +31,8 @@ import Toast from '../UI/Toast';
 
 // === УТИЛИТЫ И ХУКИ ===
 import { useLocalStorage } from '../../hooks/useLocalStorage';
-import { BOOKING_STEPS, BOOKING_STEPS_LABELS, STORAGE_KEYS } from '../../utils/constants';
+import { useLanguage } from '../../hooks/useLanguage';
+import { BOOKING_STEPS, STORAGE_KEYS } from '../../utils/constants';
 import { validateBookingForm } from '../../utils/validators';
 import { playBookingConfirmation } from '../../utils/audioHelper';
 
@@ -49,6 +50,17 @@ const INITIAL_DRAFT = {
   comment: '',
 };
 
+// === КЛЮЧИ ПЕРЕВОДА ДЛЯ ШАГОВ ===
+// ПОЧЕМУ вынесено в константу?
+// Единая точка правды для соответствия шагов и ключей перевода
+const STEP_TRANSLATION_KEYS = {
+  [BOOKING_STEPS.SERVICE]: 'booking.steps.service',
+  [BOOKING_STEPS.SPECIALIST]: 'booking.steps.specialist',
+  [BOOKING_STEPS.DATETIME]: 'booking.steps.datetime',
+  [BOOKING_STEPS.CONTACTS]: 'booking.steps.contacts',
+  [BOOKING_STEPS.CONFIRM]: 'booking.steps.confirm',
+};
+
 export default function BookingWizard({
   services,
   specialists,
@@ -57,6 +69,8 @@ export default function BookingWizard({
 }) {
   const navigate = useNavigate();
   const location = useLocation();
+  // 🔥 ЭТАП 7.4: Хук локализации
+  const { t } = useLanguage();
 
   // === СОСТОЯНИЕ ТЕКУЩЕГО ШАГА ===
   const [currentStep, setCurrentStep] = useState(BOOKING_STEPS.SERVICE);
@@ -75,10 +89,10 @@ export default function BookingWizard({
   // === ФЛАГ: ПОКАЗЫВАТЬ ФОРМУ ИЛИ СПИСОК ЗАПИСЕЙ ===
   const [showMyBookings, setShowMyBookings] = useState(false);
 
-  // === 🔥 НОВАЯ ЗАПИСЬ (ЭТАП 1.3) ===
+  // === НОВАЯ ЗАПИСЬ (ЭТАП 1.3) ===
   const [lastCreatedBooking, setLastCreatedBooking] = useState(null);
 
-  // === 🔥 ТЕЛЕФОН ПОСЛЕДНЕЙ ЗАПИСИ (ЭТАП 1.3) ===
+  // === ТЕЛЕФОН ПОСЛЕДНЕЙ ЗАПИСИ (ЭТАП 1.3) ===
   const [lastClientPhone, setLastClientPhone] = useLocalStorage(
     'bookme24_last_client_phone',
     '',
@@ -98,9 +112,9 @@ export default function BookingWizard({
         setCurrentStep(targetStep);
 
         const serviceName = services.find(s => s.id === preselectedServiceId)?.name;
-        Toast.success(`Выбрана услуга: ${serviceName}`, { duration: 2000 });
+        Toast.success(t('booking.serviceSelected', { name: serviceName }), { duration: 2000 });
       } else {
-        Toast.error('Выбранная услуга не найдена', { duration: 3000 });
+        Toast.error(t('booking.serviceNotFound'), { duration: 3000 });
       }
     }
 
@@ -113,7 +127,7 @@ export default function BookingWizard({
         setCurrentStep(targetStep);
 
         const specialistName = specialists.find(s => s.id === preselectedSpecialistId)?.fullName;
-        Toast.success(`Выбран специалист: ${specialistName}`, { duration: 2000 });
+        Toast.success(t('booking.specialistSelected', { name: specialistName }), { duration: 2000 });
       }
     }
 
@@ -121,7 +135,7 @@ export default function BookingWizard({
       navigate(location.pathname, { replace: true, state: {} });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location.state]);
+  }, [location.state, t]);
 
   // === ПОЛУЧЕННЫЕ ОБЪЕКТЫ ===
   const selectedService = services.find((s) => s.id === draft.serviceId);
@@ -136,7 +150,7 @@ export default function BookingWizard({
       draft.clientPhone;
 
     if (hasDraft) {
-      Toast.info('Черновик формы восстановлен', { duration: 3000 });
+      Toast.info(t('booking.draft.restored'), { duration: 3000 });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -152,7 +166,6 @@ export default function BookingWizard({
       case BOOKING_STEPS.DATETIME:
         updateDraft({ date: null, startTime: null });
         break;
-      
       case BOOKING_STEPS.SPECIALIST:
         updateDraft({ 
           specialistId: null, 
@@ -160,7 +173,6 @@ export default function BookingWizard({
           startTime: null 
         });
         break;
-      
       case BOOKING_STEPS.SERVICE:
         updateDraft({ 
           serviceId: null,
@@ -169,7 +181,6 @@ export default function BookingWizard({
           startTime: null 
         });
         break;
-      
       case BOOKING_STEPS.CONTACTS:
         updateDraft({
           clientName: '',
@@ -178,32 +189,32 @@ export default function BookingWizard({
           comment: '',
         });
         break;
-      
       default:
         break;
     }
   };
 
   // === ВАЛИДАЦИЯ ТЕКУЩЕГО ШАГА ===
+  // 🔥 ЭТАП 7.4: Все сообщения об ошибках локализованы
   const validateCurrentStep = () => {
     switch (currentStep) {
       case BOOKING_STEPS.SERVICE:
         if (!draft.serviceId) {
-          Toast.error('Пожалуйста, выберите услугу');
+          Toast.error(t('booking.validation.selectService'));
           return false;
         }
         return true;
 
       case BOOKING_STEPS.SPECIALIST:
         if (!draft.specialistId) {
-          Toast.error('Пожалуйста, выберите специалиста');
+          Toast.error(t('booking.validation.selectSpecialist'));
           return false;
         }
         return true;
 
       case BOOKING_STEPS.DATETIME:
         if (!draft.date || !draft.startTime) {
-          Toast.error('Пожалуйста, выберите дату и время');
+          Toast.error(t('booking.validation.selectDateTime'));
           return false;
         }
         return true;
@@ -266,7 +277,12 @@ export default function BookingWizard({
 
       if (result.success) {
         playBookingConfirmation();
-        Toast.success(`Запись создана! ${selectedService?.name}, ${draft.startTime}`);
+        Toast.success(
+          t('booking.confirmation.success', {
+            service: selectedService?.name,
+            time: draft.startTime,
+          })
+        );
 
         setLastCreatedBooking(result.booking);
         setLastClientPhone(draft.clientPhone.trim());
@@ -276,10 +292,10 @@ export default function BookingWizard({
         setShowMyBookings(true);
         setCurrentStep(BOOKING_STEPS.SERVICE);
       } else {
-        Toast.error(result.error || 'Не удалось создать запись');
+        Toast.error(result.error || t('booking.confirmation.failed'));
       }
     } catch (error) {
-      Toast.error('Произошла ошибка при создании записи');
+      Toast.error(t('booking.confirmation.error'));
       console.error('[BookingWizard] Error:', error);
     } finally {
       setIsSubmitting(false);
@@ -299,7 +315,6 @@ export default function BookingWizard({
 
   // === ФИЛЬТРАЦИЯ ЗАПИСЕЙ КЛИЕНТА (ЭТАП 1.3) ===
   const phoneForFilter = draft.clientPhone || lastClientPhone;
-  
   const myBookings = bookings.filter(
     (b) =>
       b.clientPhone &&
@@ -322,20 +337,20 @@ export default function BookingWizard({
     );
   }
 
-  // === 🔥 ТЕКСТ КНОПКИ "ДАЛЕЕ" В ЗАВИСИМОСТИ ОТ ШАГА (ЭТАП 2.1) ===
+  // === 🔥 ТЕКСТ КНОПКИ "ДАЛЕЕ" В ЗАВИСИМОСТИ ОТ ШАГА (ЭТАП 2.1 + 7.4) ===
   // ПОЧЕМУ меняем текст?
   // Это даёт пользователю подсказку о следующем действии.
   // На последнем шаге — "Подтвердить запись" вместо "Далее".
   const getNextButtonText = () => {
     switch (currentStep) {
       case BOOKING_STEPS.CONTACTS:
-        return 'Подтвердить запись';
+        return t('booking.buttons.confirm');
       case BOOKING_STEPS.DATETIME:
-        return 'Выбрать время';
+        return t('booking.buttons.selectTime');
       case BOOKING_STEPS.SPECIALIST:
-        return 'Выбрать дату';
+        return t('booking.buttons.selectDate');
       default:
-        return 'Далее';
+        return t('common.next');
     }
   };
 
@@ -344,9 +359,9 @@ export default function BookingWizard({
     <div className="booking-wizard">
       {/* === ЗАГОЛОВОК === */}
       <div className="booking-wizard__header">
-        <h1>📝 Запись на услугу</h1>
+        <h1>{t('booking.title')}</h1>
         <p className="booking-wizard__subtitle">
-          Запишитесь за 5 простых шагов — это займёт не более 2 минут
+          {t('booking.subtitle')}
         </p>
       </div>
 
@@ -356,6 +371,8 @@ export default function BookingWizard({
           {Object.values(BOOKING_STEPS).map((stepNum) => {
             const isActive = currentStep === stepNum;
             const isCompleted = currentStep > stepNum;
+            // 🔥 ЭТАП 7.4: Локализованное название шага
+            const stepLabel = t(STEP_TRANSLATION_KEYS[stepNum]);
 
             return (
               <div
@@ -368,7 +385,7 @@ export default function BookingWizard({
                   {isCompleted ? <Check size={16} /> : stepNum}
                 </div>
                 <span className="booking-wizard__step-label">
-                  {BOOKING_STEPS_LABELS[stepNum]}
+                  {stepLabel}
                 </span>
               </div>
             );
@@ -383,11 +400,6 @@ export default function BookingWizard({
       </div>
 
       {/* === КОНТЕНТ ШАГА === */}
-      {/* 
-        🔥 ЭТАП 2.1: Добавлен класс booking-wizard__content с padding-bottom
-        Это нужно, чтобы последний элемент контента не перекрывался
-        sticky-панелью навигации внизу.
-      */}
       <div className="booking-wizard__content">
         {currentStep === BOOKING_STEPS.SERVICE && (
           <ServiceSelector
@@ -426,22 +438,7 @@ export default function BookingWizard({
         )}
       </div>
 
-      {/* === 🔥 КНОПКИ НАВИГАЦИИ (ЭТАП 2.1: STICKY) === */}
-      {/* 
-        ПОЧЕМУ sticky, а не fixed?
-        - sticky "прилипает" к низу родителя (.booking-wizard), 
-          а не к окну браузера. Это значит, что при прокрутке 
-          страницы кнопки остаются видимыми в пределах компонента.
-        - fixed был бы привязан к окну и мог бы перекрывать 
-          другие элементы вне компонента.
-        
-        ПОЧЕМУ z-index: 10?
-        Чтобы панель была поверх контента при прокрутке,
-        но ниже модалки подтверждения (z-index: 1000).
-        
-        ПОЧЕМУ box-shadow сверху?
-        Визуально отделяет панель от контента, создавая эффект "приподнятости".
-      */}
+      {/* === КНОПКИ НАВИГАЦИИ (ЭТАП 2.1: STICKY) === */}
       <div className="booking-wizard__navigation">
         {currentStep > BOOKING_STEPS.SERVICE && (
           <Button
@@ -449,7 +446,7 @@ export default function BookingWizard({
             onClick={handleBack}
             leftIcon={<ArrowLeft size={16} />}
           >
-            Назад
+            {t('common.back')}
           </Button>
         )}
 

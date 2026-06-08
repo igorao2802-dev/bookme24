@@ -1,22 +1,69 @@
 /**
- * Минимальные стили для корневого элемента
- * Основная стилизация — в styles/globals.css
+ * index.css — глобальные стили приложения bookme24
+ * 
+ * АРХИТЕКТУРНАЯ РОЛЬ:
+ * Точка входа для всех глобальных стилей.
+ * Импортирует темы, сброс стилей, базовые настройки.
+ * 
+ * ПОЧЕМУ themes.css импортируется здесь?
+ * - Темы должны быть доступны всем компонентам
+ * - Порядок импорта важен: темы → сброс → компоненты
+ * - Это гарантирует, что переменные определены до использования
  */
 
-#root {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+/* === ИМПОРТ ТЕМ === */
+/* ПОЧЕМУ первый импорт? */
+/* - CSS-переменные должны быть определены до использования */
+/* - Все последующие стили могут использовать var(--color-*) */
+@import "./styles/themes.css";
+
+/* === СБРОС СТИЛЕЙ === */
+/* ПОЧЕМУ box-sizing: border-box? */
+/* - Стандартный паттерн для современной вёрстки */
+/* - Padding и border включаются в общую ширину/высоту */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-/* Защита от "белого экрана" при медленной загрузке */
-#root:empty::before {
-  content: "Загрузка салона «Здоровье и красота»...";
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  font-size: 1.2rem;
-  color: #8b6f47;
-  font-family: "Inter", sans-serif;
+/* === БАЗОВЫЕ НАСТРОЙКИ ТЕЛА === */
+/* ПОЧЕМУ font-family системный? */
+/* - Быстрая загрузка (не нужно ждать шрифты) */
+/* - Нативный вид на каждой ОС */
+body {
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu",
+    "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.6;
+}
+
+/* === КОНТЕЙНЕР === */
+/* ПОЧЕМУ max-width: 1200px? */
+/* - Оптимальная ширина для чтения (60-80 символов в строке) */
+/* - Стандарт для десктопных приложений */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-md, 16px);
+}
+
+/* === УТИЛИТЫ === */
+.text-break {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+/* === АДАПТИВНОСТЬ === */
+@media (max-width: 768px) {
+  .container {
+    padding: 0 var(--spacing-sm, 8px);
+  }
 }
