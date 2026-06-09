@@ -1,11 +1,15 @@
 /**
- * Модуль валидации входных данных
+ * validators.js — модуль валидации входных данных
  *
  * ПОЧЕМУ отдельный файл?
  * - Переиспользование во всех формах (Запись, Редактирование, Админка)
  * - Единая точка правки regex-ов и правил
  * - Легко покрывать unit-тестами
- * - Замечание В.В. по ПР-03: "валидация — не задача компонента кнопки"
+ *
+ * 🔥 ЭТАП 7.8: Возвращаем errorKey вместо строк
+ * - Валидаторы не React-компоненты, не могут использовать useLanguage()
+ * - Возвращаем ключ перевода, компонент сам переведёт через t()
+ * - Это делает валидаторы language-agnostic
  */
 
 import { BY_PHONE_CODES, FIELD_LIMITS } from "./constants.js";
@@ -13,40 +17,29 @@ import { BY_PHONE_CODES, FIELD_LIMITS } from "./constants.js";
 /**
  * Валидация телефона Республики Беларусь
  * Формат: +375 (XX) XXX-XX-XX, где XX ∈ {17, 25, 29, 33, 44}
- *
- * ПОЧЕМУ такой regex?
- * - Строгая проверка кода оператора (защита от +375 00 ...)
- * - Ровно 9 цифр после +375
- * - Возвращаем boolean для простоты использования в формах
  */
 export function validatePhone(phone) {
-  if (!phone || typeof phone !== "string") {
-    return { isValid: false, error: "Телефон не указан" };
+  if (!phone || typeof phone !== "string" || phone.trim() === "") {
+    return { isValid: false, errorKey: "validation.phone.required" };
   }
 
   // Нормализуем: убираем пробелы, скобки, дефисы
   const cleaned = phone.replace(/\D/g, "");
 
   if (cleaned.length !== 12) {
-    return {
-      isValid: false,
-      error: "Телефон должен содержать 12 цифр (с кодом 375)",
-    };
+    return { isValid: false, errorKey: "validation.phone.tooShort" };
   }
 
   if (!cleaned.startsWith("375")) {
-    return { isValid: false, error: "Телефон должен начинаться с +375" };
+    return { isValid: false, errorKey: "validation.phone.invalidPrefix" };
   }
 
   const operatorCode = cleaned.slice(3, 5);
   if (!BY_PHONE_CODES.includes(operatorCode)) {
-    return {
-      isValid: false,
-      error: `Недопустимый код оператора. Разрешены: ${BY_PHONE_CODES.join(", ")}`,
-    };
+    return { isValid: false, errorKey: "validation.phone.invalidCode" };
   }
 
-  return { isValid: true, error: null };
+  return { isValid: true, errorKey: null };
 }
 
 /**
@@ -55,95 +48,74 @@ export function validatePhone(phone) {
  */
 export function validateName(name) {
   if (!name || typeof name !== "string") {
-    return { isValid: false, error: "ФИО не указано" };
+    return { isValid: false, errorKey: "validation.name.required" };
   }
 
   const trimmed = name.trim();
-
   if (trimmed.length === 0) {
-    return { isValid: false, error: "ФИО не может быть пустым" };
+    return { isValid: false, errorKey: "validation.name.required" };
   }
 
   if (trimmed.length > FIELD_LIMITS.NAME_MAX_LENGTH) {
-    return {
-      isValid: false,
-      error: `ФИО не может превышать ${FIELD_LIMITS.NAME_MAX_LENGTH} символов`,
-    };
+    return { isValid: false, errorKey: "validation.name.tooLong" };
   }
 
   // Проверка на 2+ слова (кириллица или латиница, допускаем дефис)
-  // ПОЧЕМУ такой regex? Разрешаем "Анна-Мария", "Иванова Петровна"
   const wordsCount = trimmed.split(/\s+/).length;
   if (wordsCount < 2) {
-    return { isValid: false, error: "Укажите имя и фамилию (минимум 2 слова)" };
+    return { isValid: false, errorKey: "validation.name.minTwoWords" };
   }
 
   // Проверка на допустимые символы (буквы, пробелы, дефисы)
-  // ЗАПРЕЩАЕМ цифры и спецсимволы для защиты от мусорного ввода
-  const nameRegex = /^[a-zA-Zа-яА-ЯёЁіІўЎ\s\-']+$/;
+  const nameRegex = /^[a-zA-Zа-яА-ЯёЁіІўЎ\s-']+$/;
   if (!nameRegex.test(trimmed)) {
-    return {
-      isValid: false,
-      error: "ФИО может содержать только буквы, пробелы и дефисы",
-    };
+    return { isValid: false, errorKey: "validation.name.invalidChars" };
   }
 
-  return { isValid: true, error: null };
+  return { isValid: true, errorKey: null };
 }
 
 /**
  * Валидация email (RFC-совместимая, упрощённая)
- * ПОЧЕМУ не супер-строгая? Email — опциональное поле, главное — отсеять явный мусор
  */
 export function validateEmail(email) {
   // Пустой email допустим (поле опциональное)
   if (!email || email.trim() === "") {
-    return { isValid: true, error: null };
+    return { isValid: true, errorKey: null };
   }
 
   if (email.length > FIELD_LIMITS.EMAIL_MAX_LENGTH) {
-    return {
-      isValid: false,
-      error: `Email не может превышать ${FIELD_LIMITS.EMAIL_MAX_LENGTH} символов`,
-    };
+    return { isValid: false, errorKey: "validation.email.tooLong" };
   }
 
   // Базовый regex: что-то @ что-то . что-то (минимум 2 символа в домене)
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
   if (!emailRegex.test(email)) {
-    return { isValid: false, error: "Некорректный формат email" };
+    return { isValid: false, errorKey: "validation.email.invalid" };
   }
 
-  return { isValid: true, error: null };
+  return { isValid: true, errorKey: null };
 }
 
 /**
  * Валидация комментария к записи
- * ПОЧЕМУ лимит 500? Защита от спама и переполнения localStorage
  */
 export function validateComment(comment) {
   if (!comment) {
-    return { isValid: true, error: null }; // Пустой комментарий допустим
+    return { isValid: true, errorKey: null }; // Пустой комментарий допустим
   }
 
   if (comment.length > FIELD_LIMITS.COMMENT_MAX_LENGTH) {
-    return {
-      isValid: false,
-      error: `Комментарий не может превышать ${FIELD_LIMITS.COMMENT_MAX_LENGTH} символов`,
-    };
+    return { isValid: false, errorKey: "validation.comment.tooLong" };
   }
 
   // Защита от XSS: запрещаем HTML-теги
-  // ПОЧЕМУ здесь? React экранирует автоматически, но двойная защита не помешает
   const htmlTagRegex = /<[^>]*>/;
   if (htmlTagRegex.test(comment)) {
-    return {
-      isValid: false,
-      error: "Комментарий не может содержать HTML-теги",
-    };
+    return { isValid: false, errorKey: "validation.comment.htmlNotAllowed" };
   }
 
-  return { isValid: true, error: null };
+  return { isValid: true, errorKey: null };
 }
 
 /**
@@ -152,14 +124,12 @@ export function validateComment(comment) {
  */
 export function validateBookingDate(dateString) {
   if (!dateString) {
-    return { isValid: false, error: "Дата не выбрана" };
+    return { isValid: false, errorKey: "validation.date.notSelected" };
   }
 
   const selectedDate = new Date(dateString);
-
-  // ПОЧЕМУ проверяем NaN? new Date("мусор") вернёт Invalid Date
   if (isNaN(selectedDate.getTime())) {
-    return { isValid: false, error: "Некорректный формат даты" };
+    return { isValid: false, errorKey: "validation.date.invalidFormat" };
   }
 
   const now = new Date();
@@ -172,41 +142,38 @@ export function validateBookingDate(dateString) {
 
   // Запрет прошедших дат
   if (selectedDay < today) {
-    return { isValid: false, error: "Нельзя записаться на прошедшую дату" };
+    return { isValid: false, errorKey: "validation.date.inPast" };
   }
 
   // Горизонт планирования (30 дней)
   const maxDate = new Date(today);
   maxDate.setDate(maxDate.getDate() + 30);
-
   if (selectedDay > maxDate) {
-    return {
-      isValid: false,
-      error: "Запись возможна не более чем на 30 дней вперёд",
-    };
+    return { isValid: false, errorKey: "validation.date.tooFarAhead" };
   }
 
-  return { isValid: true, error: null };
+  return { isValid: true, errorKey: null };
 }
 
 /**
  * Универсальная валидация всей формы контактов (шаг 4)
- * ПОЧЕМУ агрегатор? Возвращает объект ошибок для каждого поля — удобно для UI
+ *
+ * 🔥 ЭТАП 7.8: Теперь errors содержат errorKey, а не строки
  */
 export function validateBookingForm(formData) {
   const errors = {};
 
   const nameResult = validateName(formData.clientName);
-  if (!nameResult.isValid) errors.clientName = nameResult.error;
+  if (!nameResult.isValid) errors.clientName = nameResult.errorKey;
 
   const phoneResult = validatePhone(formData.clientPhone);
-  if (!phoneResult.isValid) errors.clientPhone = phoneResult.error;
+  if (!phoneResult.isValid) errors.clientPhone = phoneResult.errorKey;
 
   const emailResult = validateEmail(formData.clientEmail);
-  if (!emailResult.isValid) errors.clientEmail = emailResult.error;
+  if (!emailResult.isValid) errors.clientEmail = emailResult.errorKey;
 
   const commentResult = validateComment(formData.comment);
-  if (!commentResult.isValid) errors.comment = commentResult.error;
+  if (!commentResult.isValid) errors.comment = commentResult.errorKey;
 
   return {
     isValid: Object.keys(errors).length === 0,

@@ -6,15 +6,17 @@
  * - Владеет состоянием полей (formData) и ошибок (errors)
  * - НЕ взаимодействует с localStorage напрямую
  * - При сохранении вызывает onSave(data) — родитель решает, что делать
+ * - Возвращает ключи переводов для ошибок, компонент сам переводит через t()
  * 
  * ПОЧЕМУ локальное состояние, а не глобальное?
  * - Пользователь может отменить изменения без последствий
  * - Валидация происходит только при взаимодействии с формой
  * - Изолированность упрощает тестирование
  * 
- * 🔥 ЭТАП 6.3: Форма с валидацией и двумя режимами
+ * 🔥 ЭТАП 8.3: Форма с валидацией, локализацией и двумя режимами
  * - mode="add": пустые поля, кнопка "Добавить"
  * - mode="edit": предзаполненные поля из prop service, кнопка "Обновить"
+ * - Валидация возвращает errorKey → компонент переводит через t()
  */
 
 import { useState, useEffect } from 'react';
@@ -24,77 +26,103 @@ import Input from '../UI/Input';
 import Select from '../UI/Select';
 import Button from '../UI/Button';
 
-import { SERVICE_CATEGORIES, SERVICE_CATEGORY_LABELS, FIELD_LIMITS } from '../../utils/constants';
+import {
+  SERVICE_CATEGORIES,
+  SERVICE_CATEGORY_LABELS,
+  FIELD_LIMITS,
+} from '../../utils/constants';
+import { useLanguage } from '../../hooks/useLanguage'; // 🔥 ЭТАП 7.8: локализация
 
 import './ServiceForm.css';
 
-// === ВАЛИДАЦИЯ ДАННЫХ УСЛУГИ ===
-// ПОЧЕМУ вынесено в отдельную функцию?
-// - Переиспользование: можно вызывать при onBlur каждого поля и перед сохранением
-// - Изолированность: легко тестировать без React
-// - Единая точка правды для правил валидации
-function validateServiceField(name, value) {
+// === ВАЛИДАЦИЯ ОДНОГО ПОЛЯ ===
+// ПОЧЕМУ возвращаем errorKey, а не строку?
+// - Валидаторы не React-компоненты, не могут использовать useLanguage()
+// - Возвращаем ключ перевода, компонент сам переведёт через t()
+// - Это делает валидаторы language-agnostic
+function validateServiceField(name, value, existingServices = [], currentId = null) {
   switch (name) {
-    case 'name':
-      if (!value || value.trim().length === 0) {
-        return 'Название услуги обязательно';
+    case 'name': {
+      if (!value || typeof value !== 'string' || value.trim().length === 0) {
+        return 'validation.service.nameRequired';
       }
-      if (value.length > 100) {
-        return 'Название не может превышать 100 символов';
+      const trimmed = value.trim();
+      if (trimmed.length > 100) {
+        return 'validation.service.nameTooLong';
+      }
+      // Проверка уникальности названия
+      const isDuplicate = existingServices.some(
+        (s) =>
+          s.id !== currentId && // Исключаем текущую при редактировании
+          s.name.toLowerCase() === trimmed.toLowerCase()
+      );
+      if (isDuplicate) {
+        return 'validation.service.nameDuplicate';
       }
       return null;
+    }
 
     case 'category':
       if (!value || !Object.values(SERVICE_CATEGORIES).includes(value)) {
-        return 'Выберите корректную категорию';
+        return 'validation.service.categoryRequired';
       }
       return null;
 
-    case 'description':
-      if (!value || value.trim().length === 0) {
-        return 'Описание услуги обязательно';
+    case 'description': {
+      if (!value || typeof value !== 'string' || value.trim().length === 0) {
+        return 'validation.service.descriptionRequired';
       }
       if (value.length > FIELD_LIMITS.COMMENT_MAX_LENGTH) {
-        return `Описание не может превышать ${FIELD_LIMITS.COMMENT_MAX_LENGTH} символов`;
+        return 'validation.service.descriptionTooLong';
       }
       return null;
+    }
 
     case 'duration': {
+      if (value === undefined || value === null || value === '') {
+        return 'validation.service.durationRequired';
+      }
       const num = Number(value);
-      if (!value || isNaN(num)) {
-        return 'Укажите длительность в минутах';
+      if (isNaN(num)) {
+        return 'validation.service.durationInvalid';
       }
       if (num < 15) {
-        return 'Минимальная длительность — 15 минут';
+        return 'validation.service.durationTooShort';
       }
       if (num > 480) {
-        return 'Максимальная длительность — 480 минут (8 часов)';
+        return 'validation.service.durationTooLong';
       }
       return null;
     }
 
     case 'price': {
+      if (value === undefined || value === null || value === '') {
+        return 'validation.service.priceRequired';
+      }
       const num = Number(value);
-      if (!value || isNaN(num)) {
-        return 'Укажите цену';
+      if (isNaN(num)) {
+        return 'validation.service.priceInvalid';
       }
       if (num <= 0) {
-        return 'Цена должна быть положительным числом';
+        return 'validation.service.priceTooLow';
       }
       if (num > 10000) {
-        return 'Цена не может превышать 10000 BYN';
+        return 'validation.service.priceTooHigh';
       }
       return null;
     }
 
     case 'rating': {
-      if (!value || value === '') return null; // Рейтинг опциональный
+      // Рейтинг опциональный
+      if (value === undefined || value === null || value === '') {
+        return null;
+      }
       const num = Number(value);
       if (isNaN(num)) {
-        return 'Рейтинг должен быть числом';
+        return 'validation.service.ratingInvalid';
       }
       if (num < 0 || num > 5) {
-        return 'Рейтинг должен быть от 0 до 5';
+        return 'validation.service.ratingOutOfRange';
       }
       return null;
     }
@@ -107,11 +135,16 @@ function validateServiceField(name, value) {
 // === ВАЛИДАЦИЯ ВСЕЙ ФОРМЫ ===
 // ПОЧЕМУ отдельная функция?
 // Вызывается перед сохранением, чтобы проверить все поля сразу
-function validateAllFields(formData) {
+function validateAllFields(formData, existingServices, currentId) {
   const errors = {};
   Object.keys(formData).forEach((key) => {
-    const error = validateServiceField(key, formData[key]);
-    if (error) errors[key] = error;
+    const errorKey = validateServiceField(
+      key,
+      formData[key],
+      existingServices,
+      currentId
+    );
+    if (errorKey) errors[key] = errorKey;
   });
   return errors;
 }
@@ -123,6 +156,8 @@ export default function ServiceForm({
   onSave,
   onCancel,
 }) {
+  const { t } = useLanguage(); // 🔥 ЭТАП 7.8
+
   // === НАЧАЛЬНОЕ СОСТОЯНИЕ ФОРМЫ ===
   // ПОЧЕМУ зависит от mode?
   // - add: пустые поля
@@ -136,7 +171,17 @@ export default function ServiceForm({
     rating: '',
   });
 
+  // === СОСТОЯНИЕ ОШИБОК (ключи переводов) ===
+  // ПОЧЕМУ ключи, а не строки?
+  // - Валидаторы возвращают ключи переводов
+  // - При рендере переводим через t(errors[field])
+  // - Это позволяет менять язык без повторной валидации
   const [errors, setErrors] = useState({});
+
+  // === СОСТОЯНИЕ "ТРОНУТЫХ" ПОЛЕЙ ===
+  // ПОЧЕМУ нужно touched?
+  // - Не показываем ошибки, пока пользователь не взаимодействовал с полем
+  // - Это стандартный UX-паттерн: валидация после blur, а не при первом рендере
   const [touched, setTouched] = useState({});
 
   // === ИНИЦИАЛИЗАЦИЯ ПРИ РЕЖИМЕ EDIT ===
@@ -149,30 +194,41 @@ export default function ServiceForm({
         name: service.name || '',
         category: service.category || '',
         description: service.description || '',
-        duration: String(service.duration || ''),
-        price: String(service.price || ''),
-        rating: service.rating ? String(service.rating) : '',
+        duration: service.duration !== undefined ? String(service.duration) : '',
+        price: service.price !== undefined ? String(service.price) : '',
+        rating: service.rating !== undefined ? String(service.rating) : '',
       });
+      // Сбрасываем ошибки и touched при смене услуги
+      setErrors({});
+      setTouched({});
     }
   }, [mode, service]);
 
-  // === ОПЦИИ КАТЕГОРИЙ ===
+  // === ОПЦИИ КАТЕГОРИЙ (локализованные) ===
+  // ПОЧЕМУ вычисляем внутри компонента?
+  // - label зависит от t(), которая вызывается через useLanguage()
+  // - Константа не может использовать хуки React
   const categoryOptions = [
-    { value: '', label: 'Выберите категорию' },
+    { value: '', label: t('admin.services.form.selectCategory') },
     ...Object.values(SERVICE_CATEGORIES).map((cat) => ({
       value: cat,
-      label: SERVICE_CATEGORY_LABELS[cat],
+      label: SERVICE_CATEGORY_LABELS[cat], // Константы из constants.js (не переводятся)
     })),
   ];
 
   // === ОБРАБОТЧИК ИЗМЕНЕНИЯ ПОЛЯ ===
   const handleChange = (name, value) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
-    
-    // Если поле уже было тронуто — валидируем сразу
+
+    // Если поле уже было тронуто — валидируем сразу (live-валидация)
     if (touched[name]) {
-      const error = validateServiceField(name, value);
-      setErrors((prev) => ({ ...prev, [name]: error }));
+      const errorKey = validateServiceField(
+        name,
+        value,
+        existingServices,
+        service?.id
+      );
+      setErrors((prev) => ({ ...prev, [name]: errorKey }));
     }
   };
 
@@ -183,8 +239,13 @@ export default function ServiceForm({
   // - Это стандартный UX-паттерн для форм
   const handleBlur = (name) => {
     setTouched((prev) => ({ ...prev, [name]: true }));
-    const error = validateServiceField(name, formData[name]);
-    setErrors((prev) => ({ ...prev, [name]: error }));
+    const errorKey = validateServiceField(
+      name,
+      formData[name],
+      existingServices,
+      service?.id
+    );
+    setErrors((prev) => ({ ...prev, [name]: errorKey }));
   };
 
   // === ОБРАБОТЧИК ОТПРАВКИ ФОРМЫ ===
@@ -192,9 +253,9 @@ export default function ServiceForm({
     e.preventDefault();
 
     // 1. Валидируем все поля
-    const allErrors = validateAllFields(formData);
+    const allErrors = validateAllFields(formData, existingServices, service?.id);
     setErrors(allErrors);
-    
+
     // Помечаем все поля как тронутые (чтобы показать ошибки)
     const allTouched = Object.keys(formData).reduce((acc, key) => {
       acc[key] = true;
@@ -207,32 +268,17 @@ export default function ServiceForm({
       return;
     }
 
-    // 3. Проверка уникальности названия
-    // ПОЧЕМУ здесь, а не в валидации?
-    // - Нужно знать existingServices (приходит из props)
-    // - Валидация поля проверяет только формат, не бизнес-логику
-    const isDuplicate = existingServices.some(
-      (s) =>
-        s.id !== service?.id && // Исключаем текущую при редактировании
-        s.name.toLowerCase() === formData.name.toLowerCase().trim()
-    );
-
-    if (isDuplicate) {
-      setErrors((prev) => ({
-        ...prev,
-        name: 'Услуга с таким названием уже существует',
-      }));
-      return;
-    }
-
-    // 4. Преобразуем типы и отправляем родителю
+    // 3. Преобразуем типы и отправляем родителю
+    // ПОЧЕМУ преобразование здесь, а не в валидаторе?
+    // - Валидатор проверяет формат, а не преобразует
+    // - Родитель получает уже готовые числовые значения
     const serviceData = {
       name: formData.name.trim(),
       category: formData.category,
       description: formData.description.trim(),
       duration: Number(formData.duration),
       price: Number(formData.price),
-      rating: formData.rating ? Number(formData.rating) : 4.5,
+      rating: formData.rating !== '' ? Number(formData.rating) : 4.5,
     };
 
     onSave(serviceData);
@@ -240,8 +286,12 @@ export default function ServiceForm({
 
   // === ТЕКСТЫ В ЗАВИСИМОСТИ ОТ РЕЖИМА ===
   const isEditMode = mode === 'edit';
-  const submitButtonText = isEditMode ? 'Обновить' : 'Добавить';
-  const titleText = isEditMode ? 'Редактировать услугу' : 'Добавить услугу';
+  const submitButtonText = isEditMode
+    ? t('admin.services.form.update')
+    : t('admin.services.form.add');
+  const titleText = isEditMode
+    ? t('admin.services.form.editTitle')
+    : t('admin.services.form.addTitle');
 
   return (
     <form className="service-form" onSubmit={handleSubmit} noValidate>
@@ -249,51 +299,60 @@ export default function ServiceForm({
 
       {/* === НАЗВАНИЕ === */}
       <Input
-        label="Название услуги"
+        label={t('admin.services.form.name')}
         name="name"
         value={formData.name}
         onChange={(e) => handleChange('name', e.target.value)}
         onBlur={() => handleBlur('name')}
-        error={errors.name}
-        placeholder="Например: Женская стрижка"
+        error={touched.name && errors.name ? t(errors.name) : null}
+        placeholder={t('admin.services.form.namePlaceholder')}
         maxLength={100}
         required
       />
 
       {/* === КАТЕГОРИЯ === */}
       <Select
-        label="Категория"
+        label={t('admin.services.form.category')}
         name="category"
         value={formData.category}
         onChange={(e) => handleChange('category', e.target.value)}
         onBlur={() => handleBlur('category')}
-        error={errors.category}
+        error={touched.category && errors.category ? t(errors.category) : null}
         options={categoryOptions}
         required
       />
 
       {/* === ОПИСАНИЕ === */}
       <div className="service-form__field">
-        <label className="input__label" htmlFor="description">
-          Описание <span className="input__required">*</span>
+        <label className="input__label" htmlFor="service-description">
+          {t('admin.services.form.description')}
+          <span className="input__required">*</span>
         </label>
         <textarea
-          id="description"
+          id="service-description"
           name="description"
           value={formData.description}
           onChange={(e) => handleChange('description', e.target.value)}
           onBlur={() => handleBlur('description')}
-          placeholder="Опишите услугу подробно..."
+          placeholder={t('admin.services.form.descriptionPlaceholder')}
           maxLength={FIELD_LIMITS.COMMENT_MAX_LENGTH}
           rows={4}
           className={`input__field input__field--textarea ${
-            errors.description ? 'input__field--error' : ''
+            touched.description && errors.description
+              ? 'input__field--error'
+              : ''
           }`}
           required
         />
-        {errors.description && (
+        {touched.description && errors.description ? (
           <p className="input__message input__message--error">
-            {errors.description}
+            {t(errors.description)}
+          </p>
+        ) : (
+          <p className="input__message input__message--helper">
+            {t('admin.services.form.descriptionHelper', {
+              max: FIELD_LIMITS.COMMENT_MAX_LENGTH,
+            })}
           </p>
         )}
         <span className="service-form__counter">
@@ -304,13 +363,13 @@ export default function ServiceForm({
       {/* === ДЛИТЕЛЬНОСТЬ И ЦЕНА (в одну строку) === */}
       <div className="service-form__row">
         <Input
-          label="Длительность (мин)"
+          label={t('admin.services.form.duration')}
           name="duration"
           type="number"
           value={formData.duration}
           onChange={(e) => handleChange('duration', e.target.value)}
           onBlur={() => handleBlur('duration')}
-          error={errors.duration}
+          error={touched.duration && errors.duration ? t(errors.duration) : null}
           placeholder="60"
           min={15}
           max={480}
@@ -318,13 +377,13 @@ export default function ServiceForm({
         />
 
         <Input
-          label="Цена (BYN)"
+          label={t('admin.services.form.price')}
           name="price"
           type="number"
           value={formData.price}
           onChange={(e) => handleChange('price', e.target.value)}
           onBlur={() => handleBlur('price')}
-          error={errors.price}
+          error={touched.price && errors.price ? t(errors.price) : null}
           placeholder="45.00"
           min={0}
           step={0.01}
@@ -334,18 +393,18 @@ export default function ServiceForm({
 
       {/* === РЕЙТИНГ (опционально) === */}
       <Input
-        label="Рейтинг (необязательно)"
+        label={t('admin.services.form.rating')}
         name="rating"
         type="number"
         value={formData.rating}
         onChange={(e) => handleChange('rating', e.target.value)}
         onBlur={() => handleBlur('rating')}
-        error={errors.rating}
+        error={touched.rating && errors.rating ? t(errors.rating) : null}
         placeholder="4.8"
         min={0}
         max={5}
         step={0.1}
-        helperText="От 0 до 5. Если не указано — 4.5 по умолчанию"
+        helperText={t('admin.services.form.ratingHelper')}
       />
 
       {/* === КНОПКИ ДЕЙСТВИЙ === */}
@@ -356,7 +415,7 @@ export default function ServiceForm({
           leftIcon={<X size={16} />}
           onClick={onCancel}
         >
-          Отмена
+          {t('common.cancel')}
         </Button>
         <Button
           type="submit"

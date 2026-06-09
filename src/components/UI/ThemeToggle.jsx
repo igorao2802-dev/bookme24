@@ -1,18 +1,15 @@
 /**
- * ThemeToggle.jsx — переключатель темы с тремя режимами
+ * ThemeToggle.jsx — переключатель темы (светлая/тёмная/авто)
  * 
  * АРХИТЕКТУРНАЯ РОЛЬ:
- * Кнопка-цикл, которая переключает режимы: light → dark → auto → light
- * В режиме "auto" тема определяется автоматически по времени суток
- * в часовом поясе пользователя.
+ * Презентационный компонент. Получает состояние темы из ThemeContext
+ * через хук useTheme и вызывает toggleTheme при клике.
+ * НЕ владеет состоянием — вся логика живёт в контексте.
  * 
- * ПОЧЕМУ кнопка-цикл, а не выпадающее меню?
- * - Меньше кликов для переключения (1 клик вместо 2)
- * - Компактнее в шапке
- * - Tooltip показывает текущий режим и следующий
- * 
- * 🔥 ЭТАП 6.1: Поддержка трёх режимов (light/dark/auto)
- * 🔥 ЭТАП 6.1: Автоматическое определение времени суток через Intl API
+ * 🔥 ЭТАП 6.1: Три режима темы (light/dark/auto)
+ * - light: всегда светлая тема
+ * - dark: всегда тёмная тема
+ * - auto: определяется по времени суток (7:00-20:00 = день)
  */
 
 import { Sun, Moon, Monitor } from 'lucide-react';
@@ -98,7 +95,7 @@ export default function ThemeToggle() {
   
   // === НАХОДИМ ТЕКУЩИЙ РЕЖИМ ===
   const currentTheme = THEMES.find((t) => t.value === theme) || THEMES[0];
-  const { Icon } = currentTheme;
+  const { Icon, nextLabel } = currentTheme;
   
   // === В РЕЖИМЕ AUTO ПОКАЗЫВАЕМ РЕАЛЬНУЮ ТЕКУЩУЮ ТЕМУ ===
   // ПОЧЕМУ это важно?
@@ -114,5 +111,10 @@ export default function ThemeToggle() {
       type="button"
       className={`theme-toggle theme-toggle--${theme}`}
       onClick={toggleTheme}
-      // ПОЧЕМУ aria-label с именем режима?
-      // - Ск
+      aria-label={nextLabel}
+      title={nextLabel}
+    >
+      <displayIcon size={20} />
+    </button>
+  );
+}

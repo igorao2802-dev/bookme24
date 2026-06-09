@@ -87,6 +87,18 @@
       "failed": "Failed to create booking",
       "error": "An error occurred while creating the booking"
     },
+    "contacts": {
+      "title": "Contact Information",
+      "description": "Fill out the form — we will contact you to confirm the booking",
+      "name": "Full Name",
+      "namePlaceholder": "Anna Smith",
+      "phone": "Phone",
+      "phoneHelper": "BY operator codes: 25, 29, 33, 44",
+      "email": "Email (optional)",
+      "comment": "Comment (optional)",
+      "commentPlaceholder": "Wishes, special requirements, allergies...",
+      "commentHelper": "Maximum {max} characters"
+    },
     "draft": {
       "restored": "Form draft restored"
     },
@@ -127,7 +139,7 @@
     },
     "specialist": {
       "experience": "{years} years exp.",
-      "services": "Services"
+      "services": "Specialist's services"
     },
     "favorites": {
       "empty": "Your favorites list is empty",
@@ -184,6 +196,94 @@
       "service": "By service",
       "specialist": "By specialist",
       "client": "By client"
+    },
+    "services": {
+      "title": "Service Management",
+      "add": "Add Service",
+      "edit": "Edit",
+      "delete": "Delete",
+      "confirmDelete": "Are you sure you want to delete the service \"{name}\"?",
+      "custom": "Custom",
+      "standard": "Standard",
+      "cannotModifyStandard": "Cannot edit standard service from catalog",
+      "cannotDeleteStandard": "Cannot delete standard service from catalog",
+      "empty": "No services yet. Add your first service so clients can book.",
+      "searchPlaceholder": "Search by service name...",
+      "noResults": "No services found",
+      "previousPage": "Previous page",
+      "nextPage": "Next page",
+      "page": "Page",
+      "columns": {
+        "name": "Name",
+        "category": "Category",
+        "duration": "Duration",
+        "price": "Price",
+        "rating": "Rating",
+        "type": "Type",
+        "actions": "Actions"
+      },
+      "form": {
+        "addTitle": "Add New Service",
+        "editTitle": "Edit Service",
+        "add": "Add",
+        "update": "Update",
+        "name": "Service Name",
+        "namePlaceholder": "e.g. Women's Haircut",
+        "category": "Category",
+        "selectCategory": "Select category",
+        "description": "Description",
+        "descriptionPlaceholder": "Describe the service in detail: what's included, features...",
+        "descriptionHelper": "Maximum {max} characters",
+        "duration": "Duration (min)",
+        "price": "Price (BYN)",
+        "rating": "Rating (optional)",
+        "ratingHelper": "From 0 to 5. If not specified — 4.5 by default",
+        "unsavedChanges": "You have unsaved changes. Are you sure you want to close the form?"
+      }
+    },
+    "specialists": {
+      "title": "Specialist Management",
+      "add": "Add Specialist",
+      "edit": "Edit",
+      "delete": "Delete",
+      "confirmDelete": "Are you sure you want to delete the specialist \"{name}\"?",
+      "custom": "Custom",
+      "standard": "Standard",
+      "cannotModifyStandard": "Cannot edit standard specialist",
+      "cannotDeleteStandard": "Cannot delete standard specialist",
+      "empty": "No specialists yet. Add your first specialist so clients can choose a master.",
+      "searchPlaceholder": "Search by name or position...",
+      "noResults": "No specialists found",
+      "previousPage": "Previous page",
+      "nextPage": "Next page",
+      "page": "Page",
+      "columns": {
+        "fullName": "Full Name",
+        "position": "Position",
+        "experience": "Experience",
+        "rating": "Rating",
+        "servicesCount": "Services",
+        "type": "Type",
+        "actions": "Actions"
+      },
+      "form": {
+        "addTitle": "Add New Specialist",
+        "editTitle": "Edit Specialist",
+        "add": "Add",
+        "update": "Update",
+        "fullName": "Full Name",
+        "fullNamePlaceholder": "Anna Smith",
+        "position": "Position",
+        "positionPlaceholder": "Hair Stylist",
+        "experience": "Experience (years)",
+        "rating": "Rating (optional)",
+        "ratingHelper": "From 0 to 5. Default is 4.5",
+        "services": "Specialist Services",
+        "servicesHint": "Select services provided by this specialist",
+        "servicesCounter": "Selected: {selected} of {total}",
+        "noServices": "No services available. Please add services to the catalog first.",
+        "unsavedChanges": "You have unsaved changes. Are you sure you want to close the form?"
+      }
     }
   },
   "profile": {
@@ -194,7 +294,8 @@
       "stats": "📊 Statistics",
       "bookings": "📅 My Bookings",
       "favorites": "❤️ Favorites",
-      "settings": "⚙️ Settings"
+      "settings": "⚙️ Settings",
+      "bonus": "🎁 Bonus Account"
     },
     "profile": {
       "defaultName": "Client",
@@ -261,12 +362,93 @@
       "logoutConfirm": "Are you sure you want to log out?",
       "logoutWarning": "You will need to select your role again.",
       "logoutSuccess": "You have logged out"
+    },
+    "bonus": {
+      "title": "Bonus Account",
+      "balance": "Your balance",
+      "points": "points",
+      "equivalent": "equivalent",
+      "level": "Level",
+      "progress": "Until next level",
+      "history": "Points history",
+      "noHistory": "Points history is empty",
+      "levels": {
+        "bronze": "Bronze",
+        "silver": "Silver",
+        "gold": "Gold"
+      }
     }
   },
   "validation": {
     "required": "This field is required",
-    "email": "Invalid email format",
-    "phone": "Invalid phone format",
+    "phone": {
+      "required": "Phone number is required",
+      "tooShort": "Phone number is too short (should be 12 digits)",
+      "invalidPrefix": "Number must start with +375",
+      "invalidCode": "Invalid operator code. Allowed: 25, 29, 33, 44"
+    },
+    "name": {
+      "required": "Full name is required",
+      "tooShort": "Full name is too short",
+      "tooLong": "Full name cannot exceed 100 characters",
+      "minTwoWords": "Please specify first and last name (minimum 2 words)",
+      "invalidChars": "Full name can only contain letters, spaces and hyphens"
+    },
+    "email": {
+      "invalid": "Invalid email format",
+      "tooLong": "Email cannot exceed 100 characters"
+    },
+    "comment": {
+      "tooLong": "Comment cannot exceed 500 characters",
+      "htmlNotAllowed": "Comment cannot contain HTML tags"
+    },
+    "date": {
+      "notSelected": "Date is not selected",
+      "invalidFormat": "Invalid date format",
+      "inPast": "Cannot book for a past date",
+      "tooFarAhead": "Booking is possible no more than 30 days in advance"
+    },
+    "service": {
+      "nameRequired": "Service name is required",
+      "nameTooLong": "Service name cannot exceed 100 characters",
+      "nameDuplicate": "Service with this name already exists",
+      "categoryRequired": "Please select a service category",
+      "categoryInvalid": "Invalid service category",
+      "descriptionRequired": "Service description is required",
+      "descriptionTooLong": "Description cannot exceed 500 characters",
+      "durationRequired": "Please specify service duration",
+      "durationInvalid": "Duration must be a number",
+      "durationTooShort": "Minimum duration is 15 minutes",
+      "durationTooLong": "Maximum duration is 480 minutes (8 hours)",
+      "priceRequired": "Please specify service price",
+      "priceInvalid": "Price must be a number",
+      "priceTooLow": "Price must be greater than 0",
+      "priceTooHigh": "Price cannot exceed 10000 BYN",
+      "ratingInvalid": "Rating must be a number",
+      "ratingOutOfRange": "Rating must be between 0 and 5",
+      "notFound": "Service not found",
+      "cannotModifyStandard": "Cannot edit standard service from catalog",
+      "cannotDeleteStandard": "Cannot delete standard service from catalog"
+    },
+    "specialist": {
+      "nameRequired": "Full name is required",
+      "nameTooLong": "Full name cannot exceed 100 characters",
+      "nameMinTwoWords": "Please specify first and last name (minimum 2 words)",
+      "nameDuplicate": "Specialist with this name already exists",
+      "positionRequired": "Position is required",
+      "positionTooLong": "Position cannot exceed 50 characters",
+      "experienceRequired": "Please specify years of experience",
+      "experienceInvalid": "Experience must be a number",
+      "experienceNegative": "Experience cannot be negative",
+      "experienceTooHigh": "Experience cannot exceed 50 years",
+      "ratingInvalid": "Rating must be a number",
+      "ratingOutOfRange": "Rating must be between 0 and 5",
+      "servicesRequired": "Please select specialist services",
+      "servicesEmpty": "Select at least one service",
+      "notFound": "Specialist not found",
+      "cannotModifyStandard": "Cannot edit standard specialist",
+      "cannotDeleteStandard": "Cannot delete standard specialist"
+    },
     "minLength": "Minimum length: {min} characters",
     "maxLength": "Maximum length: {max} characters"
   },
@@ -275,6 +457,13 @@
     "tomorrow": "Tomorrow",
     "yesterday": "Yesterday",
     "free": "Free",
-    "busy": "Busy"
+    "busy": "Busy",
+    "minutes": "min"
+  },
+  "theme": {
+    "toggle": "Toggle theme",
+    "light": "Light theme",
+    "dark": "Dark theme",
+    "auto": "Auto (by time of day)"
   }
 }

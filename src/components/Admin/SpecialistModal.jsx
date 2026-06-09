@@ -3,13 +3,17 @@
  * 
  * АРХИТЕКТУРНАЯ РОЛЬ:
  * Полностью аналогична ServiceModal, но для SpecialistForm.
+ * - Управляет открытием/закрытием окна
+ * - Предупреждает о несохранённых данных при закрытии
+ * - Передаёт данные формы родителю через onSave
  * 
- * 🔥 ЭТАП 6.3: Модалка с подтверждением закрытия
+ * 🔥 ЭТАП 8.5: Модалка с локализацией и подтверждением закрытия
  */
 
 import { useRef } from 'react';
 import Modal from '../UI/Modal';
 import SpecialistForm from './SpecialistForm';
+import { useLanguage } from '../../hooks/useLanguage'; // 🔥 ЭТАП 7.5: локализация
 
 export default function SpecialistModal({
   isOpen,
@@ -20,17 +24,22 @@ export default function SpecialistModal({
   onSave,
   onClose,
 }) {
+  const { t } = useLanguage(); // 🔥 ЭТАП 7.5
+
+  // === REF ДЛЯ ОТСЛЕЖИВАНИЯ ИЗМЕНЕНИЙ ===
   const isDirtyRef = useRef(false);
 
+  // === ОБРАБОТЧИК СОХРАНЕНИЯ ===
   const handleSave = (specialistData) => {
     isDirtyRef.current = false;
     onSave(specialistData);
   };
 
+  // === ОБРАБОТЧИК ЗАКРЫТИЯ С ПОДТВЕРЖДЕНИЕМ ===
   const handleClose = () => {
     if (isDirtyRef.current) {
       const confirmed = window.confirm(
-        'У вас есть несохранённые изменения. Вы уверены, что хотите закрыть форму?'
+        t('admin.specialists.form.unsavedChanges')
       );
       if (!confirmed) return;
     }
@@ -39,15 +48,21 @@ export default function SpecialistModal({
     onClose();
   };
 
+  // === ОБРАБОТЧИК ИЗМЕНЕНИЙ ===
   const handleFormChange = () => {
     isDirtyRef.current = true;
   };
+
+  // === ЗАГОЛОВОК МОДАЛКИ ===
+  const title = mode === 'edit'
+    ? t('admin.specialists.form.editTitle')
+    : t('admin.specialists.form.addTitle');
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title={mode === 'edit' ? 'Редактировать специалиста' : 'Добавить специалиста'}
+      title={title}
       size="lg"
     >
       <div onChange={handleFormChange}>

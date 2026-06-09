@@ -1,8 +1,11 @@
 /**
  * Стили для ServiceForm (форма услуги)
- * BEM-методология + адаптивность
+ * BEM-методология + адаптивность + поддержка тёмной темы
  * 
- * 🔥 ЭТАП 6.3: Стили формы добавления/редактирования услуги
+ * 🔥 ЭТАП 8.3: Стили формы добавления/редактирования услуги
+ * - Все цвета через CSS-переменные (поддержка тёмной темы)
+ * - Адаптивная двухколоночная раскладка
+ * - Анимации для появления ошибок
  */
 
 /* === ОСНОВНОЙ КОНТЕЙНЕР === */
@@ -28,6 +31,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--spacing-xs, 4px);
+  position: relative;
 }
 
 /* === СЧЁТЧИК СИМВОЛОВ === */
@@ -35,13 +39,14 @@
   font-size: var(--font-size-xs, 0.75rem);
   color: var(--color-text-muted, #6b5d4f);
   text-align: right;
+  margin-top: var(--spacing-xs, 4px);
 }
 
-/* === СТРОКА С ДВУМЯ ПОЛЯМИ === */
-/* ПОЧЕМУ grid, а не flex?
-   - Grid гарантирует одинаковую ширину (1fr 1fr)
-   - Автоматический перенос на мобильных (через media query)
-*/
+/* === СТРОКА С ДВУМЯ ПОЛЯМИ ===
+ * ПОЧЕМУ grid, а не flex?
+ * - Grid гарантирует одинаковую ширину (1fr 1fr)
+ * - Автоматический перенос на мобильных (через media query)
+ */
 .service-form__row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -58,6 +63,22 @@
   margin-top: var(--spacing-sm, 8px);
 }
 
+/* === АНИМАЦИЯ ПОЯВЛЕНИЯ ОШИБОК === */
+.input__message--error {
+  animation: slideDown 200ms ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* === АДАПТИВНОСТЬ === */
 @media (max-width: 640px) {
   .service-form {
@@ -69,12 +90,27 @@
     grid-template-columns: 1fr;
   }
 
-  /* Кнопки на всю ширину */
+  /* Кнопки на всю ширину (в обратном порядке: "Сохранить" сверху) */
   .service-form__actions {
     flex-direction: column-reverse;
   }
 
   .service-form__actions button {
     width: 100%;
+    justify-content: center;
   }
+}
+
+/* === ПОДДЕРЖКА ТЁМНОЙ ТЕМЫ === */
+[data-theme="dark"] .service-form__title {
+  color: var(--color-text, #f2ebe0);
+  border-bottom-color: var(--color-border, #4a3a2a);
+}
+
+[data-theme="dark"] .service-form__counter {
+  color: var(--color-text-muted, #b5a28d);
+}
+
+[data-theme="dark"] .service-form__actions {
+  border-top-color: var(--color-border, #4a3a2a);
 }

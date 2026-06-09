@@ -14,10 +14,11 @@
  * 
  * 🔥 ЭТАП 5.4: Реализация раздела избранного в личном кабинете
  * 🔥 ЭТАП 7.7: Локализация всех текстов
+ * 🔥 ИСПРАВЛЕНО: Синтаксические ошибки JSX-комментариев
  */
 
 import { Heart } from 'lucide-react';
-import { useLanguage } from '../../hooks/useLanguage'; // 🔥 ЭТАП 7.7
+import { useLanguage } from '../../hooks/useLanguage';
 import FavoritesList from '../Catalog/FavoritesList';
 import EmptyState from '../UI/EmptyState';
 import './FavoritesSection.css';
@@ -30,9 +31,13 @@ export default function FavoritesSection({
   onBookService,
   onBookSpecialist,
 }) {
-  const { t } = useLanguage(); // 🔥 ЭТАП 7.7
+  const { t } = useLanguage();
 
   // === ФИЛЬТРАЦИЯ ИЗБРАННЫХ ЭЛЕМЕНТОВ ===
+  // ПОЧЕМУ не используем useMemo?
+  // - Фильтрация быстрая (массив services обычно < 50 элементов)
+  // - favorites меняется нечасто
+  // - useMemo добавил бы сложности без заметной выгоды
   const favoriteServices = services.filter((s) => favorites.includes(s.id));
   const favoriteSpecialists = specialists.filter((s) => favorites.includes(s.id));
 
@@ -45,12 +50,12 @@ export default function FavoritesSection({
       <section className="favorites-section">
         <h2 className="favorites-section__title">
           <Heart size={24} />
-          {t('profile.sections.favorites')} {/* 🔥 ЭТАП 7.7 */}
+          {t('profile.sections.favorites')}
         </h2>
         <EmptyState
           icon={<Heart size={48} />}
-          title={t('catalog.favorites.empty')} {/* 🔥 ЭТАП 7.7 */}
-          description={t('catalog.favorites.emptyDescription')} {/* 🔥 ЭТАП 7.7 */}
+          title={t('catalog.favorites.empty')}
+          description={t('catalog.favorites.emptyDescription')}
           variant="info"
         />
       </section>
@@ -62,7 +67,7 @@ export default function FavoritesSection({
     <section className="favorites-section">
       <h2 className="favorites-section__title">
         <Heart size={24} />
-        {t('profile.sections.favorites')} {/* 🔥 ЭТАП 7.7 */}
+        {t('profile.sections.favorites')}
         <span className="favorites-section__count">
           ({totalCount})
         </span>

@@ -94,3 +94,88 @@
     align-items: flex-start;
   }
 }
+
+/* ═══════════════════════════════════════════════
+   🔥 СИСТЕМА ТАБОВ (ЭТАП 8.8)
+   Переключение между разделами админки
+   ═══════════════════════════════════════════════ */
+
+.admin-dashboard__tabs {
+  display: flex;
+  gap: var(--spacing-sm, 8px);
+  padding: var(--spacing-sm, 8px);
+  background: var(--color-bg, #fdfaf6);
+  border-radius: var(--radius-lg, 12px);
+  margin-bottom: var(--spacing-lg, 24px);
+  overflow-x: auto;
+}
+
+.admin-dashboard__tab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs, 4px);
+  padding: var(--spacing-sm, 8px) var(--spacing-md, 16px);
+  background: transparent;
+  border: 1.5px solid transparent;
+  border-radius: var(--radius-md, 8px);
+  font-size: var(--font-size-base, 1rem);
+  font-weight: 500;
+  color: var(--color-text-muted, #6b5d4f);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--transition-fast, 150ms ease);
+}
+
+.admin-dashboard__tab:hover {
+  background: var(--color-surface, #ffffff);
+  color: var(--color-text, #3d2f26);
+}
+
+.admin-dashboard__tab--active {
+  background: var(--color-surface, #ffffff);
+  border-color: var(--color-primary-400, #c9a88c);
+  color: var(--color-primary-700, #7f5e44);
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+}
+
+.admin-dashboard__tab:focus-visible {
+  outline: 2px solid var(--color-primary, #b8957a);
+  outline-offset: 2px;
+}
+
+/* === КОНТЕНТ ТАБА === */
+.admin-dashboard__content {
+  margin-top: var(--spacing-md, 16px);
+}
+
+/* === ПОДДЕРЖКА ТЁМНОЙ ТЕМЫ === */
+[data-theme="dark"] .admin-dashboard__tabs {
+  background: var(--color-bg, #1a1410);
+}
+
+[data-theme="dark"] .admin-dashboard__tab {
+  color: var(--color-text-muted, #b5a28d);
+}
+
+[data-theme="dark"] .admin-dashboard__tab:hover {
+  background: var(--color-surface, #2d2419);
+  color: var(--color-text, #f2ebe0);
+}
+
+[data-theme="dark"] .admin-dashboard__tab--active {
+  background: var(--color-surface, #2d2419);
+  border-color: var(--color-primary-400, #c9a88c);
+  color: var(--color-primary-400, #c9a88c);
+}
+
+/* === АДАПТИВНОСТЬ === */
+@media (max-width: 768px) {
+  .admin-dashboard__tabs {
+    flex-wrap: nowrap;
+  }
+
+  .admin-dashboard__tab {
+    flex-shrink: 0;
+  }
+}

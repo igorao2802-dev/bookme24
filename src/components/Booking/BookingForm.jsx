@@ -1,206 +1,203 @@
 /**
- * BookingForm.jsx — Шаг 4: форма контактов клиента
+ * BookingForm.jsx — форма контактных данных клиента (шаг 4)
  * 
- * ОСОБЕННОСТИ:
- * - Управляемые компоненты (Controlled Components)
- * - Валидация "на лету" при потере фокуса (onBlur)
- * - Валидация телефона РБ (+375 XX XXX-XX-XX)
- * - Автоформатирование телефона
- * - CSS-классы для ошибок (требование В.В.)
- * 
- * 🔥 ЭТАП 3.1: Оптимизация раскладки полей
- * - Убран max-width: 600px — форма использует всю ширину
- * - Телефон и Email размещены в 2 колонки (grid)
- * - ФИО и Комментарий — на всю ширину
- * - Адаптивность: на мобильных (≤640px) все поля в одну колонку
+ * 🔥 ЭТАП 3.1: Двухколоночная раскладка (Телефон + Email)
+ * 🔥 ЭТАП 7.8: Локализация всех текстов и ошибок валидации
  */
 
 import { useState } from 'react';
-import { User, Phone, Mail } from 'lucide-react';
-
+import { useLanguage } from '../../hooks/useLanguage';
+import { validateBookingForm } from '../../utils/validators';
 import Input from '../UI/Input';
-import {
-  validateName,
-  validatePhone,
-  validateEmail,
-  validateComment,
-} from '../../utils/validators';
-import { FIELD_LIMITS, BY_PHONE_CODES } from '../../utils/constants';
-
+import Button from '../UI/Button';
 import './BookingForm.css';
 
-export default function BookingForm({ draft, onChange }) {
-  // === СОСТОЯНИЕ ОШИБОК (показываем после blur) ===
+export default function BookingForm({ draft, updateDraft, onNext, onBack }) {
+  const { t } = useLanguage(); // 🔥 ЭТАП 7.8
+  
+  const [formData, setFormData] = useState({
+    clientName: draft.clientName || '',
+    clientPhone: draft.clientPhone || '',
+    clientEmail: draft.clientEmail || '',
+    comment: draft.comment || '',
+  });
+
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
 
-  // === ОБНОВЛЕНИЕ ПОЛЯ ===
+  // === ОБРАБОТЧИК ИЗМЕНЕНИЯ ПОЛЯ ===
   const handleChange = (field, value) => {
-    onChange({ [field]: value });
-    // Если поле уже было "тронутым" — валидируем сразу
-    if (touched[field]) {
-      validateField(field, value);
+    setFormData(prev => ({ ...prev, [field]: value }));
+    
+    // Очищаем ошибку при изменении
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: null }));
     }
   };
 
-  // === ОБРАБОТКА ПОТЕРИ ФОКУСА ===
+  // === ОБРАБОТЧИК ПОТЕРИ ФОКУСА ===
   const handleBlur = (field) => {
-    setTouched((prev) => ({ ...prev, [field]: true }));
-    validateField(field, draft[field]);
-  };
-
-  // === ВАЛИДАЦИЯ ОДНОГО ПОЛЯ ===
-  const validateField = (field, value) => {
-    let result;
-    switch (field) {
-      case 'clientName':
-        result = validateName(value);
-        break;
-      case 'clientPhone':
-        result = validatePhone(value);
-        break;
-      case 'clientEmail':
-        result = validateEmail(value);
-        break;
-      case 'comment':
-        result = validateComment(value);
-        break;
-      default:
-        result = { isValid: true, error: null };
-    }
-
-    setErrors((prev) => ({
-      ...prev,
-      [field]: result.isValid ? null : result.error,
-    }));
+    setTouched(prev => ({ ...prev, [field]: true }));
   };
 
   // === АВТОФОРМАТИРОВАНИЕ ТЕЛЕФОНА ===
-  // ПОЧЕМУ здесь, а не в утилите?
-  // Это UI-логика (маска ввода), не бизнес-логика валидации
   const handlePhoneChange = (e) => {
     let value = e.target.value.replace(/\D/g, '');
-
-    // Если начинается не с 375 — добавляем
-    if (!value.startsWith('375')) {
-      if (value.startsWith('80') || value.startsWith('8')) {
-        value = '375' + value.slice(value.startsWith('80') ? 2 : 1);
-      } else if (!value.startsWith('3')) {
-        value = '375' + value;
-      }
+    
+    // Добавляем +375 если не начинается с 375
+    if (value && !value.startsWith('375')) {
+      value = '375' + value;
     }
 
     // Ограничиваем длиной
-    value = value.slice(0, 12);
+    if (value.length > 12) {
+      value = value.slice(0, 12);
+    }
 
     // Форматируем: +375 (XX) XXX-XX-XX
     let formatted = '';
-    if (value.length > 0) formatted = '+' + value.slice(0, 3);
-    if (value.length > 3) formatted += ' (' + value.slice(3, 5);
-    if (value.length > 5) formatted += ') ' + value.slice(5, 8);
-    if (value.length > 8) formatted += '-' + value.slice(8, 10);
-    if (value.length > 10) formatted += '-' + value.slice(10, 12);
+    if (value.length > 0) {
+      formatted = '+' + value.slice(0, 3);
+    }
+    if (value.length > 3) {
+      formatted += ' (' + value.slice(3, 5);
+    }
+    if (value.length > 5) {
+      formatted += ') ' + value.slice(5, 8);
+    }
+    if (value.length > 8) {
+      formatted += '-' + value.slice(8, 10);
+    }
+    if (value.length > 10) {
+      formatted += '-' + value.slice(10, 12);
+    }
 
     handleChange('clientPhone', formatted);
   };
 
-  return (
-    <div className="booking-form">
-      <div className="booking-form__header">
-        <h2>Контактные данные</h2>
-        <p className="booking-form__description">
-          Заполните форму — мы свяжемся с вами для подтверждения записи
-        </p>
-      </div>
+  // === ОТПРАВКА ФОРМЫ ===
+  const handleSubmit = (e) => {
+    e.preventDefault();
 
-      {/* 
-        🔥 ЭТАП 3.1: Убран max-width: 600px в CSS
-        Форма теперь использует всю ширину контейнера
-      */}
-      <form className="booking-form__fields" onSubmit={(e) => e.preventDefault()}>
-        {/* === СТРОКА 1: ФИО (на всю ширину) === */}
+    // Помечаем все поля как тронутые
+    const allTouched = {
+      clientName: true,
+      clientPhone: true,
+      clientEmail: true,
+      comment: true,
+    };
+    setTouched(allTouched);
+
+    // Валидация
+    const result = validateBookingForm(formData);
+    
+    if (!result.isValid) {
+      setErrors(result.errors); // Теперь это ключи ошибок
+      return;
+    }
+
+    // Сохраняем данные и переходим к следующему шагу
+    updateDraft(formData);
+    onNext();
+  };
+
+  return (
+    <form className="booking-form" onSubmit={handleSubmit}>
+      <h2>{t('booking.contacts.title')}</h2>
+      <p className="booking-form__description">
+        {t('booking.contacts.description')}
+      </p>
+
+      <div className="booking-form__fields">
+        {/* === ФИО (на всю ширину) === */}
         <Input
-          label="ФИО"
+          label={t('booking.contacts.name')}
           name="clientName"
-          value={draft.clientName}
+          value={formData.clientName}
           onChange={(e) => handleChange('clientName', e.target.value)}
           onBlur={() => handleBlur('clientName')}
-          error={errors.clientName}
-          placeholder="Иванова Анна Петровна"
-          leftIcon={<User size={18} />}
-          maxLength={FIELD_LIMITS.NAME_MAX_LENGTH}
+          error={touched.clientName && errors.clientName ? t(errors.clientName) : null}
+          placeholder={t('booking.contacts.namePlaceholder')}
           required
         />
 
-        {/* 
-          🔥 ЭТАП 3.1: СТРОКА 2 — Телефон и Email в 2 колонки
-          ПОЧЕМУ обёртка?
-          CSS Grid требует общего родителя для ячеек.
-          На мобильных (≤640px) grid переключается в 1 колонку.
-        */}
+        {/* === ТЕЛЕФОН + EMAIL (2 колонки) === */}
         <div className="booking-form__row-2col">
           <Input
-            label="Телефон"
+            label={t('booking.contacts.phone')}
             name="clientPhone"
             type="tel"
-            value={draft.clientPhone}
+            value={formData.clientPhone}
             onChange={handlePhoneChange}
             onBlur={() => handleBlur('clientPhone')}
-            error={errors.clientPhone}
+            error={touched.clientPhone && errors.clientPhone ? t(errors.clientPhone) : null}
             placeholder="+375 (29) 123-45-67"
-            helperText={`Коды операторов: ${BY_PHONE_CODES.join(', ')}`}
-            leftIcon={<Phone size={18} />}
+            helperText={t('booking.contacts.phoneHelper')}
             required
           />
 
           <Input
-            label="Email (необязательно)"
+            label={t('booking.contacts.email')}
             name="clientEmail"
             type="email"
-            value={draft.clientEmail}
+            value={formData.clientEmail}
             onChange={(e) => handleChange('clientEmail', e.target.value)}
             onBlur={() => handleBlur('clientEmail')}
-            error={errors.clientEmail}
+            error={touched.clientEmail && errors.clientEmail ? t(errors.clientEmail) : null}
             placeholder="anna@example.com"
-            leftIcon={<Mail size={18} />}
-            maxLength={FIELD_LIMITS.EMAIL_MAX_LENGTH}
           />
         </div>
 
-        {/* === СТРОКА 3: Комментарий (на всю ширину) === */}
+        {/* === КОММЕНТАРИЙ (на всю ширину) === */}
         <div className="booking-form__field">
           <label className="input__label" htmlFor="comment">
-            Комментарий (необязательно)
+            {t('booking.contacts.comment')}
           </label>
           <div className="input__wrapper">
             <textarea
               id="comment"
               name="comment"
-              value={draft.comment}
+              value={formData.comment}
               onChange={(e) => handleChange('comment', e.target.value)}
               onBlur={() => handleBlur('comment')}
-              placeholder="Пожелания, особенности, аллергии..."
-              maxLength={FIELD_LIMITS.COMMENT_MAX_LENGTH}
+              placeholder={t('booking.contacts.commentPlaceholder')}
+              maxLength={500}
               rows={4}
               className={`input__field input__field--textarea ${
-                errors.comment ? 'input__field--error' : ''
+                touched.comment && errors.comment ? 'input__field--error' : ''
               }`}
             />
           </div>
           <div className="booking-form__comment-footer">
-            {errors.comment ? (
-              <p className="input__message input__message--error">{errors.comment}</p>
+            {touched.comment && errors.comment ? (
+              <p className="input__message input__message--error">
+                {t(errors.comment)}
+              </p>
             ) : (
               <p className="input__message input__message--helper">
-                Максимум {FIELD_LIMITS.COMMENT_MAX_LENGTH} символов
+                {t('booking.contacts.commentHelper', { max: 500 })}
               </p>
             )}
             <span className="booking-form__char-count">
-              {draft.comment.length} / {FIELD_LIMITS.COMMENT_MAX_LENGTH}
+              {formData.comment.length} / 500
             </span>
           </div>
         </div>
-      </form>
-    </div>
+      </div>
+
+      {/* === КНОПКИ НАВИГАЦИИ === */}
+      <div className="booking-form__navigation">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onBack}
+        >
+          {t('common.back')}
+        </Button>
+        <Button type="submit" variant="primary">
+          {t('booking.buttons.confirm')}
+        </Button>
+      </div>
+    </form>
   );
 }

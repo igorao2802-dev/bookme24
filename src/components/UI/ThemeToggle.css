@@ -1,0 +1,149 @@
+/**
+ * Стили для ThemeToggle (переключатель темы)
+ * BEM-методология + адаптивность + поддержка тёмной темы
+ * 
+ * 🔥 ЭТАП 6.1: Переключатель с тремя режимами (light/dark/auto)
+ * - Круглая кнопка 40x40px
+ * - Иконка 20px
+ * - Плавные переходы при наведении и смене режима
+ * - Контраст с терракотовым градиентом шапки
+ */
+
+/* === ОСНОВНАЯ КНОПКА === */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: var(--radius-full, 9999px);
+
+  color: var(--color-text-inverse, #ffffff);
+
+  cursor: pointer;
+  transition:
+    background-color var(--transition-fast, 150ms ease),
+    border-color var(--transition-fast, 150ms ease),
+    transform var(--transition-fast, 150ms ease),
+    color var(--transition-fast, 150ms ease);
+}
+
+/* === HOVER-ЭФФЕКТ === */
+/* 
+  ПОЧЕМУ rgba(255, 255, 255, 0.25)?
+  Полупрозрачный белый создаёт эффект "подсветки" без изменения цвета иконки.
+  Это сохраняет контраст с терракотовым градиентом шапки.
+*/
+.theme-toggle:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: scale(1.05);
+}
+
+/* === ACTIVE-ЭФФЕКТ (нажатие мышкой) === */
+.theme-toggle:active {
+  transform: scale(0.95);
+  background: rgba(255, 255, 255, 0.35);
+}
+
+/* === FOCUS-VISIBLE (клавиатурная навигация) === */
+/* 
+  ПОЧЕМУ :focus-visible, а не :focus?
+  - :focus срабатывает и при клике мышкой (раздражающий outline)
+  - :focus-visible срабатывает ТОЛЬКО при Tab-навигации
+  Это современный стандарт A11y (WCAG 2.1)
+*/
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--color-text-inverse, #ffffff);
+  outline-offset: 2px;
+}
+
+/* === ИКОНКА ВНУТРИ КНОПКИ === */
+.theme-toggle svg {
+  width: 20px;
+  height: 20px;
+  transition: transform var(--transition-fast, 150ms ease);
+}
+
+/* === АНИМАЦИЯ ПРИ СМЕНЕ РЕЖИМА === */
+/* 
+  ПОЧЕМУ rotate?
+  Создаёт эффект "вращения" иконки при переключении темы.
+  Sun → Moon → Monitor — каждая смена сопровождается лёгким поворотом.
+*/
+.theme-toggle--light svg {
+  transform: rotate(0deg);
+}
+
+.theme-toggle--dark svg {
+  transform: rotate(-15deg);
+}
+
+.theme-toggle--auto svg {
+  transform: rotate(15deg);
+}
+
+/* === ПОДДЕРЖКА ТЁМНОЙ ТЕМЫ === */
+/* 
+  В тёмной теме кнопка находится на тёмном фоне шапки,
+  поэтому делаем её чуть светлее для контраста
+*/
+[data-theme="dark"] .theme-toggle {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: var(--color-text, #f2ebe0);
+}
+
+[data-theme="dark"] .theme-toggle:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+[data-theme="dark"] .theme-toggle:active {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+[data-theme="dark"] .theme-toggle:focus-visible {
+  outline-color: var(--color-primary-400, #c9a88c);
+}
+
+/* === АДАПТИВНОСТЬ === */
+@media (max-width: 480px) {
+  .theme-toggle {
+    width: 36px;
+    height: 36px;
+  }
+
+  .theme-toggle svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+/* === ДОСТУПНОСТЬ: prefers-reduced-motion === */
+/* 
+  ПОЧЕМУ это важно?
+  Некоторые пользователи отключают анимации из-за вестибулярных нарушений.
+  Уважение к этим настройкам — требование WCAG 2.1.
+*/
+@media (prefers-reduced-motion: reduce) {
+  .theme-toggle,
+  .theme-toggle svg {
+    transition: none;
+  }
+
+  .theme-toggle:hover,
+  .theme-toggle:active {
+    transform: none;
+  }
+
+  .theme-toggle--light svg,
+  .theme-toggle--dark svg,
+  .theme-toggle--auto svg {
+    transform: none;
+  }
+}

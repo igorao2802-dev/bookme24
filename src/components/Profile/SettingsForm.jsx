@@ -1,40 +1,21 @@
 /**
- * SettingsForm.jsx — форма настроек профиля клиента
+ * SettingsForm.jsx — форма настроек профиля
  * 
- * АРХИТЕКТУРНАЯ РОЛЬ:
- * Презентационный компонент. НЕ владеет состоянием настроек.
- * Получает данные через props, отправляет изменения через callbacks.
- * 
- * 🔥 ЭТАП 5.5: Реализация раздела настроек
- * 🔥 ЭТАП 7.7: Локализация всех текстов, полей, кнопок и window.confirm
+ * 🔥 ЭТАП 5.5: Настройки профиля
+ * 🔥 ЭТАП 7.8: Локализация всех текстов и ошибок валидации
  */
 
-import { useState, useEffect } from 'react';
-import { Phone, Mail, Bell, BellOff, Trash2, LogOut, Save } from 'lucide-react';
-import { useLanguage } from '../../hooks/useLanguage'; // 🔥 ЭТАП 7.7
+import { useState } from 'react';
+import { useLanguage } from '../../hooks/useLanguage';
+import { validatePhone, validateEmail } from '../../utils/validators';
 import Input from '../UI/Input';
 import Button from '../UI/Button';
 import Toast from '../UI/Toast';
-import { validatePhone, validateEmail } from '../../utils/validators';
 import './SettingsForm.css';
 
-export default function SettingsForm({
-  settings,
-  onSave,
-  onClearHistory,
-  onLogout,
-}) {
-  const { t } = useLanguage(); // 🔥 ЭТАП 7.7
-
-  // === ВАРИАНТЫ УВЕДОМЛЕНИЙ ===
-  // 🔥 ЭТАП 7.7: label берётся через t()
-  const NOTIFICATION_OPTIONS = [
-    { value: 'sms', label: t('profile.settings.sms'), icon: <Bell size={16} /> },
-    { value: 'email', label: t('profile.settings.emailNotifications'), icon: <Mail size={16} /> },
-    { value: 'none', label: t('profile.settings.doNotDisturb'), icon: <BellOff size={16} /> },
-  ];
-
-  // === ЛОКАЛЬНОЕ СОСТОЯНИЕ ФОРМЫ ===
+export default function SettingsForm({ settings, onSave, onClearHistory, onLogout }) {
+  const { t } = useLanguage(); // 🔥 ЭТАП 7.8
+  
   const [formData, setFormData] = useState({
     phone: settings.phone || '',
     email: settings.email || '',
@@ -43,72 +24,64 @@ export default function SettingsForm({
 
   const [errors, setErrors] = useState({});
 
-  // === СИНХРОНИЗАЦИЯ ПРИ ИЗМЕНЕНИИ PROPS ===
-  useEffect(() => {
-    setFormData({
-      phone: settings.phone || '',
-      email: settings.email || '',
-      notification: settings.notification || 'sms',
-    });
-  }, [settings]);
+  // === ВАРИАНТЫ УВЕДОМЛЕНИЙ ===
+  const NOTIFICATION_OPTIONS = [
+    { value: 'sms', label: t('profile.settings.sms'), icon: '📱' },
+    { value: 'email', label: t('profile.settings.emailNotifications'), icon: '✉️' },
+    { value: 'none', label: t('profile.settings.doNotDisturb'), icon: '🔕' },
+  ];
 
-  // === ОБРАБОТЧИК ИЗМЕНЕНИЯ ПОЛЕЙ ===
+  // === ОБРАБОТЧИК ИЗМЕНЕНИЯ ПОЛЯ ===
   const handleChange = (field, value) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    setFormData(prev => ({ ...prev, [field]: value }));
+    
     if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: null }));
+      setErrors(prev => ({ ...prev, [field]: null }));
     }
   };
 
-  // === ВАЛИДАЦИЯ ФОРМЫ ===
-  const validate = () => {
+  // === ВАЛИДАЦИЯ И СОХРАНЕНИЕ ===
+  const handleSave = () => {
     const newErrors = {};
 
+    // Валидация телефона
     const phoneResult = validatePhone(formData.phone);
     if (!phoneResult.isValid) {
-      newErrors.phone = phoneResult.error;
+      newErrors.phone = phoneResult.errorKey;
     }
 
+    // Валидация email
     const emailResult = validateEmail(formData.email);
     if (!emailResult.isValid) {
-      newErrors.email = emailResult.error;
+      newErrors.email = emailResult.errorKey;
     }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  // === ОБРАБОТЧИК СОХРАНЕНИЯ ===
-  const handleSave = () => {
-    if (!validate()) {
-      Toast.error(t('profile.settings.validationError')); // 🔥 ЭТАП 7.7
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      Toast.error(t('profile.settings.validationError'));
       return;
     }
 
     onSave(formData);
-    Toast.success(t('profile.settings.saveSuccess')); // 🔥 ЭТАП 7.7
+    Toast.success(t('profile.settings.saveSuccess'));
   };
 
-  // === ОБРАБОТЧИК ОЧИСТКИ ИСТОРИИ ===
+  // === ОЧИСТКА ИСТОРИИ ===
   const handleClearHistory = () => {
-    // 🔥 ЭТАП 7.7: Локализованный window.confirm
     const confirmed = window.confirm(
-      `${t('profile.settings.clearHistoryConfirm')}\n\n` +
-        `${t('profile.settings.clearHistoryWarning')}`
+      `${t('profile.settings.clearHistoryConfirm')}\n\n${t('profile.settings.clearHistoryWarning')}`
     );
 
     if (confirmed) {
       onClearHistory();
-      Toast.success(t('profile.settings.clearHistorySuccess')); // 🔥 ЭТАП 7.7
+      Toast.success(t('profile.settings.clearHistorySuccess'));
     }
   };
 
-  // === ОБРАБОТЧИК ВЫХОДА ===
+  // === ВЫХОД ИЗ АККАУНТА ===
   const handleLogout = () => {
-    // 🔥 ЭТАП 7.7: Локализованный window.confirm
     const confirmed = window.confirm(
-      `${t('profile.settings.logoutConfirm')}\n\n` +
-        `${t('profile.settings.logoutWarning')}`
+      `${t('profile.settings.logoutConfirm')}\n\n${t('profile.settings.logoutWarning')}`
     );
 
     if (confirmed) {
@@ -121,39 +94,35 @@ export default function SettingsForm({
       {/* === СЕКЦИЯ 1: КОНТАКТНЫЕ ДАННЫЕ === */}
       <section className="settings-form__section">
         <h3 className="settings-form__section-title">
-          <Phone size={18} />
-          {t('profile.settings.contacts')} {/* 🔥 ЭТАП 7.7 */}
+          {t('profile.settings.contacts')}
         </h3>
 
         <Input
-          label={t('profile.settings.phone')} {/* 🔥 ЭТАП 7.7 */}
+          label={t('profile.settings.phone')}
           name="phone"
           type="tel"
           value={formData.phone}
           onChange={(e) => handleChange('phone', e.target.value)}
-          error={errors.phone}
+          error={errors.phone ? t(errors.phone) : null}
           placeholder="+375 (29) 123-45-67"
-          leftIcon={<Phone size={18} />}
           required
         />
 
         <Input
-          label={t('profile.settings.email')} {/* 🔥 ЭТАП 7.7 */}
+          label={t('profile.settings.email')}
           name="email"
           type="email"
           value={formData.email}
           onChange={(e) => handleChange('email', e.target.value)}
-          error={errors.email}
+          error={errors.email ? t(errors.email) : null}
           placeholder="anna@example.com"
-          leftIcon={<Mail size={18} />}
         />
       </section>
 
       {/* === СЕКЦИЯ 2: УВЕДОМЛЕНИЯ === */}
       <section className="settings-form__section">
         <h3 className="settings-form__section-title">
-          <Bell size={18} />
-          {t('profile.settings.notifications')} {/* 🔥 ЭТАП 7.7 */}
+          {t('profile.settings.notifications')}
         </h3>
 
         <div className="settings-form__radio-group">
@@ -185,30 +154,27 @@ export default function SettingsForm({
       <section className="settings-form__section settings-form__actions">
         <Button
           variant="primary"
-          leftIcon={<Save size={16} />}
           onClick={handleSave}
           className="settings-form__btn-save"
         >
-          {t('profile.settings.save')} {/* 🔥 ЭТАП 7.7 */}
+          {t('profile.settings.save')}
         </Button>
 
         <div className="settings-form__danger-actions">
           <Button
             variant="outline"
-            leftIcon={<Trash2 size={16} />}
             onClick={handleClearHistory}
             className="settings-form__btn-danger"
           >
-            {t('profile.settings.clearHistory')} {/* 🔥 ЭТАП 7.7 */}
+            {t('profile.settings.clearHistory')}
           </Button>
 
           <Button
             variant="outline"
-            leftIcon={<LogOut size={16} />}
             onClick={handleLogout}
             className="settings-form__btn-danger"
           >
-            {t('profile.settings.logout')} {/* 🔥 ЭТАП 7.7 */}
+            {t('profile.settings.logout')}
           </Button>
         </div>
       </section>

@@ -7,12 +7,18 @@
  * - Предупреждает о несохранённых данных при закрытии
  * - Передаёт данные формы родителю через onSave
  * 
- * 🔥 ЭТАП 6.3: Модалка с подтверждением закрытия
+ * ПОЧЕМУ отдельный компонент, а не直接使用 Modal + ServiceForm?
+ * - Инкапсуляция логики отслеживания изменений (isDirty)
+ * - Переиспользование: можно вызвать из любого места
+ * - Чёткое разделение ответственности
+ * 
+ * 🔥 ЭТАП 8.5: Модалка с локализацией и подтверждением закрытия
  */
 
 import { useRef } from 'react';
 import Modal from '../UI/Modal';
 import ServiceForm from './ServiceForm';
+import { useLanguage } from '../../hooks/useLanguage'; // 🔥 ЭТАП 7.5: локализация
 
 export default function ServiceModal({
   isOpen,
@@ -22,6 +28,8 @@ export default function ServiceModal({
   onSave,
   onClose,
 }) {
+  const { t } = useLanguage(); // 🔥 ЭТАП 7.5
+
   // === REF ДЛЯ ОТСЛЕЖИВАНИЯ ИЗМЕНЕНИЙ ===
   // ПОЧЕМУ useRef, а не useState?
   // - Нам не нужен ререндер при изменении флага isDirty
@@ -45,7 +53,7 @@ export default function ServiceModal({
     // - Работает даже при закрытии по Escape или клику на overlay
     if (isDirtyRef.current) {
       const confirmed = window.confirm(
-        'У вас есть несохранённые изменения. Вы уверены, что хотите закрыть форму?'
+        t('admin.services.form.unsavedChanges')
       );
       if (!confirmed) return;
     }
@@ -62,11 +70,16 @@ export default function ServiceModal({
     isDirtyRef.current = true;
   };
 
+  // === ЗАГОЛОВОК МОДАЛКИ ===
+  const title = mode === 'edit'
+    ? t('admin.services.form.editTitle')
+    : t('admin.services.form.addTitle');
+
   return (
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title={mode === 'edit' ? 'Редактировать услугу' : 'Добавить услугу'}
+      title={title}
       size="lg"
     >
       <div onChange={handleFormChange}>

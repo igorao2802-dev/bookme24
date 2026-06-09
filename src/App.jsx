@@ -1,23 +1,11 @@
 /**
  * App.jsx — ДИРИЖЁР приложения (Single Source of Truth)
  * 
- * ПОЧЕМУ App — владелец глобального состояния?
- * Согласно принципу Lifting State Up (подъём состояния),
- * данные, нужные нескольким компонентам, хранятся у их общего родителя.
- * App.jsx — самый верхний компонент, поэтому он "владеет правдой".
- * 
- * Архитектурные роли:
- * - Данные текут ВНИЗ через props (приказы)
- * - События текут ВВЕРХ через callbacks (отчёты)
- * 
  * 🔥 ЭТАП 5.1: Добавлен маршрут /profile для Личного кабинета
- * 🔥 ЭТАП 5.2: Передача onNewBooking в ProfilePage
- * 🔥 ЭТАП 5.3: Передача onCancelBooking в ProfilePage
- * 🔥 ЭТАП 5.5: Передача onRoleChange для выхода из аккаунта
  * 🔥 ЭТАП 6.1: Интеграция ThemeProvider для переключения тем
  * 🔥 ЭТАП 6.3: Интеграция хуков useServices и useSpecialists для CRUD
  * 🔥 ЭТАП 7.1: Интеграция LanguageProvider для локализации
- * 🔥 ИСПРАВЛЕНО: Опечатки onUpdateBooking, onUpdateSpecialist
+ * 🔥 ЭТАП 8.8: Передача CRUD-функций в AdminDashboard
  */
 
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
@@ -37,19 +25,14 @@ import ProfilePage from './components/Profile/ProfilePage';
 // === ХУКИ ===
 import { useBookings } from './hooks/useBookings';
 import { useLocalStorage } from './hooks/useLocalStorage';
-import { useServices } from './hooks/useServices';
-import { useSpecialists } from './hooks/useSpecialists';
+import { useServices } from './hooks/useServices';       // 🔥 ЭТАП 6.3
+import { useSpecialists } from './hooks/useSpecialists'; // 🔥 ЭТАП 6.3
 
 // === КОНСТАНТЫ ===
 import { STORAGE_KEYS, USER_ROLES } from './utils/constants';
 
 /**
  * AppContent — внутренний компонент с бизнес-логикой и роутингом
- * 
- * ПОЧЕМУ отдельный компонент?
- * - useNavigate() требует, чтобы BrowserRouter был выше в дереве
- * - Провайдеры (ThemeProvider, LanguageProvider) оборачивают всё приложение
- * - Разделение упрощает тестирование и избегает вложенных хуков
  */
 function AppContent() {
   const navigate = useNavigate();
@@ -62,7 +45,6 @@ function AppContent() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        // ПОЧЕМУ Promise.all? Параллельная загрузка ускоряет старт в ~2 раза
         const [servicesResponse, specialistsResponse] = await Promise.all([
           fetch('/data/services.json'),
           fetch('/data/specialists.json'),
@@ -83,7 +65,10 @@ function AppContent() {
     loadData();
   }, []);
 
-  // === 🔥 ХУКИ ДЛЯ CRUD УСЛУГ И СПЕЦИАЛИСТОВ (ЭТАП 6.3) ===
+  // === 🔥 ХУКИ ДЛЯ CRUD УСЛУГ И СПЕЦИАЛИСТОВ (ЭТАП 6.3 + 8.8) ===
+  // ПОЧЕМУ передаём jsonServices/jsonSpecialists?
+  // - Хуки сливают JSON-данные с кастомными из localStorage
+  // - Возвращают объединённый массив `services` / `specialists`
   const {
     services,
     addService,
@@ -99,6 +84,9 @@ function AppContent() {
   } = useSpecialists(jsonSpecialists);
 
   // === ГЛАВНЫЙ ХУК — CRUD ЗАПИСЕЙ ===
+  // ПОЧЕМУ передаём объединённые services/specialists?
+  // - useBookings использует их для валидации записей
+  // - Если админ добавил новую услугу — она сразу доступна для записи
   const {
     bookings,
     stats,
@@ -150,7 +138,7 @@ function AppContent() {
           }
         />
 
-        {/* === АДМИН-ПАНЕЛЬ === */}
+        {/* === 🔥 АДМИН-ПАНЕЛЬ (ЭТАП 8.8) === */}
         <Route
           path="/admin"
           element={
@@ -162,11 +150,11 @@ function AppContent() {
                 stats={stats}
                 onUpdateBooking={updateBooking}
                 onCancelBooking={cancelBooking}
-                // 🔥 ЭТАП 6.3: CRUD для услуг
+                // 🔥 ЭТАП 8.8: CRUD для услуг
                 onAddService={addService}
                 onUpdateService={updateService}
                 onDeleteService={deleteService}
-                // 🔥 ЭТАП 6.3: CRUD для специалистов
+                // 🔥 ЭТАП 8.8: CRUD для специалистов
                 onAddSpecialist={addSpecialist}
                 onUpdateSpecialist={updateSpecialist}
                 onDeleteSpecialist={deleteSpecialist}
@@ -177,7 +165,7 @@ function AppContent() {
           }
         />
 
-        {/* === 🔥 ЛИЧНЫЙ КАБИНЕТ (ЭТАП 5.1 + 5.2 + 5.3 + 5.5) === */}
+        {/* === ЛИЧНЫЙ КАБИНЕТ === */}
         <Route
           path="/profile"
           element={
@@ -197,7 +185,7 @@ function AppContent() {
           }
         />
 
-        {/* === 404: ЛЮБОЙ ДРУГОЙ МАРШРУТ === */}
+        {/* === 404 === */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Layout>
@@ -206,15 +194,6 @@ function AppContent() {
 
 /**
  * App — главный компонент с провайдерами контекста
- * 
- * ПОЧЕМУ именно такой порядок провайдеров?
- * 1. ThemeProvider — самый внешний (тема применяется ко всему)
- * 2. LanguageProvider — внутри темы (локализация зависит от темы)
- * 3. AppContent — самый внутренний (бизнес-логика и роутинг)
- * 
- * ПОЧЕМУ BrowserRouter не здесь?
- * - BrowserRouter должен быть в index.js или main.jsx
- * - Это позволяет использовать useNavigate внутри AppContent
  */
 export default function App() {
   return (
