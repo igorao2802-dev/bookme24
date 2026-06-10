@@ -34,7 +34,7 @@ export default function AdminStats({ stats, bookings }) {
       (b) =>
         b.status === 'confirmed' ||
         b.status === 'completed' ||
-        b.status === 'in-progress'
+        b.status === 'inProgress'
     )
     .reduce((sum, b) => sum + (b.totalPrice || 0), 0);
 

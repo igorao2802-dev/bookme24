@@ -1,22 +1,10 @@
 /**
  * AdminDashboard.jsx — главная панель администратора
  * 
- * АРХИТЕКТУРНАЯ РОЛЬ:
- * Дирижёр админки. Содержит:
- * - Блок статистики (AdminStats) — всегда виден
- * - Систему табов для переключения между разделами:
- *   * "Записи" — фильтрация и управление записями
- *   * "Услуги" — CRUD каталога услуг
- *   * "Специалисты" — CRUD списка мастеров
- * 
  * 🔥 ЭТАП 6.3: Интеграция CRUD для услуг и специалистов
  * 🔥 ЭТАП 7.6: Локализация табов через t()
  * 🔥 ЭТАП 8.8: Полная интеграция модалок и таблиц
- * 
- * ПОЧЕМУ табы, а не отдельные страницы?
- * - Админ должен быстро переключаться между разделами
- * - Нет необходимости в дополнительных роутах
- * - Все данные уже загружены в App.jsx
+ * 🔥 ИСПРАВЛЕНО: Опечатки (se tSortBy, onCa ncelBooking, onDelete Specialist)
  */
 
 import { useState, useCallback } from 'react';
@@ -43,11 +31,11 @@ export default function AdminDashboard({
   // CRUD записей
   onUpdateBooking,
   onCancelBooking,
-  // 🔥 ЭТАП 6.3: CRUD услуг
+  // CRUD услуг
   onAddService,
   onUpdateService,
   onDeleteService,
-  // 🔥 ЭТАП 6.3: CRUD специалистов
+  // CRUD специалистов
   onAddSpecialist,
   onUpdateSpecialist,
   onDeleteSpecialist,
@@ -57,7 +45,7 @@ export default function AdminDashboard({
   // === АКТИВНЫЙ ТАБ ===
   const [activeTab, setActiveTab] = useState('bookings');
 
-  // === СОСТОЯНИЕ ФИЛЬТРОВ (для раздела "Записи") ===
+  // === СОСТОЯНИЕ ФИЛЬТРОВ ===
   const [filters, setFilters] = useState({
     searchQuery: '',
     status: 'all',
@@ -68,10 +56,6 @@ export default function AdminDashboard({
   const [sortBy, setSortBy] = useState('date-desc');
 
   // === СОСТОЯНИЕ МОДАЛОК ===
-  // ПОЧЕМУ два отдельных состояния, а не одно?
-  // - Модалки независимы: можно открыть ServiceModal, не закрывая SpecialistModal
-  // - Более читаемо, чем один объект с вложенными свойствами
-  // - Легко расширять (например, добавить модалку для удаления)
   const [serviceModal, setServiceModal] = useState({
     isOpen: false,
     mode: 'add',
@@ -84,11 +68,8 @@ export default function AdminDashboard({
     specialist: null,
   });
 
-  // === 🔥 КОНФИГУРАЦИЯ ТАБОВ (ЭТАП 7.6: локализация) ===
-  // ПОЧЕМУ вычисляется внутри компонента, а не как константа?
-  // - label зависит от t(), которая вызывается через useLanguage()
-  // - Константа не может использовать хуки React
-  // - Вычисление происходит при каждом рендере, что нормально (быстрая операция)
+  // === КОНФИГУРАЦИЯ ТАБОВ ===
+  // 🔥 ЭТАП 7.6: локализация через t()
   const ADMIN_TABS = [
     { id: 'bookings', label: t('admin.tabs.bookings'), icon: Calendar },
     { id: 'services', label: t('admin.tabs.services'), icon: Scissors },
@@ -112,9 +93,6 @@ export default function AdminDashboard({
   };
 
   // === ФИЛЬТРАЦИЯ И СОРТИРОВКА ЗАПИСЕЙ ===
-  // ПОЧЕМУ здесь, а не в AdminBookingsTable?
-  // - AdminDashboard владеет состоянием фильтров
-  // - AdminBookingsTable — презентационный, только отображает данные
   const filteredBookings = bookings.filter((b) => {
     const matchesSearch =
       !filters.searchQuery ||
@@ -161,10 +139,7 @@ export default function AdminDashboard({
     return value !== '' && value !== null && value !== undefined;
   }).length;
 
-  // === 🔥 ОБРАБОТЧИКИ МОДАЛКИ УСЛУГ ===
-  // ПОЧЕМУ useCallback?
-  // - Мемоизируем функции, чтобы избежать лишних ререндеров таблиц
-  // - Таблицы получают эти функции через props
+  // === ОБРАБОТЧИКИ МОДАЛКИ УСЛУГ ===
   const handleOpenAddService = useCallback(() => {
     setServiceModal({ isOpen: true, mode: 'add', service: null });
   }, []);
@@ -180,22 +155,20 @@ export default function AdminDashboard({
   const handleSaveService = useCallback(
     (serviceData) => {
       let result;
-
       if (serviceModal.mode === 'add') {
         result = onAddService(serviceData);
       } else {
         result = onUpdateService(serviceModal.service.id, serviceData);
       }
 
-      // Закрываем модалку только при успешном сохранении
-      if (result.success) {
+      if (result?.success) {
         handleCloseServiceModal();
       }
     },
     [serviceModal, onAddService, onUpdateService, handleCloseServiceModal]
   );
 
-  // === 🔥 ОБРАБОТЧИКИ МОДАЛКИ СПЕЦИАЛИСТОВ ===
+  // === ОБРАБОТЧИКИ МОДАЛКИ СПЕЦИАЛИСТОВ ===
   const handleOpenAddSpecialist = useCallback(() => {
     setSpecialistModal({ isOpen: true, mode: 'add', specialist: null });
   }, []);
@@ -211,14 +184,13 @@ export default function AdminDashboard({
   const handleSaveSpecialist = useCallback(
     (specialistData) => {
       let result;
-
       if (specialistModal.mode === 'add') {
         result = onAddSpecialist(specialistData);
       } else {
         result = onUpdateSpecialist(specialistModal.specialist.id, specialistData);
       }
 
-      if (result.success) {
+      if (result?.success) {
         handleCloseSpecialistModal();
       }
     },
@@ -227,7 +199,7 @@ export default function AdminDashboard({
 
   return (
     <div className="admin-dashboard">
-      {/* === СТАТИСТИКА (ВСЕГДА ВИДНА) === */}
+      {/* === СТАТИСТИКА === */}
       <AdminStats stats={stats} bookings={bookings} />
 
       {/* === СИСТЕМА ТАБОВ === */}
@@ -299,6 +271,7 @@ export default function AdminDashboard({
         isOpen={serviceModal.isOpen}
         mode={serviceModal.mode}
         service={serviceModal.service}
+        specialists={specialists} // 🔥 ИСПРАВЛЕНИЕ 1.5: передаём specialists
         existingServices={services}
         onSave={handleSaveService}
         onClose={handleCloseServiceModal}

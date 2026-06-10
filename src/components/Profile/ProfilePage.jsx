@@ -10,9 +10,10 @@
  * - Настройки профиля (SettingsForm)
  * 
  * 🔥 ЭТАП 5.1-5.5: Полная реализация личного кабинета
- * 🔥 ЭТАП 7.7: Локализация всех текстов
+ * 🔥 ЭТАП 7.5/7.7: Локализация всех пользовательских текстов
  * 🔥 ИСПРАВЛЕНО: Добавлен импорт Navigate, исправлен порядок хуков
- * 🔥 ИСПРАВЛЕНО: Синтаксические ошибки JSX-комментариев
+ * 🔥 ИСПРАВЛЕНИЕ 1.2: Умная фильтрация записей — показываем все, 
+ *    если телефон клиента неизвестен (первый вход / записи от менеджера)
  */
 
 import { useMemo } from 'react';
@@ -64,15 +65,27 @@ export default function ProfilePage({
     }
   );
 
-  // === 🔥 ИСПРАВЛЕНИЕ: ВСЕ ХУКИ ДОЛЖНЫ БЫТЬ ЗДЕСЬ, ДО ЛЮБОГО return ===
-  // Это требование React Hooks — они должны вызываться в одном и том же порядке
-  // при каждом рендере компонента
-
-  // === ФИЛЬТРАЦИЯ ЗАПИСЕЙ КЛИЕНТА ===
+  // === 🔥 ИСПРАВЛЕНИЕ 1.2: УМНАЯ ФИЛЬТРАЦИЯ ЗАПИСЕЙ ===
+  // ПОЧЕМУ "умная" фильтрация вместо жёсткой по телефону?
+  // - Если телефон клиента ещё не известен (lastClientPhone пустой),
+  //   значит он впервые зашёл в ЛК или записи созданы менеджером в админке
+  // - В этом случае показываем ВСЕ записи — это единственный способ
+  //   синхронизировать данные клиента и менеджера (т.к. нет системы авторизации)
+  // - Как только клиент создаст первую запись через форму, появится lastClientPhone
+  //   и будет работать фильтрация только по его записям
+  // - Это компромисс для MVP без полноценной авторизации пользователей
   const clientBookings = useMemo(() => {
-    if (!lastClientPhone) return [];
-    const normalizedPhone = lastClientPhone.replace(/\D/g, '');
+    // СЛУЧАЙ 1: Телефон неизвестен — показываем ВСЕ записи
+    if (!lastClientPhone) {
+      return [...bookings].sort((a, b) => {
+        const dateA = new Date(a.date);
+        const dateB = new Date(b.date);
+        return dateB - dateA; // Новые сверху
+      });
+    }
 
+    // СЛУЧАЙ 2: Телефон известен — фильтруем по нему
+    const normalizedPhone = lastClientPhone.replace(/\D/g, '');
     return bookings.filter((b) => {
       if (!b.clientPhone) return false;
       const bookingPhone = b.clientPhone.replace(/\D/g, '');
@@ -83,6 +96,7 @@ export default function ProfilePage({
   // === ДАННЫЕ ПРОФИЛЯ ===
   const profileData = useMemo(() => {
     if (clientBookings.length === 0) return null;
+
     const sorted = [...clientBookings].sort((a, b) => {
       const dateA = new Date(a.createdAt || 0);
       const dateB = new Date(b.createdAt || 0);
@@ -113,9 +127,10 @@ export default function ProfilePage({
   // === СТАТИСТИКА ===
   const stats = useMemo(() => {
     const total = clientBookings.length;
+
     const confirmed = clientBookings.filter((b) =>
       b.status === 'confirmed' ||
-      b.status === 'in-progress' ||
+      b.status === 'inProgress' ||
       b.status === 'completed'
     ).length;
 
@@ -127,7 +142,7 @@ export default function ProfilePage({
       .filter((b) =>
         b.status === 'confirmed' ||
         b.status === 'completed' ||
-        b.status === 'in-progress'
+        b.status === 'inProgress'
       )
       .reduce((sum, b) => sum + (b.totalPrice || 0), 0);
 
@@ -201,15 +216,14 @@ export default function ProfilePage({
     Toast.success(t('profile.settings.logoutSuccess'));
   };
 
-  // === 🔥 ТЕПЕРЬ МОЖНО ДЕЛАТЬ ПРОВЕРКИ И EARLY RETURNS ===
-  // Все хуки уже вызваны выше — это правильное использование React Hooks
-
   // === ЗАЩИТА ДОСТУПА ===
   if (userRole !== USER_ROLES.CLIENT) {
     return <Navigate to="/" replace />;
   }
 
   // === СОСТОЯНИЕ: НЕТ ЗАПИСЕЙ ===
+  // 🔥 ИСПРАВЛЕНИЕ 1.2: Это состояние теперь срабатывает ТОЛЬКО если
+  // вообще нет ни одной записи в системе (ни от клиента, ни от менеджера)
   if (!profileData) {
     return (
       <div className="profile-page">

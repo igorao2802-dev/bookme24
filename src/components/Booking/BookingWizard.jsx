@@ -5,17 +5,19 @@
  * Это "дирижёр" всей формы записи. Он:
  * - Хранит черновик (draft) записи в одном объекте (Single Source of Truth)
  * - Управляет текущим шагом (currentStep)
- * - Автосохраняет draft в localStorage (наследие ПР-05)
+ * - Автосохраняет draft в localStorage
  * - Координирует переходы между шагами с валидацией
  * 
  * 🔥 ЭТАП 2.1: Кнопки навигации зафиксированы внизу экрана (sticky)
+ * 🔥 ЭТАП 3.2: Оптимизация навигации и UX (кнопка очистки, кликабельные шаги)
+ * 🔥 ЭТАП 3.4: Маршрутизация от карточки специалиста (фильтрация услуг + пропуск шага 2)
  * 🔥 ЭТАП 7.4: Полная локализация всех пользовательских текстов
- * 🔥 ИСПРАВЛЕНО: Все опечатки с пробелами в идентификаторах
+ * 🔥 ИСПРАВЛЕНО: Все опечатки с пробелами в идентификаторах и стрелочных функциях
  */
 
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Check, ArrowLeft, ArrowRight } from 'lucide-react';
+import { Check, ArrowLeft, ArrowRight, Trash2 } from 'lucide-react';
 
 // === ИМПОРТ ШАГОВ ===
 import ServiceSelector from './ServiceSelector';
@@ -51,8 +53,6 @@ const INITIAL_DRAFT = {
 };
 
 // === КЛЮЧИ ПЕРЕВОДА ДЛЯ ШАГОВ ===
-// ПОЧЕМУ вынесено в константу?
-// Единая точка правды для соответствия шагов и ключей перевода
 const STEP_TRANSLATION_KEYS = {
   [BOOKING_STEPS.SERVICE]: 'booking.steps.service',
   [BOOKING_STEPS.SPECIALIST]: 'booking.steps.specialist',
@@ -69,43 +69,46 @@ export default function BookingWizard({
 }) {
   const navigate = useNavigate();
   const location = useLocation();
-  // 🔥 ЭТАП 7.4: Хук локализации
   const { t } = useLanguage();
 
-  // === СОСТОЯНИЕ ТЕКУЩЕГО ШАГА ===
   const [currentStep, setCurrentStep] = useState(BOOKING_STEPS.SERVICE);
-
-  // === ЧЕРНОВИК С АВТОСОХРАНЕНИЕМ ===
+  
   const [draft, setDraft, clearDraft] = useLocalStorage(
     STORAGE_KEYS.BOOKING_DRAFT,
     INITIAL_DRAFT,
     { debounceMs: 500 }
   );
 
-  // === СОСТОЯНИЕ ПОКАЗА МОДАЛКИ ПОДТВЕРЖДЕНИЯ ===
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // === ФЛАГ: ПОКАЗЫВАТЬ ФОРМУ ИЛИ СПИСОК ЗАПИСЕЙ ===
   const [showMyBookings, setShowMyBookings] = useState(false);
-
-  // === НОВАЯ ЗАПИСЬ (ЭТАП 1.3) ===
   const [lastCreatedBooking, setLastCreatedBooking] = useState(null);
-
-  // === ТЕЛЕФОН ПОСЛЕДНЕЙ ЗАПИСИ (ЭТАП 1.3) ===
+  
   const [lastClientPhone, setLastClientPhone] = useLocalStorage(
     'bookme24_last_client_phone',
     '',
     { debounceMs: 0 }
   );
 
-  // === ОБРАБОТКА ПЕРЕХОДА ИЗ КАТАЛОГА (ЭТАП 1.2) ===
+  // === ОБРАБОТКА ПЕРЕХОДА ИЗ КАТАЛОГА ===
   useEffect(() => {
     const { preselectedServiceId, preselectedSpecialistId, startStep } = location.state || {};
 
+    // 🔥 ЭТАП 3.4: Обработка перехода от карточки специалиста
+    if (preselectedSpecialistId) {
+      const specialistExists = specialists.some(s => s.id === preselectedSpecialistId);
+      if (specialistExists) {
+        updateDraft({ specialistId: preselectedSpecialistId });
+        setCurrentStep(startStep || BOOKING_STEPS.SERVICE);
+        
+        const specialistName = specialists.find(s => s.id === preselectedSpecialistId)?.fullName;
+        Toast.success(t('booking.specialistSelected', { name: specialistName }), { duration: 2000 });
+      }
+    }
+
+    // Обработка перехода от карточки услуги
     if (preselectedServiceId) {
       const serviceExists = services.some(s => s.id === preselectedServiceId);
-      
       if (serviceExists) {
         updateDraft({ serviceId: preselectedServiceId });
         const targetStep = startStep || BOOKING_STEPS.SPECIALIST;
@@ -118,84 +121,67 @@ export default function BookingWizard({
       }
     }
 
-    if (preselectedSpecialistId) {
-      const specialistExists = specialists.some(s => s.id === preselectedSpecialistId);
-      
-      if (specialistExists) {
-        updateDraft({ specialistId: preselectedSpecialistId });
-        const targetStep = startStep || BOOKING_STEPS.DATETIME;
-        setCurrentStep(targetStep);
-
-        const specialistName = specialists.find(s => s.id === preselectedSpecialistId)?.fullName;
-        Toast.success(t('booking.specialistSelected', { name: specialistName }), { duration: 2000 });
-      }
-    }
-
+    // Очищаем state роутера, чтобы не срабатывать повторно при обновлении страницы
     if (location.state) {
       navigate(location.pathname, { replace: true, state: {} });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.state, t]);
 
-  // === ПОЛУЧЕННЫЕ ОБЪЕКТЫ ===
+  // === 🔥 ОБЪЕДИНЁННАЯ ЛОГИКА АВТО-ПЕРЕХОДА (ЭТАП 3.2 + 3.4) ===
+  useEffect(() => {
+    if (!draft.serviceId) return;
+
+    const selectedService = services.find(s => s.id === draft.serviceId);
+
+    // Условие 1: Специалист уже выбран (пришли из каталога)
+    // Условие 2: У выбранной услуги всего 1 специалист (авто-выбор)
+    if (draft.specialistId || (selectedService && selectedService.specialistIds?.length === 1)) {
+      
+      // Если специалист не был выбран, но у услуги он один — выбираем его
+      if (!draft.specialistId && selectedService) {
+        updateDraft({ specialistId: selectedService.specialistIds[0] });
+      }
+      
+      // Переходим к выбору даты и времени
+      setCurrentStep(BOOKING_STEPS.DATETIME);
+    }
+  }, [draft.serviceId, draft.specialistId, services]);
+
   const selectedService = services.find((s) => s.id === draft.serviceId);
   const selectedSpecialist = specialists.find((s) => s.id === draft.specialistId);
 
-  // === ПОДСКАЗКА О ВОССТАНОВЛЕННОМ ЧЕРНОВИКЕ ===
   useEffect(() => {
-    const hasDraft =
-      draft.serviceId ||
-      draft.specialistId ||
-      draft.clientName ||
-      draft.clientPhone;
-
+    const hasDraft = draft.serviceId || draft.specialistId || draft.clientName || draft.clientPhone;
     if (hasDraft) {
       Toast.info(t('booking.draft.restored'), { duration: 3000 });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // === ОБНОВЛЕНИЕ ЧЕРНОВИКА ===
   const updateDraft = (updates) => {
     setDraft((prev) => ({ ...prev, ...updates }));
   };
 
-  // === ОЧИСТКА ДАННЫХ ШАГА (ЭТАП 1.1) ===
   const clearStepData = (step) => {
     switch (step) {
       case BOOKING_STEPS.DATETIME:
         updateDraft({ date: null, startTime: null });
         break;
       case BOOKING_STEPS.SPECIALIST:
-        updateDraft({ 
-          specialistId: null, 
-          date: null, 
-          startTime: null 
-        });
+        updateDraft({ specialistId: null, date: null, startTime: null });
         break;
       case BOOKING_STEPS.SERVICE:
-        updateDraft({ 
-          serviceId: null,
-          specialistId: null, 
-          date: null, 
-          startTime: null 
-        });
+        updateDraft({ serviceId: null, specialistId: null, date: null, startTime: null });
         break;
       case BOOKING_STEPS.CONTACTS:
-        updateDraft({
-          clientName: '',
-          clientPhone: '',
-          clientEmail: '',
-          comment: '',
-        });
+        updateDraft({ clientName: '', clientPhone: '', clientEmail: '', comment: '' });
         break;
       default:
         break;
     }
   };
 
-  // === ВАЛИДАЦИЯ ТЕКУЩЕГО ШАГА ===
-  // 🔥 ЭТАП 7.4: Все сообщения об ошибках локализованы
   const validateCurrentStep = () => {
     switch (currentStep) {
       case BOOKING_STEPS.SERVICE:
@@ -227,8 +213,8 @@ export default function BookingWizard({
           comment: draft.comment,
         });
         if (!result.isValid) {
-          const firstError = Object.values(result.errors)[0];
-          Toast.error(firstError);
+          const firstErrorKey = Object.values(result.errors)[0];
+          Toast.error(t(firstErrorKey));
           return false;
         }
         return true;
@@ -239,29 +225,32 @@ export default function BookingWizard({
     }
   };
 
-  // === ПЕРЕХОД К СЛЕДУЮЩЕМУ ШАГУ ===
   const handleNext = () => {
     if (!validateCurrentStep()) return;
-
     if (currentStep === BOOKING_STEPS.CONTACTS) {
       setShowConfirmation(true);
       return;
     }
-
     setCurrentStep((prev) => Math.min(prev + 1, BOOKING_STEPS.CONFIRM));
   };
 
-  // === ВОЗВРАТ К ПРЕДЫДУЩЕМУ ШАГУ (ЭТАП 1.1) ===
   const handleBack = () => {
     clearStepData(currentStep);
     setCurrentStep((prev) => Math.max(prev - 1, BOOKING_STEPS.SERVICE));
   };
 
-  // === ФИНАЛЬНОЕ ПОДТВЕРЖДЕНИЕ (ЭТАП 1.3) ===
+  const handleClearForm = () => {
+    const confirmed = window.confirm(t('booking.clearFormConfirm') || 'Вы уверены, что хотите очистить форму? Все введенные данные будут потеряны.');
+    if (confirmed) {
+      clearDraft();
+      setCurrentStep(BOOKING_STEPS.SERVICE);
+      Toast.info(t('booking.formCleared') || 'Форма очищена');
+    }
+  };
+
   const handleConfirm = async () => {
     if (isSubmitting) return;
     setIsSubmitting(true);
-
     try {
       const result = onCreateBooking({
         serviceId: draft.serviceId,
@@ -277,16 +266,9 @@ export default function BookingWizard({
 
       if (result.success) {
         playBookingConfirmation();
-        Toast.success(
-          t('booking.confirmation.success', {
-            service: selectedService?.name,
-            time: draft.startTime,
-          })
-        );
-
+        Toast.success(t('booking.confirmation.success', { service: selectedService?.name, time: draft.startTime }));
         setLastCreatedBooking(result.booking);
         setLastClientPhone(draft.clientPhone.trim());
-
         clearDraft();
         setShowConfirmation(false);
         setShowMyBookings(true);
@@ -302,7 +284,6 @@ export default function BookingWizard({
     }
   };
 
-  // === СБРОС И НОВАЯ ЗАПИСЬ ===
   const handleNewBooking = () => {
     clearDraft();
     setLastCreatedBooking(null);
@@ -310,10 +291,8 @@ export default function BookingWizard({
     setShowMyBookings(false);
   };
 
-  // === ПРОГРЕСС (в процентах) ===
   const progressPercent = ((currentStep - 1) / (BOOKING_STEPS.CONFIRM - 1)) * 100;
 
-  // === ФИЛЬТРАЦИЯ ЗАПИСЕЙ КЛИЕНТА (ЭТАП 1.3) ===
   const phoneForFilter = draft.clientPhone || lastClientPhone;
   const myBookings = bookings.filter(
     (b) =>
@@ -322,7 +301,6 @@ export default function BookingWizard({
       b.clientPhone.replace(/\D/g, '') === phoneForFilter.replace(/\D/g, '')
   );
 
-  // === РЕНДЕР: СПИСОК "МОИ ЗАПИСИ" ===
   if (showMyBookings) {
     return (
       <div className="booking-wizard">
@@ -337,10 +315,6 @@ export default function BookingWizard({
     );
   }
 
-  // === 🔥 ТЕКСТ КНОПКИ "ДАЛЕЕ" В ЗАВИСИМОСТИ ОТ ШАГА (ЭТАП 2.1 + 7.4) ===
-  // ПОЧЕМУ меняем текст?
-  // Это даёт пользователю подсказку о следующем действии.
-  // На последнем шаге — "Подтвердить запись" вместо "Далее".
   const getNextButtonText = () => {
     switch (currentStep) {
       case BOOKING_STEPS.CONTACTS:
@@ -354,24 +328,19 @@ export default function BookingWizard({
     }
   };
 
-  // === РЕНДЕР: STEPPER ===
   return (
     <div className="booking-wizard">
-      {/* === ЗАГОЛОВОК === */}
       <div className="booking-wizard__header">
         <h1>{t('booking.title')}</h1>
-        <p className="booking-wizard__subtitle">
-          {t('booking.subtitle')}
-        </p>
+        <p className="booking-wizard__subtitle">{t('booking.subtitle')}</p>
       </div>
 
-      {/* === ПРОГРЕСС-БАР === */}
       <div className="booking-wizard__progress">
         <div className="booking-wizard__steps">
           {Object.values(BOOKING_STEPS).map((stepNum) => {
             const isActive = currentStep === stepNum;
             const isCompleted = currentStep > stepNum;
-            // 🔥 ЭТАП 7.4: Локализованное название шага
+            const isClickable = isCompleted; 
             const stepLabel = t(STEP_TRANSLATION_KEYS[stepNum]);
 
             return (
@@ -379,14 +348,15 @@ export default function BookingWizard({
                 key={stepNum}
                 className={`booking-wizard__step ${
                   isActive ? 'booking-wizard__step--active' : ''
-                } ${isCompleted ? 'booking-wizard__step--completed' : ''}`}
+                } ${isCompleted ? 'booking-wizard__step--completed' : ''} ${
+                  isClickable ? 'booking-wizard__step--clickable' : ''
+                }`}
+                onClick={() => isClickable && setCurrentStep(stepNum)}
               >
                 <div className="booking-wizard__step-circle">
                   {isCompleted ? <Check size={16} /> : stepNum}
                 </div>
-                <span className="booking-wizard__step-label">
-                  {stepLabel}
-                </span>
+                <span className="booking-wizard__step-label">{stepLabel}</span>
               </div>
             );
           })}
@@ -399,11 +369,13 @@ export default function BookingWizard({
         </div>
       </div>
 
-      {/* === КОНТЕНТ ШАГА === */}
       <div className="booking-wizard__content">
         {currentStep === BOOKING_STEPS.SERVICE && (
           <ServiceSelector
-            services={services}
+            // 🔥 ЭТАП 3.4: Фильтруем услуги, если выбран конкретный специалист
+            services={services.filter(s => 
+              !draft.specialistId || s.specialistIds?.includes(draft.specialistId)
+            )}
             selectedServiceId={draft.serviceId}
             onSelect={(serviceId) => updateDraft({ serviceId })}
           />
@@ -431,14 +403,10 @@ export default function BookingWizard({
         )}
 
         {currentStep === BOOKING_STEPS.CONTACTS && (
-          <BookingForm
-            draft={draft}
-            onChange={updateDraft}
-          />
+          <BookingForm draft={draft} onChange={updateDraft} />
         )}
       </div>
 
-      {/* === КНОПКИ НАВИГАЦИИ (ЭТАП 2.1: STICKY) === */}
       <div className="booking-wizard__navigation">
         {currentStep > BOOKING_STEPS.SERVICE && (
           <Button
@@ -450,21 +418,27 @@ export default function BookingWizard({
           </Button>
         )}
 
+        <Button
+          variant="outline"
+          onClick={handleClearForm}
+          leftIcon={<Trash2 size={16} />}
+          className="booking-wizard__btn-clear"
+        >
+          {t('booking.clearForm') || 'Очистить'}
+        </Button>
+
         <div className="booking-wizard__nav-spacer" />
 
         <Button
           variant="primary"
           onClick={handleNext}
-          rightIcon={
-            currentStep === BOOKING_STEPS.CONTACTS ? null : <ArrowRight size={16} />
-          }
+          rightIcon={currentStep === BOOKING_STEPS.CONTACTS ? null : <ArrowRight size={16} />}
           size="lg"
         >
           {getNextButtonText()}
         </Button>
       </div>
 
-      {/* === МОДАЛКА ПОДТВЕРЖДЕНИЯ === */}
       <ConfirmationModal
         isOpen={showConfirmation}
         onClose={() => setShowConfirmation(false)}

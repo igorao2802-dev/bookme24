@@ -244,3 +244,36 @@
     border-top: none;
   }
 }
+
+/* ═══════════════════════════════════════════════
+   🔥 ЭТАП 3.2: КЛИКАБЕЛЬНЫЕ ШАГИ ПРОГРЕСС-БАРА
+   ═══════════════════════════════════════════════ */
+
+.booking-wizard__step--clickable {
+  cursor: pointer;
+}
+
+.booking-wizard__step--clickable:hover .booking-wizard__step-circle {
+  transform: scale(1.15);
+  box-shadow: 0 6px 16px rgba(212, 165, 116, 0.5);
+}
+
+.booking-wizard__step--clickable:hover .booking-wizard__step-label {
+  color: var(--color-primary-dark, #b8895a);
+  text-decoration: underline;
+}
+
+/* ═══════════════════════════════════════════════
+   🔥 ЭТАП 3.2: СТИЛИ КНОПКИ ОЧИСТКИ
+   ═══════════════════════════════════════════════ */
+
+.booking-wizard__btn-clear {
+  color: var(--color-text-muted, #6b5d4f);
+  border-color: var(--color-border, #e8dcc4);
+}
+
+.booking-wizard__btn-clear:hover {
+  background-color: var(--color-error-light, #fceae8);
+  color: var(--color-error-dark, #9e4539);
+  border-color: var(--color-error, #c65d52);
+}

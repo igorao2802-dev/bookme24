@@ -2,10 +2,7 @@
  * Стили для ServiceForm (форма услуги)
  * BEM-методология + адаптивность + поддержка тёмной темы
  * 
- * 🔥 ЭТАП 8.3: Стили формы добавления/редактирования услуги
- * - Все цвета через CSS-переменные (поддержка тёмной темы)
- * - Адаптивная двухколоночная раскладка
- * - Анимации для появления ошибок
+ * 🔥 ИСПРАВЛЕНИЕ: Добавлена поддержка тёмной темы через [data-theme="dark"]
  */
 
 /* === ОСНОВНОЙ КОНТЕЙНЕР === */
@@ -16,7 +13,7 @@
   padding: var(--spacing-lg, 24px);
 }
 
-/* === ЗАГОЛОВОК === */
+/* === ЗАГОЛОВОК (если используется) === */
 .service-form__title {
   font-size: var(--font-size-xl, 1.5rem);
   font-weight: 600;
@@ -42,11 +39,7 @@
   margin-top: var(--spacing-xs, 4px);
 }
 
-/* === СТРОКА С ДВУМЯ ПОЛЯМИ ===
- * ПОЧЕМУ grid, а не flex?
- * - Grid гарантирует одинаковую ширину (1fr 1fr)
- * - Автоматический перенос на мобильных (через media query)
- */
+/* === СТРОКА С ДВУМЯ ПОЛЯМИ === */
 .service-form__row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -85,12 +78,10 @@
     padding: var(--spacing-md, 16px);
   }
 
-  /* На мобильных — поля в одну колонку */
   .service-form__row {
     grid-template-columns: 1fr;
   }
 
-  /* Кнопки на всю ширину (в обратном порядке: "Сохранить" сверху) */
   .service-form__actions {
     flex-direction: column-reverse;
   }
@@ -101,7 +92,10 @@
   }
 }
 
-/* === ПОДДЕРЖКА ТЁМНОЙ ТЕМЫ === */
+/* ═══════════════════════════════════════════════
+   🔥 ПОДДЕРЖКА ТЁМНОЙ ТЕМЫ
+   ═══════════════════════════════════════════════ */
+
 [data-theme="dark"] .service-form__title {
   color: var(--color-text, #f2ebe0);
   border-bottom-color: var(--color-border, #4a3a2a);
@@ -113,4 +107,19 @@
 
 [data-theme="dark"] .service-form__actions {
   border-top-color: var(--color-border, #4a3a2a);
+}
+
+/* Убеждаемся, что textarea наследует тёмную тему */
+[data-theme="dark"] .service-form__field textarea {
+  background-color: var(--color-surface, #2d2419);
+  color: var(--color-text, #f2ebe0);
+  border-color: var(--color-border, #4a3a2a);
+}
+
+[data-theme="dark"] .service-form__field textarea::placeholder {
+  color: var(--color-text-subtle, #8a7968);
+}
+
+[data-theme="dark"] .service-form__field textarea:focus {
+  border-color: var(--color-primary-400, #c9a88c);
 }

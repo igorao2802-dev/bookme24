@@ -1,10 +1,8 @@
 /**
  * Стили для Layout
+ * BEM-методология + адаптивность + поддержка тёмной темы
  * 
- * ПОЧЕМУ BEM-нотация (layout__header, layout__nav-link--active)?
- * - Избегаем конфликтов стилей между компонентами
- * - Читаемая структура: блок__элемент--модификатор
- * 
+ * 🔥 ЭТАП 2.1: Подвал теперь имеет градиент, идентичный шапке
  * 🔥 ЭТАП 4.1: Hover/Active/Focus-visible для навигации
  * 🔥 ЭТАП 7.2: Группа переключателей (тема + язык + роль)
  * 🔥 ЭТАП 7.3: Полная интеграция с локализацией
@@ -78,12 +76,10 @@
   justify-content: center;
 }
 
-/* 
-  ПОЧЕМУ такие цвета ссылок?
-  Белый текст на тёмном терракотовом — контраст 8.5:1 (WCAG AAA).
-  При ховере добавляем полупрозрачную подложку, а НЕ меняем цвет текста.
-  Так текст никогда не «пропадёт».
-*/
+/* ПОЧЕМУ такие цвета ссылок?
+   Белый текст на тёмном терракотовом — контраст 8.5:1 (WCAG AAA).
+   При ховере добавляем полупрозрачную подложку, а НЕ меняем цвет текста.
+   Так текст никогда не «пропадёт». */
 .layout__nav-link {
   color: var(--color-text-inverse, #ffffff);
   text-decoration: none;
@@ -94,15 +90,18 @@
   background-color: transparent;
   white-space: nowrap;
 
-  /* 
-    ПОЧЕМУ transition для нескольких свойств?
-    Нужно анимировать background-color (hover), 
-    transform (active) и outline (focus-visible).
-  */
+  /* ПОЧЕМУ transition для нескольких свойств?
+     Нужно анимировать background-color (hover), 
+     transform (active) и outline (focus-visible). */
   transition:
     background-color var(--transition-fast, 150ms ease),
     transform var(--transition-fast, 150ms ease),
     outline var(--transition-fast, 150ms ease);
+
+  /* 🔥 ЭТАП 2.1: Выравнивание иконки и текста */
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs, 4px);
 }
 
 /* 🔥 ЭТАП 4.1: Состояние HOVER */
@@ -189,11 +188,17 @@
 
 /* ═══════════════════════════════════════════════
    👣 ПОДВАЛ
-   Глубокий тёплый коричневый — элегантно
+   🔥 ЭТАП 4.1: Градиент, идентичный шапке, для визуальной целостности
    ═══════════════════════════════════════════════ */
 .layout__footer {
-  background-color: var(--color-neutral-900, #251b14);
-  color: var(--color-neutral-100, #f2ebe0);
+  /* 🔥 ЭТАП 4.1: Заменён сплошной цвет на градиент, идентичный шапке */
+  background: linear-gradient(
+    135deg,
+    var(--color-primary-600, #9c7558) 0%,
+    var(--color-primary-700, #7f5e44) 100%
+  );
+  /* Гарантируем читаемость текста на градиенте */
+  color: var(--color-text-inverse, #ffffff);
   padding: var(--spacing-2xl, 48px) 0 var(--spacing-xl, 32px);
   margin-top: auto;
 }
@@ -207,31 +212,30 @@
 .layout__footer-col h4 {
   margin-bottom: var(--spacing-sm, 8px);
   font-size: var(--font-size-lg, 1.125rem);
+  /* Белый для контраста на градиенте */
   color: var(--color-text-inverse, #ffffff);
 }
 
-/* 
-  ПОЧЕМУ не чисто белый текст?
-  На тёмно-коричневом чистый белый «режет» глаза.
-  Кремовый #F2EBE0 даёт контраст 12.8:1 — читается отлично,
-  но выглядит теплее и премиальнее.
-*/
+/* ПОЧЕМУ не чисто белый?
+   На терракотовом градиенте кремовый #F2EBE0 даёт отличный контраст,
+   но выглядит теплее и премиальнее, чем резкий #FFFFFF. */
 .layout__footer-col p {
   color: var(--color-neutral-100, #f2ebe0);
   font-size: var(--font-size-sm, 0.875rem);
   margin-bottom: var(--spacing-xs, 4px);
-  opacity: 0.85;
+  opacity: 0.9;
 }
 
 .layout__footer-col a {
   color: var(--color-primary-200, #eacfb5);
   border-bottom: none;
   text-decoration: none;
+  transition: color var(--transition-fast, 150ms ease);
 }
 
 .layout__footer-col a:hover {
-  color: var(--color-primary-100, #f5e6d3);
-  border-bottom: 1px solid var(--color-primary-100, #f5e6d3);
+  color: var(--color-text-inverse, #ffffff);
+  border-bottom: 1px solid var(--color-text-inverse, #ffffff);
 }
 
 /* ═══════════════════════════════════════════════
@@ -304,7 +308,8 @@
 @media (prefers-reduced-motion: reduce) {
   .layout__nav-link,
   .layout__logo,
-  .layout__role-select {
+  .layout__role-select,
+  .layout__footer-col a {
     transition: none;
   }
 

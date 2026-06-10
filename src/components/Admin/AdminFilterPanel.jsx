@@ -1,24 +1,21 @@
 /**
  * AdminFilterPanel.jsx — панель фильтров и сортировки для администратора
  * 
- * АРХИТЕКТУРНАЯ РОЛЬ:
- * Презентационный компонент. НЕ владеет состоянием фильтров.
- * Сообщает об изменениях родителю через onFilterChange и onSortChange.
- * 
- * ЭТАП 1.4: Валидация дат (запрет нелогичных периодов)
- * 🔥 ЭТАП 3.2: Разделение на три секции: Поиск, Сортировка, Фильтры
- * 🔥 ЭТАП 3.4: Явный заголовок "Сортировка" над полем
- * 🔥 ЭТАП 3.5: Лейблы для всех полей фильтров (Статус, Специалист, С, По)
- * 🔥 ЭТАП 7.6: Полная локализация всех текстов
+ * 🔥 ЭТАП 1.4: Валидация дат
+ * 🔥 ЭТАП 3.2: Разделение на три секции
+ * 🔥 ЭТАП 7.6: Полная локализация через t()
  */
 
 import { Filter, RotateCcw, Search, ArrowUpDown } from 'lucide-react';
+
 import Input from '../UI/Input';
 import Select from '../UI/Select';
 import Badge from '../UI/Badge';
 import Toast from '../UI/Toast';
+
 import { BOOKING_STATUS } from '../../utils/constants';
 import { useLanguage } from '../../hooks/useLanguage'; // 🔥 ЭТАП 7.6
+
 import './AdminFilterPanel.css';
 
 export default function AdminFilterPanel({
@@ -33,9 +30,7 @@ export default function AdminFilterPanel({
   const { t } = useLanguage(); // 🔥 ЭТАП 7.6
 
   // === ОПЦИИ СТАТУСОВ ===
-  // 🔥 ЭТАП 7.6: label берётся через t('status.' + status) вместо BOOKING_STATUS_LABELS
-  // ПОЧЕМУ так? BOOKING_STATUS_LABELS — хардкод в constants.js.
-  // Использование t() позволяет переводить статусы без изменения constants.js
+  // 🔥 ЭТАП 7.6: label берётся через t('status.' + status)
   const statusOptions = [
     { value: 'all', label: t('admin.filters.allStatuses') },
     ...Object.values(BOOKING_STATUS).map((status) => ({
@@ -63,7 +58,7 @@ export default function AdminFilterPanel({
     { value: 'client', label: t('admin.sort.client') },
   ];
 
-  // === 🔥 ОБРАБОТЧИК ИЗМЕНЕНИЯ ДАТЫ "ОТ" (ЭТАП 1.4) ===
+  // === ОБРАБОТЧИК ИЗМЕНЕНИЯ ДАТЫ "ОТ" ===
   const handleDateFromChange = (e) => {
     const newDateFrom = e.target.value;
     if (filters.dateTo && newDateFrom > filters.dateTo) {
@@ -75,7 +70,7 @@ export default function AdminFilterPanel({
     onFilterChange('dateFrom', newDateFrom);
   };
 
-  // === 🔥 ОБРАБОТЧИК ИЗМЕНЕНИЯ ДАТЫ "ДО" (ЭТАП 1.4) ===
+  // === ОБРАБОТЧИК ИЗМЕНЕНИЯ ДАТЫ "ДО" ===
   const handleDateToChange = (e) => {
     const newDateTo = e.target.value;
     if (filters.dateFrom && newDateTo < filters.dateFrom) {
@@ -86,6 +81,9 @@ export default function AdminFilterPanel({
     }
     onFilterChange('dateTo', newDateTo);
   };
+
+  // === ЛОКАЛЬ ДЛЯ ФОРМАТИРОВАНИЯ ДАТ ===
+  const locale = t('common.locale') === 'en' ? 'en-US' : 'ru-RU';
 
   return (
     <div className="admin-filter-panel">
@@ -98,7 +96,6 @@ export default function AdminFilterPanel({
             <Badge variant="warning" size="sm">{activeCount}</Badge>
           )}
         </h3>
-
         {activeCount > 0 && (
           <button
             type="button"
@@ -111,7 +108,7 @@ export default function AdminFilterPanel({
         )}
       </div>
 
-      {/* === 🔥 СЕКЦИЯ 1: ПОИСК (ЭТАП 3.2) === */}
+      {/* === СЕКЦИЯ 1: ПОИСК === */}
       <div className="admin-filter-panel__section admin-filter-panel__section--search">
         <h4 className="admin-filter-panel__section-title">
           <Search size={16} />
@@ -125,7 +122,7 @@ export default function AdminFilterPanel({
         />
       </div>
 
-      {/* === 🔥 СЕКЦИЯ 2: СОРТИРОВКА (ЭТАП 3.2 + 3.4) === */}
+      {/* === СЕКЦИЯ 2: СОРТИРОВКА === */}
       <div className="admin-filter-panel__section admin-filter-panel__section--sort">
         <h4 className="admin-filter-panel__section-title">
           <ArrowUpDown size={16} />
@@ -138,7 +135,7 @@ export default function AdminFilterPanel({
         />
       </div>
 
-      {/* === 🔥 СЕКЦИЯ 3: ФИЛЬТРЫ (ЭТАП 3.2 + 3.5) === */}
+      {/* === СЕКЦИЯ 3: ФИЛЬТРЫ === */}
       <div className="admin-filter-panel__section admin-filter-panel__section--filters">
         <h4 className="admin-filter-panel__section-title">
           <Filter size={16} />
@@ -171,9 +168,7 @@ export default function AdminFilterPanel({
             max={filters.dateTo || undefined}
             helperText={
               filters.dateTo
-                ? `${t('admin.filters.notLaterThan')} ${new Date(filters.dateTo).toLocaleDateString(
-                    t('common.locale') === 'en' ? 'en-US' : 'ru-RU'
-                  )}`
+                ? `${t('admin.filters.notLaterThan')} ${new Date(filters.dateTo).toLocaleDateString(locale)}`
                 : t('admin.filters.selectStartDate')
             }
             title={t('admin.filters.selectStartDate')}
@@ -188,9 +183,7 @@ export default function AdminFilterPanel({
             min={filters.dateFrom || undefined}
             helperText={
               filters.dateFrom
-                ? `${t('admin.filters.notEarlierThan')} ${new Date(filters.dateFrom).toLocaleDateString(
-                    t('common.locale') === 'en' ? 'en-US' : 'ru-RU'
-                  )}`
+                ? `${t('admin.filters.notEarlierThan')} ${new Date(filters.dateFrom).toLocaleDateString(locale)}`
                 : t('admin.filters.selectEndDate')
             }
             title={t('admin.filters.selectEndDate')}

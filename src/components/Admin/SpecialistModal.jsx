@@ -1,19 +1,15 @@
 /**
  * SpecialistModal.jsx — модальное окно для формы специалиста
  * 
- * АРХИТЕКТУРНАЯ РОЛЬ:
- * Полностью аналогична ServiceModal, но для SpecialistForm.
- * - Управляет открытием/закрытием окна
- * - Предупреждает о несохранённых данных при закрытии
- * - Передаёт данные формы родителю через onSave
- * 
- * 🔥 ЭТАП 8.5: Модалка с локализацией и подтверждением закрытия
+ * 🔥 ИСПРАВЛЕНИЕ 1.4: Заголовок только здесь
+ * 🔥 ЭТАП 7.8: Полная локализация
+ * 🔥 ИСПРАВЛЕНИЕ 1.6: Корректная обработка результата сохранения
  */
 
 import { useRef } from 'react';
 import Modal from '../UI/Modal';
 import SpecialistForm from './SpecialistForm';
-import { useLanguage } from '../../hooks/useLanguage'; // 🔥 ЭТАП 7.5: локализация
+import { useLanguage } from '../../hooks/useLanguage';
 
 export default function SpecialistModal({
   isOpen,
@@ -24,36 +20,32 @@ export default function SpecialistModal({
   onSave,
   onClose,
 }) {
-  const { t } = useLanguage(); // 🔥 ЭТАП 7.5
-
-  // === REF ДЛЯ ОТСЛЕЖИВАНИЯ ИЗМЕНЕНИЙ ===
+  const { t } = useLanguage();
   const isDirtyRef = useRef(false);
 
-  // === ОБРАБОТЧИК СОХРАНЕНИЯ ===
+  // 🔥 ИСПРАВЛЕНИЕ 1.6: обрабатываем результат сохранения
   const handleSave = (specialistData) => {
-    isDirtyRef.current = false;
-    onSave(specialistData);
+    const result = onSave(specialistData);
+    
+    if (result?.success !== false) {
+      isDirtyRef.current = false;
+      onClose();
+    }
   };
 
-  // === ОБРАБОТЧИК ЗАКРЫТИЯ С ПОДТВЕРЖДЕНИЕМ ===
   const handleClose = () => {
     if (isDirtyRef.current) {
-      const confirmed = window.confirm(
-        t('admin.specialists.form.unsavedChanges')
-      );
+      const confirmed = window.confirm(t('admin.specialists.form.unsavedChanges'));
       if (!confirmed) return;
     }
-
     isDirtyRef.current = false;
     onClose();
   };
 
-  // === ОБРАБОТЧИК ИЗМЕНЕНИЙ ===
   const handleFormChange = () => {
     isDirtyRef.current = true;
   };
 
-  // === ЗАГОЛОВОК МОДАЛКИ ===
   const title = mode === 'edit'
     ? t('admin.specialists.form.editTitle')
     : t('admin.specialists.form.addTitle');

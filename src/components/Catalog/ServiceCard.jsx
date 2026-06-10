@@ -1,24 +1,14 @@
 /**
  * ServiceCard.jsx — карточка услуги в каталоге
- * 
- * ПОЧЕМУ презентационный компонент?
- * Замечание В.В. из лекции React-1-1: "Хороший компонент делает одно дело."
- * Этот компонент только отображает услугу и вызывает callbacks при кликах.
- * Он НЕ знает, как работает избранное или запись — это забота родителя.
- * 
- * 🔥 ЭТАП 7.5: Локализация всех текстов
- * 🔥 ИСПРАВЛЕНО: Опечатка 'изб ранного' в aria-label
+ * 🔥 ЭТАП 5.2: Динамический рендеринг названия и описания в зависимости от языка
+ * 🔥 ЭТАП 5.4: Полная локализация, исправлены опечатки в ключах
  */
-
 import { Clock, Star, Heart, Calendar } from 'lucide-react';
-
 import { SERVICE_CATEGORY_LABELS } from '../../utils/constants';
 import { formatPrice, formatDuration } from '../../utils/formatters';
-import { useLanguage } from '../../hooks/useLanguage'; // 🔥 ЭТАП 7.5
-
+import { useLanguage } from '../../hooks/useLanguage';
 import Button from '../UI/Button';
 import Badge from '../UI/Badge';
-
 import './ServiceCard.css';
 
 export default function ServiceCard({
@@ -27,41 +17,41 @@ export default function ServiceCard({
   onToggleFavorite,
   onBook,
 }) {
-  const { t } = useLanguage(); // 🔥 ЭТАП 7.5
+  // 🔥 ЭТАП 5.2: получаем и language, и t
+  const { t, language } = useLanguage();
+
+  // 🔥 ЭТАП 5.2: Динамический выбор поля с фолбэком на русский
+  const displayName = language === 'en' && service.nameEn ? service.nameEn : service.name;
+  const displayDescription = language === 'en' && service.descriptionEn ? service.descriptionEn : service.description;
 
   return (
     <article className="service-card">
-      {/* === КНОПКА ИЗБРАННОГО === */}
       <button
         type="button"
         className={`service-card__favorite ${isFavorite ? 'service-card__favorite--active' : ''}`}
         onClick={(e) => {
-          // ПОЧЕМУ stopPropagation?
-          // Чтобы клик по сердечку не срабатывал как клик по всей карточке
           e.stopPropagation();
           onToggleFavorite();
         }}
         aria-label={
-          isFavorite 
-            ? t('catalog.buttons.removeFromFavorites') 
+          isFavorite
+            ? t('catalog.buttons.removeFromFavorites')
             : t('catalog.buttons.addToFavorites')
         }
       >
         <Heart size={20} fill={isFavorite ? 'currentColor' : 'none'} />
       </button>
 
-      {/* === КАТЕГОРИЯ === */}
       <Badge variant="default" size="sm">
         {SERVICE_CATEGORY_LABELS[service.category]}
       </Badge>
 
-      {/* === ЗАГОЛОВОК === */}
-      <h3 className="service-card__title">{service.name}</h3>
+      {/* 🔥 ЭТАП 5.2: Используем динамическое имя */}
+      <h3 className="service-card__title">{displayName}</h3>
 
-      {/* === ОПИСАНИЕ (text-break для длинных текстов — замечание из ПР-07!) === */}
-      <p className="service-card__description text-break">{service.description}</p>
+      {/* 🔥 ЭТАП 5.2: Используем динамическое описание */}
+      <p className="service-card__description text-break">{displayDescription}</p>
 
-      {/* === МЕТА-ИНФОРМАЦИЯ === */}
       <div className="service-card__meta">
         <span className="service-card__meta-item">
           <Clock size={14} />
@@ -73,7 +63,6 @@ export default function ServiceCard({
         </span>
       </div>
 
-      {/* === ЦЕНА И КНОПКА === */}
       <div className="service-card__footer">
         <div className="service-card__price">{formatPrice(service.price)}</div>
         <Button

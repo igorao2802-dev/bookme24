@@ -6,20 +6,18 @@
  * - Единая точка правки regex-ов и правил
  * - Легко покрывать unit-тестами
  *
- * 🔥 ЭТАП 7.8: Возвращаем errorKey вместо строк
- * - Валидаторы не React-компоненты, не могут использовать useLanguage()
- * - Возвращаем ключ перевода, компонент сам переведёт через t()
- * - Это делает валидаторы language-agnostic
+ * 🔥 ИСПРАВЛЕНИЕ 1.1: Все валидаторы возвращают errorKey (ключ перевода),
+ * а не захардкоженные строки. Компоненты переводят через t(errorKey).
  */
 
 import { BY_PHONE_CODES, FIELD_LIMITS } from "./constants.js";
 
 /**
  * Валидация телефона Республики Беларусь
- * Формат: +375 (XX) XXX-XX-XX, где XX ∈ {17, 25, 29, 33, 44}
+ * Формат: +375 (XX) XXX-XX-XX, где XX ∈ {25, 29, 33, 44}
  */
 export function validatePhone(phone) {
-  if (!phone || typeof phone !== "string" || phone.trim() === "") {
+  if (!phone || typeof phone !== "string") {
     return { isValid: false, errorKey: "validation.phone.required" };
   }
 
@@ -27,7 +25,10 @@ export function validatePhone(phone) {
   const cleaned = phone.replace(/\D/g, "");
 
   if (cleaned.length !== 12) {
-    return { isValid: false, errorKey: "validation.phone.tooShort" };
+    return {
+      isValid: false,
+      errorKey: "validation.phone.tooShort",
+    };
   }
 
   if (!cleaned.startsWith("375")) {
@@ -36,7 +37,10 @@ export function validatePhone(phone) {
 
   const operatorCode = cleaned.slice(3, 5);
   if (!BY_PHONE_CODES.includes(operatorCode)) {
-    return { isValid: false, errorKey: "validation.phone.invalidCode" };
+    return {
+      isValid: false,
+      errorKey: "validation.phone.invalidCode",
+    };
   }
 
   return { isValid: true, errorKey: null };
@@ -52,12 +56,16 @@ export function validateName(name) {
   }
 
   const trimmed = name.trim();
+
   if (trimmed.length === 0) {
     return { isValid: false, errorKey: "validation.name.required" };
   }
 
   if (trimmed.length > FIELD_LIMITS.NAME_MAX_LENGTH) {
-    return { isValid: false, errorKey: "validation.name.tooLong" };
+    return {
+      isValid: false,
+      errorKey: "validation.name.tooLong",
+    };
   }
 
   // Проверка на 2+ слова (кириллица или латиница, допускаем дефис)
@@ -69,7 +77,10 @@ export function validateName(name) {
   // Проверка на допустимые символы (буквы, пробелы, дефисы)
   const nameRegex = /^[a-zA-Zа-яА-ЯёЁіІўЎ\s-']+$/;
   if (!nameRegex.test(trimmed)) {
-    return { isValid: false, errorKey: "validation.name.invalidChars" };
+    return {
+      isValid: false,
+      errorKey: "validation.name.invalidChars",
+    };
   }
 
   return { isValid: true, errorKey: null };
@@ -85,7 +96,10 @@ export function validateEmail(email) {
   }
 
   if (email.length > FIELD_LIMITS.EMAIL_MAX_LENGTH) {
-    return { isValid: false, errorKey: "validation.email.tooLong" };
+    return {
+      isValid: false,
+      errorKey: "validation.email.tooLong",
+    };
   }
 
   // Базовый regex: что-то @ что-то . что-то (минимум 2 символа в домене)
@@ -106,13 +120,19 @@ export function validateComment(comment) {
   }
 
   if (comment.length > FIELD_LIMITS.COMMENT_MAX_LENGTH) {
-    return { isValid: false, errorKey: "validation.comment.tooLong" };
+    return {
+      isValid: false,
+      errorKey: "validation.comment.tooLong",
+    };
   }
 
   // Защита от XSS: запрещаем HTML-теги
   const htmlTagRegex = /<[^>]*>/;
   if (htmlTagRegex.test(comment)) {
-    return { isValid: false, errorKey: "validation.comment.htmlNotAllowed" };
+    return {
+      isValid: false,
+      errorKey: "validation.comment.htmlNotAllowed",
+    };
   }
 
   return { isValid: true, errorKey: null };
@@ -128,6 +148,7 @@ export function validateBookingDate(dateString) {
   }
 
   const selectedDate = new Date(dateString);
+
   if (isNaN(selectedDate.getTime())) {
     return { isValid: false, errorKey: "validation.date.invalidFormat" };
   }
@@ -149,7 +170,10 @@ export function validateBookingDate(dateString) {
   const maxDate = new Date(today);
   maxDate.setDate(maxDate.getDate() + 30);
   if (selectedDay > maxDate) {
-    return { isValid: false, errorKey: "validation.date.tooFarAhead" };
+    return {
+      isValid: false,
+      errorKey: "validation.date.tooFarAhead",
+    };
   }
 
   return { isValid: true, errorKey: null };
@@ -157,8 +181,7 @@ export function validateBookingDate(dateString) {
 
 /**
  * Универсальная валидация всей формы контактов (шаг 4)
- *
- * 🔥 ЭТАП 7.8: Теперь errors содержат errorKey, а не строки
+ * 🔥 ИСПРАВЛЕНИЕ 1.1: Возвращает ключи переводов, а не строки
  */
 export function validateBookingForm(formData) {
   const errors = {};

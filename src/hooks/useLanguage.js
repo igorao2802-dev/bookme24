@@ -10,18 +10,24 @@
  * - Соответствует структуре проекта (useLocalStorage, useBookings и т.д.)
  * - Легче импортировать: import { useLanguage } from '../hooks/useLanguage'
  *
- * 🔥 ЭТАП 7.1: Хук доступа к локализации
  */
 
-import { useLanguage as useLanguageFromContext } from "../contexts/LanguageContext";
+import { useContext } from "react";
+// Убрали фигурные скобки {}, так как LanguageContext является default export
+import LanguageContext from "../contexts/LanguageContext";
 
-// === РЕ-ЭКСПОРТ ХУКА ===
-// ПОЧЕМУ просто ре-экспорт?
-// - LanguageContext.jsx уже содержит всю логику
-// - Этот файл — удобная точка входа из папки hooks/
-// - Соответствует паттерну проекта (все хуки в hooks/)
 export function useLanguage() {
-  return useLanguageFromContext();
-}
+  const context = useContext(LanguageContext);
 
-export default useLanguage;
+  if (!context) {
+    throw new Error(
+      "useLanguage должен использоваться внутри LanguageProvider",
+    );
+  }
+
+  return {
+    t: context.t,
+    language: context.language,
+    setLanguage: context.setLanguage,
+  };
+}

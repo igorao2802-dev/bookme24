@@ -129,3 +129,18 @@
   border: 3px solid white;
   box-shadow: var(--shadow-md);
 }
+
+/* ═══════════════════════════════════════════════
+   🔥 ЭТАП 3.1: СТИЛИ ДЛЯ ДИАПАЗОНА ЦЕН
+   ═══════════════════════════════════════════════ */
+.filter-panel__price-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-sm, 8px);
+}
+
+/* Убираем лишние отступы у лейблов внутри grid-ячеек для компактности */
+.filter-panel__price-inputs .input__label {
+  margin-bottom: 2px;
+  font-size: var(--font-size-xs, 0.75rem);
+}

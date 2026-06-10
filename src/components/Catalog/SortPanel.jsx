@@ -1,39 +1,35 @@
 /**
  * SortPanel.jsx — выпадающий список сортировки
- *
- * ПОЧЕМУ select, а не кнопки?
- * Вариантов сортировки много (5+), кнопки заняли бы слишком много места.
- * Select компактнее и привычнее для пользователя.
+ * 🔥 ЭТАП 5.4: Полная локализация опций сортировки
  */
-
 import { ArrowUpDown } from 'lucide-react';
+import { useLanguage } from '../../hooks/useLanguage';
 import './SortPanel.css';
 
 export default function SortPanel({ value, onChange, viewMode = 'services' }) {
-  // === ОПЦИИ СОРТИРОВКИ ЗАВИСЯТ ОТ РЕЖИМА ===
-  const options =
-    viewMode === 'services'
-      ? [
-          { value: 'popular', label: 'По популярности' },
-          { value: 'price-asc', label: 'Цена: по возрастанию' },
-          { value: 'price-desc', label: 'Цена: по убыванию' },
-          { value: 'rating', label: 'По рейтингу' },
-          { value: 'name', label: 'По алфавиту' },
-        ]
-      : [
-          { value: 'popular', label: 'По популярности' },
-          { value: 'rating', label: 'По рейтингу' },
-          { value: 'experience', label: 'По стажу' },
-          { value: 'name', label: 'По имени' },
-        ];
+  const { t } = useLanguage();
+
+  const options = viewMode === 'services'
+    ? [
+        { value: 'popular', label: t('catalog.sort.popular') },
+        { value: 'price-asc', label: t('catalog.sort.priceAsc') },
+        { value: 'price-desc', label: t('catalog.sort.priceDesc') },
+        { value: 'rating', label: t('catalog.sort.rating') },
+        { value: 'name', label: t('catalog.sort.name') },
+      ]
+    : [
+        { value: 'popular', label: t('catalog.sort.popular') },
+        { value: 'rating', label: t('catalog.sort.rating') },
+        { value: 'experience', label: t('catalog.sort.experience') },
+        { value: 'name', label: t('catalog.sort.name') },
+      ];
 
   return (
     <div className="sort-panel">
       <label htmlFor="sort-select" className="sort-panel__label">
         <ArrowUpDown size={16} />
-        Сортировка
+        {t('catalog.sort.title')}
       </label>
-
       <select
         id="sort-select"
         value={value}

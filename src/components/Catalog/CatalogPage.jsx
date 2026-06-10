@@ -1,8 +1,9 @@
 /**
  * CatalogPage.jsx — Вкладка №2: Каталог услуг и специалистов
  * 
+ * 🔥 ЭТАП 3.1: Добавлена фильтрация по цене "от" и "до"
  * 🔥 ЭТАП 7.5: Полная локализация всех пользовательских текстов
- * 🔥 ИСПРАВЛЕНО: Опечатки (service.price, localeCompare, viewMode, onBookSpecialist, resetFilter s)
+ * 🔥 ИСПРАВЛЕНО: Опечатки (service.price, localeCompare, viewMode, onBookSpecialist, resetFilters)
  */
 
 import { useState, useMemo } from 'react';
@@ -29,10 +30,10 @@ import { useLanguage } from '../../hooks/useLanguage'; // 🔥 ЭТАП 7.5
 
 // === КОНСТАНТЫ ===
 import { STORAGE_KEYS, BOOKING_STEPS } from '../../utils/constants';
-
 import './CatalogPage.css';
 
 // === НАЧАЛЬНЫЕ ФИЛЬТРЫ ===
+// 🔥 ЭТАП 3.1: minPrice явно установлен в 0
 const INITIAL_FILTERS = {
   category: 'all',
   minPrice: 0,
@@ -66,6 +67,7 @@ export default function CatalogPage({ services, specialists }) {
   };
 
   // === СБРОС ФИЛЬТРОВ ===
+  // 🔥 ЭТАП 3.1: Сброс возвращает minPrice к 0, так как используется INITIAL_FILTERS
   const handleResetFilters = () => {
     setFilters(INITIAL_FILTERS);
     setSearchQuery('');
@@ -93,7 +95,7 @@ export default function CatalogPage({ services, specialists }) {
     navigate('/', {
       state: {
         preselectedSpecialistId: specialistId,
-        startStep: BOOKING_STEPS.SPECIALIST,
+        startStep: BOOKING_STEPS.SERVICE, // Начинаем с выбора услуги этого мастера
       },
     });
   };
@@ -109,6 +111,7 @@ export default function CatalogPage({ services, specialists }) {
       const matchesCategory =
         filters.category === 'all' || service.category === filters.category;
 
+      // 🔥 ЭТАП 3.1: Проверка диапазона цен "от" и "до"
       const matchesPrice =
         service.price >= filters.minPrice && service.price <= filters.maxPrice;
 
@@ -170,6 +173,7 @@ export default function CatalogPage({ services, specialists }) {
   const favoriteSpecialists = specialists.filter((s) => favorites.includes(s.id));
 
   // === КОЛИЧЕСТВО АКТИВНЫХ ФИЛЬТРОВ ===
+  // 🔥 ЭТАП 3.1: minPrice считается активным, если он не равен 0
   const activeFiltersCount = Object.entries(filters).filter(([key, value]) => {
     if (key === 'category') return value !== 'all';
     if (key === 'minPrice') return value !== INITIAL_FILTERS.minPrice;

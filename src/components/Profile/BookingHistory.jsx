@@ -1,21 +1,20 @@
 /**
  * BookingHistory.jsx — история записей клиента с фильтрацией по статусу
  * 
- * АРХИТЕКТУРНАЯ РОЛЬ:
- * Это "дирижёр" раздела истории. Владеет состоянием активного таба,
- * фильтрует записи и передаёт их в HistoryCard.
- * 
  * 🔥 ЭТАП 5.3: Реализация полноценной истории записей
- * 🔥 ЭТАП 7.7: Локализация табов и EmptyState
+ * 🔥 ЭТАП 7.7: Локализация табов и EmptyState через t()
  */
 
 import { useState, useMemo } from 'react';
 import { Calendar, CheckCircle, XCircle, List } from 'lucide-react';
+
 import { BOOKING_STATUS } from '../../utils/constants';
 import { useLanguage } from '../../hooks/useLanguage'; // 🔥 ЭТАП 7.7
+
 import HistoryCard from './HistoryCard';
 import EmptyState from '../UI/EmptyState';
 import Badge from '../UI/Badge';
+
 import './BookingHistory.css';
 
 export default function BookingHistory({

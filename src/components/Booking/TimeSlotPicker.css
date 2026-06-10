@@ -1,242 +1,193 @@
 /**
- * Стили для TimeSlotPicker
- * BEM-методология + мобильная адаптивность
+ * Стили для TimeSlotPicker (выбор даты и времени)
+ * BEM-методология + адаптивность + поддержка тёмной темы
  * 
- * 🔥 ЭТАП 2.2: Добавлены стили для заблокированных дат и слотов
- * 🔥 ЭТАП 2.5: Добавлена плавная прокрутка (scroll-behavior: smooth)
- * 🔥 ЭТАП 2.6: Убраны дублирующиеся отступы, добавлен gap у родителя
+ * 🔥 ЭТАП 2.3: Hover-эффекты для карточек даты и времени
+ * 🔥 ЭТАП 4.3: Проверка и усиление микро-взаимодействий
  */
 
-/* === КОНТЕЙНЕР КОМПОНЕНТА === */
-/* 🔥 ЭТАП 2.6: Добавлен gap вместо margin-bottom у дочерних секций */
+/* === ОСНОВНОЙ КОНТЕЙНЕР === */
 .time-slot-picker {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-lg, 24px); /* Расстояние между секциями: даты и время */
+  gap: var(--spacing-lg, 24px);
 }
 
 .time-slot-picker__header {
-  margin-bottom: var(--spacing-lg, 24px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs, 4px);
 }
 
-.time-slot-picker__header h2 {
+.time-slot-picker__title {
   font-size: var(--font-size-xl, 1.5rem);
-  margin-bottom: var(--spacing-xs, 4px);
-  color: var(--color-neutral-900, #251b14);
+  font-weight: 600;
+  color: var(--color-text, #3d2f26);
+  margin: 0;
 }
 
-.time-slot-picker__description {
+.time-slot-picker__subtitle {
+  font-size: var(--font-size-base, 1rem);
   color: var(--color-text-muted, #6b5d4f);
+  margin: 0;
 }
 
-/* === СЕКЦИИ === */
-/* 🔥 ЭТАП 2.6: Убран margin-bottom — теперь отступ контролируется gap у родителя */
-.time-slot-picker__dates,
-.time-slot-picker__times {
-  /* margin-bottom удалён — используем gap у .time-slot-picker */
+/* === СЕКЦИЯ ВЫБОРА ДАТЫ === */
+.time-slot-picker__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm, 8px);
 }
 
 .time-slot-picker__section-title {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm, 8px);
   font-size: var(--font-size-lg, 1.125rem);
   font-weight: 600;
-  margin-bottom: var(--spacing-md, 16px);
   color: var(--color-text, #3d2f26);
+  margin: 0;
 }
 
-/* ═══════════════════════════════════════════════
-   ДАТЫ
-   ═══════════════════════════════════════════════ */
-
-.time-slot-picker__date-grid {
+/* === ГОРИЗОНТАЛЬНЫЙ СКРОЛЛ ДАТ === */
+.time-slot-picker__dates {
   display: flex;
   gap: var(--spacing-sm, 8px);
   overflow-x: auto;
-  padding-bottom: var(--spacing-sm, 8px);
+  padding: var(--spacing-xs, 4px);
   scroll-snap-type: x mandatory;
-
-  /* 🔥 ЭТАП 2.5: Плавная прокрутка */
-  scroll-behavior: smooth;
-
-  /* Скрываем скроллбар для чистого вида (опционально) */
   scrollbar-width: thin;
-  scrollbar-color: var(--color-primary-200, #eacfb5) transparent;
+  scrollbar-color: var(--color-border, #e8dcc4) transparent;
 }
 
-.time-slot-picker__date-grid::-webkit-scrollbar {
+.time-slot-picker__dates::-webkit-scrollbar {
   height: 6px;
 }
 
-.time-slot-picker__date-grid::-webkit-scrollbar-thumb {
-  background: var(--color-primary-200, #eacfb5);
-  border-radius: var(--radius-full);
-}
-
-.time-slot-picker__date-grid::-webkit-scrollbar-track {
+.time-slot-picker__dates::-webkit-scrollbar-track {
   background: transparent;
 }
 
-/* === БАЗОВАЯ ДАТА === */
+.time-slot-picker__dates::-webkit-scrollbar-thumb {
+  background: var(--color-border, #e8dcc4);
+  border-radius: 3px;
+}
+
+/* === БАЗОВАЯ КАРТОЧКА ДАТЫ === */
+/* 🔥 ЭТАП 2.3 + 4.3: Плавная анимация 0.2s ease-out */
 .time-slot-picker__date {
   flex-shrink: 0;
   width: 80px;
   padding: var(--spacing-sm, 8px);
-
   background: var(--color-surface, #ffffff);
   border: 2px solid var(--color-border, #e8dcc4);
   border-radius: var(--radius-md, 8px);
-
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 2px;
-
   cursor: pointer;
-  transition: all var(--transition-fast, 150ms ease);
+  transition: all 0.2s ease-out;
   scroll-snap-align: start;
 }
 
-.time-slot-picker__date:hover:not(:disabled) {
-  border-color: var(--color-primary-400, #c9a88c);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-sm);
+.time-slot-picker__date-day {
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--color-text-muted, #6b5d4f);
+  font-weight: 500;
 }
 
-.time-slot-picker__date:focus-visible {
-  outline: 2px solid var(--color-primary, #b8957a);
-  outline-offset: 2px;
+.time-slot-picker__date-number {
+  font-size: var(--font-size-xl, 1.5rem);
+  font-weight: 700;
+  color: var(--color-text, #3d2f26);
+}
+
+.time-slot-picker__date-month {
+  font-size: var(--font-size-xs, 0.75rem);
+  color: var(--color-text-subtle, #8a7968);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* 🔥 ЭТАП 2.3 + 4.3: Hover-эффект для даты */
+.time-slot-picker__date:hover:not(:disabled):not(
+    .time-slot-picker__date--selected
+  ) {
+  border-color: var(--color-primary-400, #c9a88c);
+  /* Верхняя граница визуально исчезает */
+  border-top-color: transparent;
+  /* Плавное приподнимание */
+  transform: translateY(-4px);
+  /* Усиленная тень для эффекта глубины */
+  box-shadow: var(--shadow-md);
 }
 
 /* === ВЫБРАННАЯ ДАТА === */
 .time-slot-picker__date--selected {
   background: var(--color-primary-600, #9c7558);
   border-color: var(--color-primary-600, #9c7558);
-  color: white;
-}
-
-.time-slot-picker__date--selected:hover {
-  background: var(--color-primary-700, #7f5e44);
-  border-color: var(--color-primary-700, #7f5e44);
 }
 
 .time-slot-picker__date--selected .time-slot-picker__date-day,
+.time-slot-picker__date--selected .time-slot-picker__date-number,
 .time-slot-picker__date--selected .time-slot-picker__date-month {
-  opacity: 0.9;
+  color: white;
 }
 
-/* ═══════════════════════════════════════════════
-    ЗАБЛОКИРОВАННЫЕ ДАТЫ (ЭТАП 2.2)
-   ═══════════════════════════════════════════════ */
-
-.time-slot-picker__date--past {
-  background: var(--color-neutral-100, #f2ebe0);
-  border-color: var(--color-neutral-200, #e8ddd0);
-  color: var(--color-text-subtle, #8a7968);
-  cursor: not-allowed;
-  opacity: 0.6;
+/* 🔥 ЭТАП 2.3 + 4.3: Hover-эффект для ВЫБРАННОЙ даты */
+.time-slot-picker__date--selected:hover {
+  background: var(--color-primary-700, #7f5e44);
+  border-color: var(--color-primary-700, #7f5e44);
+  border-top-color: transparent;
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
 }
 
-.time-slot-picker__date--past:hover {
-  transform: none;
-  box-shadow: none;
-  border-color: var(--color-neutral-200, #e8ddd0);
-}
-
-.time-slot-picker__date--not-working {
-  background: var(--color-neutral-100, #f2ebe0);
-  border-color: var(--color-warning, #c9882f);
-  border-style: dashed;
-  color: var(--color-text-muted, #6b5d4f);
-  cursor: not-allowed;
-  opacity: 0.7;
-}
-
-.time-slot-picker__date--not-working:hover {
-  transform: none;
-  box-shadow: none;
-  border-color: var(--color-warning, #c9882f);
-}
-
+/* === ОТКЛЮЧЁННАЯ ДАТА (прошедшие дни) === */
 .time-slot-picker__date:disabled {
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
-/* ═══════════════════════════════════════════════
-   ТЕКСТ ДАТЫ
-   ═══════════════════════════════════════════════ */
-
-.time-slot-picker__date-day {
-  font-size: var(--font-size-xs, 0.75rem);
-  text-transform: uppercase;
-  opacity: 0.7;
-}
-
-.time-slot-picker__date-num {
-  font-size: var(--font-size-xl, 1.5rem);
-  font-weight: 700;
-}
-
-.time-slot-picker__date-month {
-  font-size: var(--font-size-xs, 0.75rem);
-  opacity: 0.7;
-}
-
-/* ═══════════════════════════════════════════════
-   ВРЕМЕННЫЕ СЛОТЫ (ОКНА)
-   ═══════════════════════════════════════════════ */
-
-.time-slot-picker__group {
-  margin-bottom: var(--spacing-lg, 24px);
-}
-
-.time-slot-picker__group:last-child {
-  margin-bottom: 0; /* Убираем отступ у последней группы */
-}
-
-.time-slot-picker__group-title {
-  font-size: var(--font-size-base, 1rem);
-  font-weight: 600;
-  color: var(--color-text-muted, #6b5d4f);
-  margin-bottom: var(--spacing-sm, 8px);
-}
-
+/* === СЕКЦИЯ ВЫБОРА ВРЕМЕНИ === */
 .time-slot-picker__slots {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
   gap: var(--spacing-sm, 8px);
 }
 
-/* === БАЗОВЫЙ СЛОТ === */
+/* === БАЗОВЫЙ СЛОТ ВРЕМЕНИ === */
+/* 🔥 ЭТАП 2.3 + 4.3: Плавная анимация 0.2s ease-out */
 .time-slot-picker__slot {
   padding: var(--spacing-sm, 8px) var(--spacing-md, 16px);
   min-height: 48px;
-
   background: var(--color-surface, #ffffff);
   border: 2px solid var(--color-border, #e8dcc4);
   border-radius: var(--radius-md, 8px);
-
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 2px;
-
   cursor: pointer;
-  transition: all var(--transition-fast, 150ms ease);
+  transition: all 0.2s ease-out;
 }
 
-.time-slot-picker__slot:hover:not(:disabled) {
+.time-slot-picker__slot-time {
+  font-size: var(--font-size-base, 1rem);
+  font-weight: 600;
+  color: var(--color-text, #3d2f26);
+}
+
+.time-slot-picker__slot-status {
+  font-size: var(--font-size-xs, 0.75rem);
+  color: var(--color-text-muted, #6b5d4f);
+}
+
+/* === HOVER ДЛЯ ОБЫЧНОГО СЛОТА === */
+.time-slot-picker__slot:hover:not(.time-slot-picker__slot--selected):not(
+    .time-slot-picker__slot--busy
+  ) {
   border-color: var(--color-primary-400, #c9a88c);
   background: var(--color-primary-soft, #fbf5ef);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-sm);
-}
-
-.time-slot-picker__slot:focus-visible {
-  outline: 2px solid var(--color-primary, #b8957a);
-  outline-offset: 2px;
 }
 
 /* === ВЫБРАННЫЙ СЛОТ === */
@@ -246,113 +197,194 @@
   color: white;
 }
 
+.time-slot-picker__slot--selected .time-slot-picker__slot-time,
+.time-slot-picker__slot--selected .time-slot-picker__slot-status {
+  color: white;
+}
+
+/* 🔥 ЭТАП 2.3 + 4.3: Hover-эффект для ВЫБРАННОГО слота (как у карточки даты) */
 .time-slot-picker__slot--selected:hover {
   background: var(--color-primary-700, #7f5e44);
   border-color: var(--color-primary-700, #7f5e44);
+  /* Верхняя граница визуально исчезает */
+  border-top-color: transparent;
+  /* Плавное приподнимание */
+  transform: translateY(-4px);
+  /* Усиленная тень */
+  box-shadow: var(--shadow-md);
 }
 
-/* ═══════════════════════════════════════════════
-    ЗАНЯТЫЙ СЛОТ (ЭТАП 2.2)
-   ═══════════════════════════════════════════════ */
-
+/* === ЗАНЯТОЙ СЛОТ === */
 .time-slot-picker__slot--busy {
-  background: var(--color-neutral-100, #f2ebe0);
+  background: var(--color-neutral-200, #e8ddd0);
   border-color: var(--color-neutral-200, #e8ddd0);
-  color: var(--color-text-subtle, #8a7968);
   cursor: not-allowed;
   opacity: 0.6;
 }
 
-.time-slot-picker__slot--busy:hover {
-  transform: none;
-  box-shadow: none;
-  border-color: var(--color-neutral-200, #e8ddd0);
-  background: var(--color-neutral-100, #f2ebe0);
+.time-slot-picker__slot--busy .time-slot-picker__slot-time {
+  color: var(--color-text-muted, #6b5d4f);
+  text-decoration: line-through;
 }
 
-.time-slot-picker__slot--busy:disabled {
-  cursor: not-allowed;
+/* === ПУСТОЕ СОСТОЯНИЕ === */
+.time-slot-picker__empty {
+  padding: var(--spacing-xl, 32px);
+  text-align: center;
+  color: var(--color-text-muted, #6b5d4f);
+  font-style: italic;
+  background: var(--color-surface-alt, #f2ebe0);
+  border-radius: var(--radius-md, 8px);
 }
 
-.time-slot-picker__slot-time {
-  font-weight: 600;
-  font-size: var(--font-size-base, 1rem);
-}
-
-.time-slot-picker__slot-reason {
-  font-size: var(--font-size-xs, 0.75rem);
-  opacity: 0.8;
-  color: var(--color-error-dark, #9e4539);
-}
-
-/* ══════════════════════════════════════════════
-   СООБЩЕНИЕ ОБ ОШИБКЕ
-   ═══════════════════════════════════════════════ */
-
-.time-slot-picker__error {
+/* === ИНФОРМАЦИОННЫЙ БЛОК === */
+.time-slot-picker__info {
   display: flex;
   align-items: center;
   gap: var(--spacing-sm, 8px);
   padding: var(--spacing-md, 16px);
-  background: var(--color-error-light, #fceae8);
-  color: var(--color-error-dark, #9e4539);
+  background: var(--color-info-light, #e8f1f5);
   border-radius: var(--radius-md, 8px);
-  border: 1px solid var(--color-error, #c65d52);
+  color: var(--color-info-dark, #466b80);
+  font-size: var(--font-size-sm, 0.875rem);
+}
+
+.time-slot-picker__info-icon {
+  flex-shrink: 0;
 }
 
 /* ═══════════════════════════════════════════════
-    ДОСТУПНОСТЬ: prefers-reduced-motion (ЭТАП 2.5)
-   ПОЧЕМУ это важно?
-   Некоторые пользователи отключают анимации из-за вестибулярных нарушений.
-   Уважение к этим настройкам — требование WCAG 2.1.
+   ПОДДЕРЖКА ТЁМНОЙ ТЕМЫ
    ═══════════════════════════════════════════════ */
 
-@media (prefers-reduced-motion: reduce) {
-  .time-slot-picker__date-grid {
-    scroll-behavior: auto; /* Отключаем плавную прокрутку */
-  }
-
-  .time-slot-picker__date,
-  .time-slot-picker__slot {
-    transition: none; /* Отключаем анимации hover */
-  }
+[data-theme="dark"] .time-slot-picker__title,
+[data-theme="dark"] .time-slot-picker__section-title {
+  color: var(--color-text, #f2ebe0);
 }
 
-/* ══════════════════════════════════════════════
+[data-theme="dark"] .time-slot-picker__subtitle {
+  color: var(--color-text-muted, #b5a28d);
+}
+
+[data-theme="dark"] .time-slot-picker__date {
+  background: var(--color-surface, #2d2419);
+  border-color: var(--color-border, #4a3a2a);
+}
+
+[data-theme="dark"] .time-slot-picker__date-day {
+  color: var(--color-text-muted, #b5a28d);
+}
+
+[data-theme="dark"] .time-slot-picker__date-number {
+  color: var(--color-text, #f2ebe0);
+}
+
+[data-theme="dark"] .time-slot-picker__date-month {
+  color: var(--color-text-subtle, #8a7968);
+}
+
+[data-theme="dark"]
+  .time-slot-picker__date:hover:not(:disabled):not(
+    .time-slot-picker__date--selected
+  ) {
+  border-color: var(--color-primary-400, #c9a88c);
+  background: var(--color-primary-soft, #3d2f26);
+}
+
+[data-theme="dark"] .time-slot-picker__date--selected {
+  background: var(--color-primary-600, #9c7558);
+  border-color: var(--color-primary-600, #9c7558);
+}
+
+[data-theme="dark"] .time-slot-picker__date--selected:hover {
+  background: var(--color-primary-700, #7f5e44);
+  border-color: var(--color-primary-700, #7f5e44);
+}
+
+[data-theme="dark"] .time-slot-picker__slot {
+  background: var(--color-surface, #2d2419);
+  border-color: var(--color-border, #4a3a2a);
+}
+
+[data-theme="dark"] .time-slot-picker__slot-time {
+  color: var(--color-text, #f2ebe0);
+}
+
+[data-theme="dark"] .time-slot-picker__slot-status {
+  color: var(--color-text-muted, #b5a28d);
+}
+
+[data-theme="dark"]
+  .time-slot-picker__slot:hover:not(.time-slot-picker__slot--selected):not(
+    .time-slot-picker__slot--busy
+  ) {
+  border-color: var(--color-primary-400, #c9a88c);
+  background: var(--color-primary-soft, #3d2f26);
+}
+
+[data-theme="dark"] .time-slot-picker__slot--selected {
+  background: var(--color-primary-600, #9c7558);
+  border-color: var(--color-primary-600, #9c7558);
+}
+
+[data-theme="dark"] .time-slot-picker__slot--selected:hover {
+  background: var(--color-primary-700, #7f5e44);
+  border-color: var(--color-primary-700, #7f5e44);
+}
+
+[data-theme="dark"] .time-slot-picker__slot--busy {
+  background: var(--color-surface-alt, #3d2f26);
+  border-color: var(--color-border, #4a3a2a);
+}
+
+[data-theme="dark"] .time-slot-picker__empty {
+  background: var(--color-surface-alt, #3d2f26);
+  color: var(--color-text-muted, #b5a28d);
+}
+
+[data-theme="dark"] .time-slot-picker__info {
+  background: var(--color-info-light, #2d3f4a);
+  color: var(--color-info, #7fb8d4);
+}
+
+/* ═══════════════════════════════════════════════
    АДАПТИВНОСТЬ
    ═══════════════════════════════════════════════ */
 
-@media (max-width: 768px) {
+@media (max-width: 640px) {
+  .time-slot-picker__slots {
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  }
+
+  .time-slot-picker__slot {
+    padding: var(--spacing-xs, 4px) var(--spacing-sm, 8px);
+    min-height: 40px;
+  }
+
+  .time-slot-picker__slot-time {
+    font-size: var(--font-size-sm, 0.875rem);
+  }
+
   .time-slot-picker__date {
     width: 70px;
-    padding: 6px;
+    padding: var(--spacing-xs, 4px);
   }
 
-  .time-slot-picker__date-num {
+  .time-slot-picker__date-number {
     font-size: var(--font-size-lg, 1.125rem);
-  }
-
-  .time-slot-picker__slots {
-    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
   }
 }
 
-@media (max-width: 480px) {
-  .time-slot-picker__date {
-    width: 60px;
-    padding: 4px;
+/* === ДОСТУПНОСТЬ: prefers-reduced-motion === */
+@media (prefers-reduced-motion: reduce) {
+  .time-slot-picker__date,
+  .time-slot-picker__slot {
+    transition: none;
   }
 
-  .time-slot-picker__date-day,
-  .time-slot-picker__date-month {
-    font-size: 0.65rem;
-  }
-
-  .time-slot-picker__date-num {
-    font-size: 1rem;
-  }
-
-  .time-slot-picker__slots {
-    grid-template-columns: repeat(3, 1fr);
+  .time-slot-picker__date:hover,
+  .time-slot-picker__date--selected:hover,
+  .time-slot-picker__slot--selected:hover {
+    transform: none;
   }
 }

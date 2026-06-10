@@ -1,24 +1,19 @@
 /**
- * Глобальные константы приложения bookme24.by
+ * constants.js — глобальные константы приложения bookme24.by
  *
- * ПОЧЕМУ вынесено в отдельный файл?
- * - Единый источник истины для всех статусов, категорий, ключей localStorage
- * - Изменение в одном месте обновляет всё приложение
- * - Избавляет от "магических строк" (magic strings) в компонентах
- * - Упрощает типизацию и автодополнение в IDE
+ * 🔥 ЭТАП 5.5: Исправлен статус IN_PROGRESS на camelCase для совместимости с i18n
  */
 
 // === СТАТУСЫ ЗАПИСЕЙ ===
-// ПОЧЕМУ объект, а не строки? Защита от опечаток: BOOKING_STATUS.PENDING вместо "pendin"
 export const BOOKING_STATUS = {
-  PENDING: "pending", // Ожидает подтверждения
-  CONFIRMED: "confirmed", // Подтверждена
-  IN_PROGRESS: "in-progress", // В процессе (клиент в салоне)
-  COMPLETED: "completed", // Завершена
-  CANCELLED: "cancelled", // Отменена
+  PENDING: "pending",
+  CONFIRMED: "confirmed",
+  IN_PROGRESS: "inProgress", // ✅ ИСПРАВЛЕНО: было "in-progress"
+  COMPLETED: "completed",
+  CANCELLED: "cancelled",
 };
 
-// Локализованные названия статусов для UI
+// Локализованные названия статусов для UI (fallback, если t() не сработает)
 export const BOOKING_STATUS_LABELS = {
   [BOOKING_STATUS.PENDING]: "Ожидает",
   [BOOKING_STATUS.CONFIRMED]: "Подтверждена",
@@ -27,8 +22,7 @@ export const BOOKING_STATUS_LABELS = {
   [BOOKING_STATUS.CANCELLED]: "Отменена",
 };
 
-// Цвета статусов для CSS-классов (используем классы, НЕ inline-стили!)
-// ПОЧЕМУ классы? Замечание В.В. из ПР-03: "управляйте состоянием через CSS-классы"
+// Цвета статусов для CSS-классов
 export const BOOKING_STATUS_COLORS = {
   [BOOKING_STATUS.PENDING]: "status-pending",
   [BOOKING_STATUS.CONFIRMED]: "status-confirmed",
@@ -39,11 +33,11 @@ export const BOOKING_STATUS_COLORS = {
 
 // === КАТЕГОРИИ УСЛУГ ===
 export const SERVICE_CATEGORIES = {
-  HAIR: "hair", // Парикмахерские услуги
-  NAILS: "nails", // Маникюр / педикюр
-  MASSAGE: "massage", // Массаж
-  COSMETOLOGY: "cosmetology", // Косметология
-  SPA: "spa", // SPA-процедуры
+  HAIR: "hair",
+  NAILS: "nails",
+  MASSAGE: "massage",
+  COSMETOLOGY: "cosmetology",
+  SPA: "spa",
 };
 
 export const SERVICE_CATEGORY_LABELS = {
@@ -55,7 +49,6 @@ export const SERVICE_CATEGORY_LABELS = {
 };
 
 // === КЛЮЧИ LOCALSTORAGE ===
-// ПОЧЕМУ префикс "bookme24_"? Защита от коллизий с другими приложениями на том же домене
 export const STORAGE_KEYS = {
   BOOKINGS: "bookme24_bookings",
   SERVICES: "bookme24_services",
@@ -72,15 +65,13 @@ export const STORAGE_KEYS = {
 };
 
 // === БИЗНЕС-КОНСТАНТЫ ===
-// ПОЧЕМУ вынесено? Преподаватель спрашивал на защите spa-mini-practice:
-// "Почему буфер 15 минут? Что если для разных услуг разные интервалы?"
 export const BUSINESS_CONFIG = {
-  BUFFER_MINUTES: 15, // Буфер между записями (уборка, дезинфекция)
-  SLOT_STEP_MINUTES: 30, // Шаг окон времени
-  MIN_ADVANCE_HOURS: 2, // Минимум часов до записи (нельзя записаться "через час")
-  MAX_BOOKING_DAYS: 30, // Горизонт записи (на 30 дней вперёд)
-  SALON_OPEN_HOUR: 9, // Салон открыт с 9:00
-  SALON_CLOSE_HOUR: 21, // Салон закрыт в 21:00
+  BUFFER_MINUTES: 15,
+  SLOT_STEP_MINUTES: 30,
+  MIN_ADVANCE_HOURS: 2,
+  MAX_BOOKING_DAYS: 30,
+  SALON_OPEN_HOUR: 9,
+  SALON_CLOSE_HOUR: 21,
 };
 
 // === ШАГИ МНОГОСТУПЕНЧАТОЙ ФОРМЫ ===
@@ -107,14 +98,12 @@ export const USER_ROLES = {
 };
 
 // === ВАЛИДАЦИЯ: лимиты полей ===
-// ПОЧЕМУ здесь? Единая точка настройки ограничений
 export const FIELD_LIMITS = {
   NAME_MAX_LENGTH: 100,
   EMAIL_MAX_LENGTH: 100,
   COMMENT_MAX_LENGTH: 500,
-  PHONE_LENGTH: 13, // "+375XXXXXXXXX" = 13 символов
+  PHONE_LENGTH: 13,
 };
 
 // === КОДЫ ОПЕРАТОРОВ РБ ===
-// ПОЧЕМУ массив? Используется в regex-валидации телефона
 export const BY_PHONE_CODES = ["17", "25", "29", "33", "44"];

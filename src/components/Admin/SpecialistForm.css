@@ -1,42 +1,14 @@
-/**
- * Стили для SpecialistForm
- * BEM-методология + адаптивность + поддержка тёмной темы
- * 
- * 🔥 ЭТАП 8.4: Стили формы специалиста со списком checkbox
- * - Все цвета через CSS-переменные (поддержка тёмной темы)
- * - Адаптивная двухколоночная раскладка
- * - Анимации для появления ошибок
- */
+/* ═══════════════════════════════════════════════
+   🔥 ИСПРАВЛЕНИЕ 1.5: СТИЛИ ДЛЯ ВЫБОРА СПЕЦИАЛИСТОВ
+   ═══════════════════════════════════════════════ */
 
-.specialist-form {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-md, 16px);
-  padding: var(--spacing-lg, 24px);
-}
-
-.specialist-form__title {
-  font-size: var(--font-size-xl, 1.5rem);
-  font-weight: 600;
-  color: var(--color-text, #3d2f26);
-  margin: 0 0 var(--spacing-sm, 8px) 0;
-  padding-bottom: var(--spacing-sm, 8px);
-  border-bottom: 1px solid var(--color-border, #e8dcc4);
-}
-
-.specialist-form__field {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs, 4px);
-}
-
-.specialist-form__hint {
+.service-form__hint {
   font-size: var(--font-size-sm, 0.875rem);
   color: var(--color-text-muted, #6b5d4f);
   margin: 0;
 }
 
-.specialist-form__empty {
+.service-form__empty {
   font-size: var(--font-size-sm, 0.875rem);
   color: var(--color-text-subtle, #8a7968);
   padding: var(--spacing-md, 16px);
@@ -47,13 +19,9 @@
 }
 
 /* === СЕТКА CHECKBOX === */
-/* ПОЧЕМУ grid?
-   Автоматическое заполнение колонок в зависимости от ширины
-   Минимальная ширина 200px на чекбокс (чтобы название услуги помещалось)
-*/
-.specialist-form__services-grid {
+.service-form__specialists-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: var(--spacing-xs, 8px);
   max-height: 300px;
   overflow-y: auto;
@@ -64,10 +32,10 @@
 }
 
 /* === ОДИН CHECKBOX === */
-.specialist-form__service-checkbox {
+.service-form__specialist-checkbox {
   display: flex;
-  align-items: center;
-  gap: var(--spacing-sm, 8px);
+  flex-direction: column;
+  gap: 2px;
   padding: var(--spacing-sm, 8px) var(--spacing-md, 12px);
   background: var(--color-surface, #ffffff);
   border: 1.5px solid var(--color-border, #e8dcc4);
@@ -76,148 +44,99 @@
   transition: all var(--transition-fast, 150ms ease);
 }
 
-.specialist-form__service-checkbox:hover {
+.service-form__specialist-checkbox:hover {
   border-color: var(--color-primary-400, #c9a88c);
   background: var(--color-primary-soft, #fbf5ef);
 }
 
 /* === СОСТОЯНИЕ "ВЫБРАНО" === */
-.specialist-form__service-checkbox--checked {
+.service-form__specialist-checkbox--checked {
   background: var(--color-primary-soft, #fbf5ef);
   border-color: var(--color-primary-600, #9c7558);
 }
 
-.specialist-form__service-checkbox--checked .specialist-form__service-name {
+.service-form__specialist-checkbox--checked .service-form__specialist-name {
   color: var(--color-primary-700, #7f5e44);
-  font-weight: 500;
+  font-weight: 600;
 }
 
-.specialist-form__checkbox-input {
+.service-form__checkbox-input {
   width: 18px;
   height: 18px;
   cursor: pointer;
   accent-color: var(--color-primary-600, #9c7558);
   flex-shrink: 0;
+  margin-bottom: 4px;
 }
 
-.specialist-form__service-name {
+.service-form__specialist-name {
   font-size: var(--font-size-sm, 0.875rem);
+  font-weight: 500;
   color: var(--color-text, #3d2f26);
   user-select: none;
 }
 
-.specialist-form__counter {
+.service-form__specialist-position {
   font-size: var(--font-size-xs, 0.75rem);
   color: var(--color-text-muted, #6b5d4f);
-  text-align: right;
-  margin-top: var(--spacing-xs, 4px);
+  user-select: none;
 }
 
-.specialist-form__row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--spacing-md, 16px);
-}
+/* ═══════════════════════════════════════════════
+   🔥 ПОДДЕРЖКА ТЁМНОЙ ТЕМЫ ДЛЯ CHECKBOX
+   ═══════════════════════════════════════════════ */
 
-.specialist-form__actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--spacing-sm, 8px);
-  padding-top: var(--spacing-md, 16px);
-  border-top: 1px solid var(--color-border, #e8dcc4);
-  margin-top: var(--spacing-sm, 8px);
-}
-
-/* === АНИМАЦИЯ ПОЯВЛЕНИЯ ОШИБОК === */
-.input__message--error {
-  animation: slideDown 200ms ease-out;
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* === АДАПТИВНОСТЬ === */
-@media (max-width: 640px) {
-  .specialist-form {
-    padding: var(--spacing-md, 16px);
-  }
-
-  .specialist-form__row {
-    grid-template-columns: 1fr;
-  }
-
-  .specialist-form__services-grid {
-    grid-template-columns: 1fr;
-    max-height: 250px;
-  }
-
-  .specialist-form__actions {
-    flex-direction: column-reverse;
-  }
-
-  .specialist-form__actions button {
-    width: 100%;
-    justify-content: center;
-  }
-}
-
-/* === ПОДДЕРЖКА ТЁМНОЙ ТЕМЫ === */
-[data-theme="dark"] .specialist-form__title {
-  color: var(--color-text, #f2ebe0);
-  border-bottom-color: var(--color-border, #4a3a2a);
-}
-
-[data-theme="dark"] .specialist-form__hint {
+[data-theme="dark"] .service-form__hint {
   color: var(--color-text-muted, #b5a28d);
 }
 
-[data-theme="dark"] .specialist-form__empty {
+[data-theme="dark"] .service-form__empty {
   color: var(--color-text-subtle, #8a7968);
   background: var(--color-bg, #1a1410);
 }
 
-[data-theme="dark"] .specialist-form__services-grid {
+[data-theme="dark"] .service-form__specialists-grid {
   background: var(--color-bg, #1a1410);
   border-color: var(--color-border, #4a3a2a);
 }
 
-[data-theme="dark"] .specialist-form__service-checkbox {
+[data-theme="dark"] .service-form__specialist-checkbox {
   background: var(--color-surface, #2d2419);
   border-color: var(--color-border, #4a3a2a);
 }
 
-[data-theme="dark"] .specialist-form__service-checkbox:hover {
+[data-theme="dark"] .service-form__specialist-checkbox:hover {
   border-color: var(--color-primary-400, #c9a88c);
   background: var(--color-primary-soft, #3d2f26);
 }
 
-[data-theme="dark"] .specialist-form__service-checkbox--checked {
+[data-theme="dark"] .service-form__specialist-checkbox--checked {
   background: var(--color-primary-soft, #3d2f26);
   border-color: var(--color-primary-600, #9c7558);
 }
 
 [data-theme="dark"]
-  .specialist-form__service-checkbox--checked
-  .specialist-form__service-name {
+  .service-form__specialist-checkbox--checked
+  .service-form__specialist-name {
   color: var(--color-primary-400, #c9a88c);
 }
 
-[data-theme="dark"] .specialist-form__service-name {
+[data-theme="dark"] .service-form__specialist-name {
   color: var(--color-text, #f2ebe0);
 }
 
-[data-theme="dark"] .specialist-form__counter {
+[data-theme="dark"] .service-form__specialist-position {
   color: var(--color-text-muted, #b5a28d);
 }
 
-[data-theme="dark"] .specialist-form__actions {
-  border-top-color: var(--color-border, #4a3a2a);
+[data-theme="dark"] .service-form__checkbox-input {
+  accent-color: var(--color-primary-400, #c9a88c);
+}
+
+/* === АДАПТИВНОСТЬ ДЛЯ CHECKBOX === */
+@media (max-width: 640px) {
+  .service-form__specialists-grid {
+    grid-template-columns: 1fr;
+    max-height: 250px;
+  }
 }
