@@ -15,7 +15,7 @@
  * 🔥 ИСПРАВЛЕНО: Все опечатки с пробелами в идентификаторах и стрелочных функциях
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Check, ArrowLeft, ArrowRight, Trash2 } from 'lucide-react';
 
@@ -90,6 +90,15 @@ export default function BookingWizard({
     { debounceMs: 0 }
   );
 
+  // === 🔥 ОБНОВЛЕНИЕ ЧЕРНОВИКА (useCallback для стабильной ссылки) ===
+  // ПОЧЕМУ useCallback?
+  // - Функция используется в нескольких useEffect
+  // - Без useCallback она создавалась бы заново при каждом рендере
+  // - Это вызывало бы лишние срабатывания эффектов
+  const updateDraft = useCallback((updates) => {
+    setDraft((prev) => ({ ...prev, ...updates }));
+  }, [setDraft]);
+
   // === ОБРАБОТКА ПЕРЕХОДА ИЗ КАТАЛОГА ===
   useEffect(() => {
     const { preselectedServiceId, preselectedSpecialistId, startStep } = location.state || {};
@@ -125,8 +134,7 @@ export default function BookingWizard({
     if (location.state) {
       navigate(location.pathname, { replace: true, state: {} });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location.state, t]);
+  }, [location.state, t, updateDraft, specialists, services, navigate]);
 
   // === 🔥 ОБЪЕДИНЁННАЯ ЛОГИКА АВТО-ПЕРЕХОДА (ЭТАП 3.2 + 3.4) ===
   useEffect(() => {
@@ -146,7 +154,7 @@ export default function BookingWizard({
       // Переходим к выбору даты и времени
       setCurrentStep(BOOKING_STEPS.DATETIME);
     }
-  }, [draft.serviceId, draft.specialistId, services]);
+  }, [draft.serviceId, draft.specialistId, services, updateDraft]);
 
   const selectedService = services.find((s) => s.id === draft.serviceId);
   const selectedSpecialist = specialists.find((s) => s.id === draft.specialistId);
@@ -156,14 +164,9 @@ export default function BookingWizard({
     if (hasDraft) {
       Toast.info(t('booking.draft.restored'), { duration: 3000 });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [draft.serviceId, draft.specialistId, draft.clientName, draft.clientPhone, t]);
 
-  const updateDraft = (updates) => {
-    setDraft((prev) => ({ ...prev, ...updates }));
-  };
-
-  const clearStepData = (step) => {
+  const clearStepData = useCallback((step) => {
     switch (step) {
       case BOOKING_STEPS.DATETIME:
         updateDraft({ date: null, startTime: null });
@@ -180,9 +183,9 @@ export default function BookingWizard({
       default:
         break;
     }
-  };
+  }, [updateDraft]);
 
-  const validateCurrentStep = () => {
+  const validateCurrentStep = useCallback(() => {
     switch (currentStep) {
       case BOOKING_STEPS.SERVICE:
         if (!draft.serviceId) {
@@ -223,32 +226,32 @@ export default function BookingWizard({
       default:
         return true;
     }
-  };
+  }, [currentStep, draft.serviceId, draft.specialistId, draft.date, draft.startTime, draft.clientName, draft.clientPhone, draft.clientEmail, draft.comment, t]);
 
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     if (!validateCurrentStep()) return;
     if (currentStep === BOOKING_STEPS.CONTACTS) {
       setShowConfirmation(true);
       return;
     }
     setCurrentStep((prev) => Math.min(prev + 1, BOOKING_STEPS.CONFIRM));
-  };
+  }, [validateCurrentStep, currentStep]);
 
-  const handleBack = () => {
+  const handleBack = useCallback(() => {
     clearStepData(currentStep);
     setCurrentStep((prev) => Math.max(prev - 1, BOOKING_STEPS.SERVICE));
-  };
+  }, [clearStepData, currentStep]);
 
-  const handleClearForm = () => {
+  const handleClearForm = useCallback(() => {
     const confirmed = window.confirm(t('booking.clearFormConfirm') || 'Вы уверены, что хотите очистить форму? Все введенные данные будут потеряны.');
     if (confirmed) {
       clearDraft();
       setCurrentStep(BOOKING_STEPS.SERVICE);
       Toast.info(t('booking.formCleared') || 'Форма очищена');
     }
-  };
+  }, [clearDraft, t]);
 
-  const handleConfirm = async () => {
+  const handleConfirm = useCallback(async () => {
     if (isSubmitting) return;
     setIsSubmitting(true);
     try {
@@ -282,14 +285,14 @@ export default function BookingWizard({
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [isSubmitting, onCreateBooking, draft.serviceId, draft.specialistId, draft.date, draft.startTime, draft.clientName, draft.clientPhone, draft.clientEmail, draft.comment, selectedService, t, setLastClientPhone, clearDraft]);
 
-  const handleNewBooking = () => {
+  const handleNewBooking = useCallback(() => {
     clearDraft();
     setLastCreatedBooking(null);
     setCurrentStep(BOOKING_STEPS.SERVICE);
     setShowMyBookings(false);
-  };
+  }, [clearDraft, setLastCreatedBooking]);
 
   const progressPercent = ((currentStep - 1) / (BOOKING_STEPS.CONFIRM - 1)) * 100;
 
@@ -315,7 +318,7 @@ export default function BookingWizard({
     );
   }
 
-  const getNextButtonText = () => {
+  const getNextButtonText = useCallback(() => {
     switch (currentStep) {
       case BOOKING_STEPS.CONTACTS:
         return t('booking.buttons.confirm');
@@ -326,7 +329,7 @@ export default function BookingWizard({
       default:
         return t('common.next');
     }
-  };
+  }, [currentStep, t]);
 
   return (
     <div className="booking-wizard">
