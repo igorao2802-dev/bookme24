@@ -111,7 +111,10 @@
       "emptyDescription": "Book your first service at Health & Beauty salon",
       "bookNow": "Book Now",
       "created": "Booking successfully created!"
-    }
+    },
+    "clearForm": "Clear Form",
+    "clearFormConfirm": "Are you sure you want to clear the form? All entered data will be lost.",
+    "formCleared": "Form cleared"
   },
   "catalog": {
     "title": "📋 Services & Specialists Catalog",

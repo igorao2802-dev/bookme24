@@ -10,9 +10,9 @@
  * 
  * 🔥 ЭТАП 2.1: Кнопки навигации зафиксированы внизу экрана (sticky)
  * 🔥 ЭТАП 3.2: Оптимизация навигации и UX (кнопка очистки, кликабельные шаги)
+ * 🔥 ЭТАП 3.3: Модальное окно согласия (GDPR)
  * 🔥 ЭТАП 3.4: Маршрутизация от карточки специалиста (фильтрация услуг + пропуск шага 2)
  * 🔥 ЭТАП 7.4: Полная локализация всех пользовательских текстов
- * 🔥 ИСПРАВЛЕНО: Все опечатки с пробелами в идентификаторах и стрелочных функциях
  */
 
 import { useState, useEffect, useCallback } from 'react';
@@ -25,6 +25,7 @@ import SpecialistSelector from './SpecialistSelector';
 import TimeSlotPicker from './TimeSlotPicker';
 import BookingForm from './BookingForm';
 import ConfirmationModal from './ConfirmationModal';
+import ConsentModal from './ConsentModal';
 import BookingList from './BookingList';
 
 // === UI КОМПОНЕНТЫ ===
@@ -80,6 +81,7 @@ export default function BookingWizard({
   );
 
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [showConsentModal, setShowConsentModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showMyBookings, setShowMyBookings] = useState(false);
   const [lastCreatedBooking, setLastCreatedBooking] = useState(null);
@@ -90,11 +92,7 @@ export default function BookingWizard({
     { debounceMs: 0 }
   );
 
-  // === 🔥 ОБНОВЛЕНИЕ ЧЕРНОВИКА (useCallback для стабильной ссылки) ===
-  // ПОЧЕМУ useCallback?
-  // - Функция используется в нескольких useEffect
-  // - Без useCallback она создавалась бы заново при каждом рендере
-  // - Это вызывало бы лишние срабатывания эффектов
+  // === ОБНОВЛЕНИЕ ЧЕРНОВИКА (useCallback для стабильной ссылки) ===
   const updateDraft = useCallback((updates) => {
     setDraft((prev) => ({ ...prev, ...updates }));
   }, [setDraft]);
@@ -103,7 +101,6 @@ export default function BookingWizard({
   useEffect(() => {
     const { preselectedServiceId, preselectedSpecialistId, startStep } = location.state || {};
 
-    // 🔥 ЭТАП 3.4: Обработка перехода от карточки специалиста
     if (preselectedSpecialistId) {
       const specialistExists = specialists.some(s => s.id === preselectedSpecialistId);
       if (specialistExists) {
@@ -115,7 +112,6 @@ export default function BookingWizard({
       }
     }
 
-    // Обработка перехода от карточки услуги
     if (preselectedServiceId) {
       const serviceExists = services.some(s => s.id === preselectedServiceId);
       if (serviceExists) {
@@ -130,28 +126,21 @@ export default function BookingWizard({
       }
     }
 
-    // Очищаем state роутера, чтобы не срабатывать повторно при обновлении страницы
     if (location.state) {
       navigate(location.pathname, { replace: true, state: {} });
     }
   }, [location.state, t, updateDraft, specialists, services, navigate]);
 
-  // === 🔥 ОБЪЕДИНЁННАЯ ЛОГИКА АВТО-ПЕРЕХОДА (ЭТАП 3.2 + 3.4) ===
+  // === АВТО-ВЫБОР СПЕЦИАЛИСТА (ЭТАП 3.2 + 3.4) ===
   useEffect(() => {
     if (!draft.serviceId) return;
 
     const selectedService = services.find(s => s.id === draft.serviceId);
 
-    // Условие 1: Специалист уже выбран (пришли из каталога)
-    // Условие 2: У выбранной услуги всего 1 специалист (авто-выбор)
     if (draft.specialistId || (selectedService && selectedService.specialistIds?.length === 1)) {
-      
-      // Если специалист не был выбран, но у услуги он один — выбираем его
       if (!draft.specialistId && selectedService) {
         updateDraft({ specialistId: selectedService.specialistIds[0] });
       }
-      
-      // Переходим к выбору даты и времени
       setCurrentStep(BOOKING_STEPS.DATETIME);
     }
   }, [draft.serviceId, draft.specialistId, services, updateDraft]);
@@ -226,12 +215,13 @@ export default function BookingWizard({
       default:
         return true;
     }
-  }, [currentStep, draft.serviceId, draft.specialistId, draft.date, draft.startTime, draft.clientName, draft.clientPhone, draft.clientEmail, draft.comment, t]);
+  }, [currentStep, draft.serviceId, draft.specialistId, draft.date, draft.startTime, 
+      draft.clientName, draft.clientPhone, draft.clientEmail, draft.comment, t]);
 
   const handleNext = useCallback(() => {
     if (!validateCurrentStep()) return;
     if (currentStep === BOOKING_STEPS.CONTACTS) {
-      setShowConfirmation(true);
+      setShowConsentModal(true);
       return;
     }
     setCurrentStep((prev) => Math.min(prev + 1, BOOKING_STEPS.CONFIRM));
@@ -250,6 +240,16 @@ export default function BookingWizard({
       Toast.info(t('booking.formCleared') || 'Форма очищена');
     }
   }, [clearDraft, t]);
+
+  const handleConsentApprove = useCallback(() => {
+    setShowConsentModal(false);
+    setShowConfirmation(true);
+  }, []);
+
+  const handleConsentReject = useCallback(() => {
+    setShowConsentModal(false);
+    Toast.error("Запись не может быть завершена без согласия на обработку данных");
+  }, []);
 
   const handleConfirm = useCallback(async () => {
     if (isSubmitting) return;
@@ -285,7 +285,9 @@ export default function BookingWizard({
     } finally {
       setIsSubmitting(false);
     }
-  }, [isSubmitting, onCreateBooking, draft.serviceId, draft.specialistId, draft.date, draft.startTime, draft.clientName, draft.clientPhone, draft.clientEmail, draft.comment, selectedService, t, setLastClientPhone, clearDraft]);
+  }, [isSubmitting, onCreateBooking, draft.serviceId, draft.specialistId, draft.date, 
+      draft.startTime, draft.clientName, draft.clientPhone, draft.clientEmail, 
+      draft.comment, selectedService, t, setLastClientPhone, clearDraft]);
 
   const handleNewBooking = useCallback(() => {
     clearDraft();
@@ -318,7 +320,8 @@ export default function BookingWizard({
     );
   }
 
-  const getNextButtonText = useCallback(() => {
+  // === ТЕКСТ КНОПКИ "ДАЛЕЕ" (обычная функция, не useCallback) ===
+  const getNextButtonText = () => {
     switch (currentStep) {
       case BOOKING_STEPS.CONTACTS:
         return t('booking.buttons.confirm');
@@ -329,7 +332,7 @@ export default function BookingWizard({
       default:
         return t('common.next');
     }
-  }, [currentStep, t]);
+  };
 
   return (
     <div className="booking-wizard">
@@ -375,7 +378,6 @@ export default function BookingWizard({
       <div className="booking-wizard__content">
         {currentStep === BOOKING_STEPS.SERVICE && (
           <ServiceSelector
-            // 🔥 ЭТАП 3.4: Фильтруем услуги, если выбран конкретный специалист
             services={services.filter(s => 
               !draft.specialistId || s.specialistIds?.includes(draft.specialistId)
             )}
@@ -441,6 +443,12 @@ export default function BookingWizard({
           {getNextButtonText()}
         </Button>
       </div>
+
+      <ConsentModal 
+        isOpen={showConsentModal}
+        onApprove={handleConsentApprove}
+        onReject={handleConsentReject}
+      />
 
       <ConfirmationModal
         isOpen={showConfirmation}
