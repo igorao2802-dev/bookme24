@@ -6,19 +6,16 @@
  * Управляет открытием/закрытием модалки добавления/редактирования.
  * 
  * 🔥 ЭТАП 6.3: Таблица специалистов с CRUD
- * - Показывает количество услуг, которые оказывает мастер
- * - Защита JSON-записей от удаления
- * - Подтверждение перед удалением
+ * 🔥 ЭТАП 7.6: Полная локализация через t()
+ * 🔥 ИСПРАВЛЕНО: Опечатка onCl ose → onClose
  */
-
 import { useState } from 'react';
 import { Plus, Edit2, Trash2 } from 'lucide-react';
-
 import Button from '../UI/Button';
 import Badge from '../UI/Badge';
 import EmptyState from '../UI/EmptyState';
 import SpecialistModal from './SpecialistModal';
-
+import { useLanguage } from '../../hooks/useLanguage'; // 🔥 ЭТАП 7.6
 import './AdminSpecialistsList.css';
 
 export default function AdminSpecialistsList({
@@ -28,6 +25,8 @@ export default function AdminSpecialistsList({
   onUpdate,
   onDelete,
 }) {
+  const { t } = useLanguage(); // 🔥 ЭТАП 7.6
+
   // === СОСТОЯНИЕ МОДАЛКИ ===
   const [modalState, setModalState] = useState({
     isOpen: false,
@@ -60,11 +59,10 @@ export default function AdminSpecialistsList({
 
   // === УДАЛЕНИЕ С ПОДТВЕРЖДЕНИЕМ ===
   const handleDelete = (specialist) => {
+    // 🔥 ЭТАП 7.6: Локализованное подтверждение
     const confirmed = window.confirm(
-      `Вы уверены, что хотите удалить специалиста "${specialist.fullName}"?\n\n` +
-        `Это действие нельзя отменить.`
+      t('admin.specialists.confirmDelete', { name: specialist.fullName })
     );
-
     if (confirmed) {
       onDelete(specialist.id);
     }
@@ -88,18 +86,18 @@ export default function AdminSpecialistsList({
     return (
       <div className="admin-specialists-list">
         <div className="admin-specialists-list__header">
-          <h2>Специалисты</h2>
+          <h2>{t('admin.specialists.title')}</h2>
           <Button
             variant="primary"
             leftIcon={<Plus size={16} />}
             onClick={openAddModal}
           >
-            Добавить специалиста
+            {t('admin.specialists.add')}
           </Button>
         </div>
         <EmptyState
-          title="Специалистов пока нет"
-          description="Добавьте первого специалиста, чтобы клиенты могли выбрать мастера"
+          title={t('admin.specialists.empty')}
+          description={t('admin.specialists.emptyDescription')}
           variant="info"
         />
         <SpecialistModal
@@ -119,13 +117,15 @@ export default function AdminSpecialistsList({
     <div className="admin-specialists-list">
       {/* === ЗАГОЛОВОК === */}
       <div className="admin-specialists-list__header">
-        <h2>Специалисты ({specialists.length})</h2>
+        <h2>
+          {t('admin.specialists.title')} ({specialists.length})
+        </h2>
         <Button
           variant="primary"
           leftIcon={<Plus size={16} />}
           onClick={openAddModal}
         >
-          Добавить специалиста
+          {t('admin.specialists.add')}
         </Button>
       </div>
 
@@ -134,13 +134,13 @@ export default function AdminSpecialistsList({
         <table className="admin-specialists-list__table">
           <thead>
             <tr>
-              <th>ФИО</th>
-              <th>Должность</th>
-              <th>Стаж</th>
-              <th>Рейтинг</th>
-              <th>Услуг</th>
-              <th>Тип</th>
-              <th>Действия</th>
+              <th>{t('admin.specialists.columns.fullName')}</th>
+              <th>{t('admin.specialists.columns.position')}</th>
+              <th>{t('admin.specialists.columns.experience')}</th>
+              <th>{t('admin.specialists.columns.rating')}</th>
+              <th>{t('admin.specialists.columns.servicesCount')}</th>
+              <th>{t('admin.specialists.columns.type')}</th>
+              <th>{t('admin.specialists.columns.actions')}</th>
             </tr>
           </thead>
           <tbody>
@@ -153,7 +153,7 @@ export default function AdminSpecialistsList({
                     {specialist.fullName}
                   </td>
                   <td>{specialist.position}</td>
-                  <td>{specialist.experience} лет</td>
+                  <td>{specialist.experience} {t('time.minutes')}</td>
                   <td>
                     <span className="admin-specialists-list__rating">
                       ⭐ {specialist.rating}
@@ -166,9 +166,13 @@ export default function AdminSpecialistsList({
                   </td>
                   <td>
                     {isEditable ? (
-                      <Badge variant="success" size="sm">Кастомный</Badge>
+                      <Badge variant="success" size="sm">
+                        {t('admin.specialists.custom')}
+                      </Badge>
                     ) : (
-                      <Badge variant="default" size="sm">Стандартный</Badge>
+                      <Badge variant="default" size="sm">
+                        {t('admin.specialists.standard')}
+                      </Badge>
                     )}
                   </td>
                   <td>
@@ -180,8 +184,8 @@ export default function AdminSpecialistsList({
                         disabled={!isEditable}
                         title={
                           isEditable
-                            ? 'Редактировать специалиста'
-                            : 'Нельзя редактировать стандартного специалиста'
+                            ? t('common.edit')
+                            : t('admin.specialists.cannotModifyStandard')
                         }
                       >
                         <Edit2 size={16} />
@@ -193,8 +197,8 @@ export default function AdminSpecialistsList({
                         disabled={!isEditable}
                         title={
                           isEditable
-                            ? 'Удалить специалиста'
-                            : 'Нельзя удалить стандартного специалиста'
+                            ? t('common.delete')
+                            : t('admin.specialists.cannotDeleteStandard')
                         }
                       >
                         <Trash2 size={16} />

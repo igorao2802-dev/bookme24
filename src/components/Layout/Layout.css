@@ -1,5 +1,5 @@
 /**
- * Стили для Layout
+ * Layout.css — стили для Layout (шапка, навигация, подвал)
  * BEM-методология + адаптивность + поддержка тёмной темы
  * 
  * 🔥 ЭТАП 2.1: Подвал теперь имеет градиент, идентичный шапке
@@ -76,10 +76,6 @@
   justify-content: center;
 }
 
-/* ПОЧЕМУ такие цвета ссылок?
-   Белый текст на тёмном терракотовом — контраст 8.5:1 (WCAG AAA).
-   При ховере добавляем полупрозрачную подложку, а НЕ меняем цвет текста.
-   Так текст никогда не «пропадёт». */
 .layout__nav-link {
   color: var(--color-text-inverse, #ffffff);
   text-decoration: none;
@@ -89,29 +85,21 @@
   font-weight: 500;
   background-color: transparent;
   white-space: nowrap;
-
-  /* ПОЧЕМУ transition для нескольких свойств?
-     Нужно анимировать background-color (hover), 
-     transform (active) и outline (focus-visible). */
   transition:
     background-color var(--transition-fast, 150ms ease),
     transform var(--transition-fast, 150ms ease),
     outline var(--transition-fast, 150ms ease);
-
-  /* 🔥 ЭТАП 2.1: Выравнивание иконки и текста */
   display: inline-flex;
   align-items: center;
   gap: var(--spacing-xs, 4px);
 }
 
-/* 🔥 ЭТАП 4.1: Состояние HOVER */
 .layout__nav-link:hover {
   background-color: rgba(255, 255, 255, 0.15);
   color: var(--color-text-inverse, #ffffff);
   border-bottom: none;
 }
 
-/* 🔥 ЭТАП 4.1: Состояние ACTIVE (нажатие мышкой) */
 .layout__nav-link:active {
   transform: scale(0.97);
   background-color: rgba(255, 255, 255, 0.25);
@@ -119,28 +107,25 @@
   border-bottom: none;
 }
 
-/* 🔥 ЭТАП 4.1: Состояние FOCUS-VISIBLE (клавиатурная навигация) */
 .layout__nav-link:focus-visible {
   outline: 2px solid var(--color-text-inverse, #ffffff);
   outline-offset: 2px;
   background-color: rgba(255, 255, 255, 0.15);
 }
 
-/* Активная ссылка (текущая страница) */
 .layout__nav-link--active {
   background-color: rgba(255, 255, 255, 0.25);
   font-weight: 600;
 }
 
-/* ═══════════════════════════════════════════════
+/* ══════════════════════════════════════════════
    🔥 ГРУППА ПЕРЕКЛЮЧАТЕЛЕЙ (ЭТАП 7.2 + 7.3)
-   Контейнер для ThemeToggle + LanguageToggle + RoleSwitcher
    ═══════════════════════════════════════════════ */
 .layout__controls {
   display: flex;
   align-items: center;
   gap: var(--spacing-sm, 8px);
-  margin-left: auto; /* Прижимает группу к правому краю */
+  margin-left: auto;
 }
 
 /* === ПЕРЕКЛЮЧАТЕЛЬ РОЛИ === */
@@ -187,17 +172,15 @@
 }
 
 /* ═══════════════════════════════════════════════
-   👣 ПОДВАЛ
-   🔥 ЭТАП 4.1: Градиент, идентичный шапке, для визуальной целостности
+    ПОДВАЛ
+   🔥 ЭТАП 2.1: Градиент, идентичный шапке, для визуальной целостности
    ═══════════════════════════════════════════════ */
 .layout__footer {
-  /* 🔥 ЭТАП 4.1: Заменён сплошной цвет на градиент, идентичный шапке */
   background: linear-gradient(
     135deg,
     var(--color-primary-600, #9c7558) 0%,
     var(--color-primary-700, #7f5e44) 100%
   );
-  /* Гарантируем читаемость текста на градиенте */
   color: var(--color-text-inverse, #ffffff);
   padding: var(--spacing-2xl, 48px) 0 var(--spacing-xl, 32px);
   margin-top: auto;
@@ -212,13 +195,9 @@
 .layout__footer-col h4 {
   margin-bottom: var(--spacing-sm, 8px);
   font-size: var(--font-size-lg, 1.125rem);
-  /* Белый для контраста на градиенте */
   color: var(--color-text-inverse, #ffffff);
 }
 
-/* ПОЧЕМУ не чисто белый?
-   На терракотовом градиенте кремовый #F2EBE0 даёт отличный контраст,
-   но выглядит теплее и премиальнее, чем резкий #FFFFFF. */
 .layout__footer-col p {
   color: var(--color-neutral-100, #f2ebe0);
   font-size: var(--font-size-sm, 0.875rem);
@@ -239,10 +218,27 @@
 }
 
 /* ═══════════════════════════════════════════════
-   📱 АДАПТИВНОСТЬ
+    ПОДДЕРЖКА ТЁМНОЙ ТЕМЫ (ЭТАП 2.5)
    ═══════════════════════════════════════════════ */
 
-/* === ПЛАНШЕТЫ И МАЛЕНЬКИЕ ДЕСКТОПЫ === */
+[data-theme="dark"] .layout__role-select {
+  background-color: var(--color-surface, #2d2419);
+  color: var(--color-text, #f2ebe0);
+  border-color: var(--color-border, #4a3a2a);
+}
+
+[data-theme="dark"] .layout__role-select:hover {
+  border-color: var(--color-primary-400, #c9a88c);
+}
+
+[data-theme="dark"] .layout__role-select:focus-visible {
+  outline-color: var(--color-primary-400, #c9a88c);
+}
+
+/* ═══════════════════════════════════════════════
+    АДАПТИВНОСТЬ
+   ══════════════════════════════════════════════ */
+
 @media (max-width: 768px) {
   .layout__header .layout__container {
     flex-direction: column;
@@ -264,7 +260,6 @@
     margin-bottom: var(--spacing-sm, 8px);
   }
 
-  /* Группа переключателей переносится на новую строку */
   .layout__controls {
     width: 100%;
     justify-content: center;
@@ -275,14 +270,12 @@
   }
 }
 
-/* === МОБИЛЬНЫЕ УСТРОЙСТВА === */
 @media (max-width: 480px) {
   .layout__nav-link {
     padding: var(--spacing-xs, 4px) var(--spacing-sm, 8px);
     font-size: var(--font-size-sm, 0.875rem);
   }
 
-  /* Переключатели переносятся вертикально */
   .layout__controls {
     flex-wrap: wrap;
     gap: var(--spacing-xs, 4px);

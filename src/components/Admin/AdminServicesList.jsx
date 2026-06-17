@@ -6,22 +6,18 @@
  * Управляет открытием/закрытием модалки добавления/редактирования.
  * 
  * 🔥 ЭТАП 6.3: Таблица услуг с CRUD
- * - JSON-записи помечены как "Стандартные" (нельзя удалить/редактировать)
- * - Кастомные записи можно редактировать и удалять
- * - Удаление требует подтверждения через window.confirm
+ * 🔥 ЭТАП 7.6: Полная локализация через t()
+ * 🔥 ИСПРАВЛЕНО: Опечатка closeM odal → closeModal
  */
-
 import { useState } from 'react';
 import { Plus, Edit2, Trash2 } from 'lucide-react';
-
 import Button from '../UI/Button';
 import Badge from '../UI/Badge';
 import EmptyState from '../UI/EmptyState';
 import ServiceModal from './ServiceModal';
-
 import { SERVICE_CATEGORY_LABELS } from '../../utils/constants';
 import { formatPrice, formatDuration } from '../../utils/formatters';
-
+import { useLanguage } from '../../hooks/useLanguage'; // 🔥 ЭТАП 7.6
 import './AdminServicesList.css';
 
 export default function AdminServicesList({
@@ -30,6 +26,8 @@ export default function AdminServicesList({
   onUpdate,
   onDelete,
 }) {
+  const { t } = useLanguage(); // 🔥 ЭТАП 7.6
+
   // === СОСТОЯНИЕ МОДАЛКИ ===
   const [modalState, setModalState] = useState({
     isOpen: false,
@@ -62,24 +60,16 @@ export default function AdminServicesList({
 
   // === ОБРАБОТЧИК УДАЛЕНИЯ ===
   const handleDelete = (service) => {
-    // ПОЧЕМУ window.confirm?
-    // - Простой встроенный диалог
-    // - Блокирующий — защищает от случайного удаления
+    // 🔥 ЭТАП 7.6: Локализованное подтверждение
     const confirmed = window.confirm(
-      `Вы уверены, что хотите удалить услугу "${service.name}"?\n\n` +
-        `Это действие нельзя отменить.`
+      t('admin.services.confirmDelete', { name: service.name })
     );
-
     if (confirmed) {
       onDelete(service.id);
     }
   };
 
   // === ПРОВЕРКА: МОЖНО ЛИ РЕДАКТИРОВАТЬ/УДАЛЯТЬ ===
-  // ПОЧЕМУ проверяем isCustom или префикс 'custom_'?
-  // - JSON-записи (из services.json) не имеют флага isCustom
-  // - Кастомные записи создаются с id 'custom_svc_...' и isCustom: true
-  // - Это защита от случайного удаления стандартного каталога
   const canModify = (service) => {
     return service.isCustom || service.id?.startsWith('custom_');
   };
@@ -89,18 +79,18 @@ export default function AdminServicesList({
     return (
       <div className="admin-services-list">
         <div className="admin-services-list__header">
-          <h2>Каталог услуг</h2>
+          <h2>{t('admin.services.title')}</h2>
           <Button
             variant="primary"
             leftIcon={<Plus size={16} />}
             onClick={openAddModal}
           >
-            Добавить услугу
+            {t('admin.services.add')}
           </Button>
         </div>
         <EmptyState
-          title="Услуг пока нет"
-          description="Добавьте первую услугу, чтобы клиенты могли записаться"
+          title={t('admin.services.empty')}
+          description={t('admin.services.emptyDescription')}
           variant="info"
         />
         <ServiceModal
@@ -119,13 +109,15 @@ export default function AdminServicesList({
     <div className="admin-services-list">
       {/* === ЗАГОЛОВОК С КНОПКОЙ ДОБАВЛЕНИЯ === */}
       <div className="admin-services-list__header">
-        <h2>Каталог услуг ({services.length})</h2>
+        <h2>
+          {t('admin.services.title')} ({services.length})
+        </h2>
         <Button
           variant="primary"
           leftIcon={<Plus size={16} />}
           onClick={openAddModal}
         >
-          Добавить услугу
+          {t('admin.services.add')}
         </Button>
       </div>
 
@@ -134,13 +126,13 @@ export default function AdminServicesList({
         <table className="admin-services-list__table">
           <thead>
             <tr>
-              <th>Название</th>
-              <th>Категория</th>
-              <th>Длительность</th>
-              <th>Цена</th>
-              <th>Рейтинг</th>
-              <th>Тип</th>
-              <th>Действия</th>
+              <th>{t('admin.services.columns.name')}</th>
+              <th>{t('admin.services.columns.category')}</th>
+              <th>{t('admin.services.columns.duration')}</th>
+              <th>{t('admin.services.columns.price')}</th>
+              <th>{t('admin.services.columns.rating')}</th>
+              <th>{t('admin.services.columns.type')}</th>
+              <th>{t('admin.services.columns.actions')}</th>
             </tr>
           </thead>
           <tbody>
@@ -167,9 +159,13 @@ export default function AdminServicesList({
                   </td>
                   <td>
                     {isEditable ? (
-                      <Badge variant="success" size="sm">Кастомная</Badge>
+                      <Badge variant="success" size="sm">
+                        {t('admin.services.custom')}
+                      </Badge>
                     ) : (
-                      <Badge variant="default" size="sm">Стандартная</Badge>
+                      <Badge variant="default" size="sm">
+                        {t('admin.services.standard')}
+                      </Badge>
                     )}
                   </td>
                   <td>
@@ -181,8 +177,8 @@ export default function AdminServicesList({
                         disabled={!isEditable}
                         title={
                           isEditable
-                            ? 'Редактировать услугу'
-                            : 'Нельзя редактировать стандартную услугу'
+                            ? t('common.edit')
+                            : t('admin.services.cannotModifyStandard')
                         }
                       >
                         <Edit2 size={16} />
@@ -194,8 +190,8 @@ export default function AdminServicesList({
                         disabled={!isEditable}
                         title={
                           isEditable
-                            ? 'Удалить услугу'
-                            : 'Нельзя удалить стандартную услугу'
+                            ? t('common.delete')
+                            : t('admin.services.cannotDeleteStandard')
                         }
                       >
                         <Trash2 size={16} />

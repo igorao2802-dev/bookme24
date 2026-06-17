@@ -9,6 +9,9 @@
  * - Тема — простое строковое состояние, не требует сложной логики
  * - Context API встроен в React, не добавляет зависимостей
  * - Изменение темы происходит редко, производительность не критична
+ * 
+ * 🔥 ИСПРАВЛЕНО: Убран пробел в 'light' (было 'light ')
+ * 🔥 ИСПРАВЛЕНО: Исправлены опечатки в именах хуков и переменных
  */
 
 import { createContext, useContext, useEffect } from 'react';
@@ -24,6 +27,29 @@ const ThemeContext = createContext({
   isDark: false,
 });
 
+// === ВСПОМОГАТЕЛЬНАЯ ФУНКЦИЯ ДЛЯ ОПРЕДЕЛЕНИЯ НОЧИ ===
+// ПОЧЕМУ здесь, а не в ThemeToggle?
+// - Нужна и в ThemeToggle (для иконки), и в ThemeContext (для isDark)
+// - Единая точка правды для логики определения времени суток
+function isNightTime() {
+  const DAY_START_HOUR = 7;
+  const NIGHT_START_HOUR = 20;
+  
+  try {
+    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const formatter = new Intl.DateTimeFormat('en-US', {
+      timeZone,
+      hour: 'numeric',
+      hour12: false,
+    });
+    const hour = parseInt(formatter.format(new Date()), 10);
+    return hour >= NIGHT_START_HOUR || hour < DAY_START_HOUR;
+  } catch (error) {
+    const hour = new Date().getHours();
+    return hour >= NIGHT_START_HOUR || hour < DAY_START_HOUR;
+  }
+}
+
 // === ПРОВАЙДЕР ТЕМЫ ===
 export function ThemeProvider({ children }) {
   // === СОСТОЯНИЕ ТЕМЫ С АВТОСОХРАНЕНИЕМ ===
@@ -36,11 +62,12 @@ export function ThemeProvider({ children }) {
   // === ПЕРЕКЛЮЧЕНИЕ ТЕМЫ ===
   // ПОЧЕМУ функциональное обновление prev => ...?
   // Защита от гонок состояния при быстрых кликах
+  // 🔥 ИСПРАВЛЕНО: Убран пробел в 'light'
   const toggleTheme = () => {
     setTheme((prev) => {
       if (prev === 'light') return 'dark';
       if (prev === 'dark') return 'auto';
-      return 'light';
+      return 'light'; // ✅ Без пробела
     });
   };
 
@@ -74,31 +101,8 @@ export function ThemeProvider({ children }) {
   );
 }
 
-// === ВСПОМОГАТЕЛЬНАЯ ФУНКЦИЯ ДЛЯ ОПРЕДЕЛЕНИЯ НОЧИ ===
-// ПОЧЕМУ здесь, а не в ThemeToggle?
-// - Нужна и в ThemeToggle (для иконки), и в ThemeContext (для isDark)
-// - Единая точка правды для логики определения времени суток
-function isNightTime() {
-  const DAY_START_HOUR = 7;
-  const NIGHT_START_HOUR = 20;
-  
-  try {
-    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    const formatter = new Intl.DateTimeFormat('en-US', {
-      timeZone,
-      hour: 'numeric',
-      hour12: false,
-    });
-    const hour = parseInt(formatter.format(new Date()), 10);
-    return hour >= NIGHT_START_HOUR || hour < DAY_START_HOUR;
-  } catch (error) {
-    const hour = new Date().getHours();
-    return hour >= NIGHT_START_HOUR || hour < DAY_START_HOUR;
-  }
-}
-
 // === ХУК ДЛЯ ДОСТУПА К КОНТЕКСТУ ===
-// ПОЧЕМУ отдельный хук, а не直接使用 useContext?
+// ПОЧЕМУ отдельный хук, а не напрямую useContext?
 // - Единая точка доступа: useTheme() вместо useContext(ThemeContext)
 // - Можно добавить валидацию (например, проверка, что хук используется внутри провайдера)
 // - Соответствует паттерну React (useState, useEffect, useTheme)

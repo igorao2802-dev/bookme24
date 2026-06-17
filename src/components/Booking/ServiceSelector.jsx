@@ -11,21 +11,17 @@
  * При клике вызывает onSelect(serviceId) — callback родителя.
  * 
  * 🔥 ЭТАП 2.3: Добавлена панель сортировки с toggle направления
- * - 6 вариантов сортировки: популярность, цена (↑↓), название (А-Я, Я-А), категория
- * - Повторный клик на ту же кнопку меняет направление (↑ → ↓)
- * - Сортировка применяется ПОСЛЕ фильтрации (оптимизация по замечанию В.В.)
+ * 🔥 ЭТАП 7.4: Полная локализация всех пользовательских текстов
  */
 
 import { useState, useMemo } from 'react';
 import { Clock, Star, Check, ArrowUp, ArrowDown } from 'lucide-react';
-import { SERVICE_CATEGORIES, SERVICE_CATEGORY_LABELS } from '../../utils/constants';
+import { SERVICE_CATEGORIES } from '../../utils/constants';
 import { formatPrice, formatDuration } from '../../utils/formatters';
 import { useDebounce } from '../../hooks/useDebounce';
-
-// === UI ===
+import { useLanguage } from '../../hooks/useLanguage'; // 🔥 ЭТАП 7.4
 import Input from '../UI/Input';
 import EmptyState from '../UI/EmptyState';
-
 import './ServiceSelector.css';
 
 // === КОНФИГУРАЦИЯ СОРТИРОВКИ ===
@@ -34,10 +30,10 @@ import './ServiceSelector.css';
 // - Легко добавлять новые варианты
 // - Используется в двух местах: рендер кнопок и логика сортировки
 const SORT_OPTIONS = [
-  { field: 'popular', label: 'Популярные', defaultDirection: 'desc' },
-  { field: 'price', label: 'По цене', defaultDirection: 'asc' },
-  { field: 'name', label: 'По названию', defaultDirection: 'asc' },
-  { field: 'category', label: 'По категории', defaultDirection: 'asc' },
+  { field: 'popular', labelKey: 'catalog.sort.popular', defaultDirection: 'desc' },
+  { field: 'price', labelKey: 'catalog.sort.priceAsc', defaultDirection: 'asc' },
+  { field: 'name', labelKey: 'catalog.sort.name', defaultDirection: 'asc' },
+  { field: 'category', labelKey: 'catalog.sort.category', defaultDirection: 'asc' },
 ];
 
 export default function ServiceSelector({
@@ -45,35 +41,28 @@ export default function ServiceSelector({
   selectedServiceId,
   onSelect,
 }) {
+  const { t } = useLanguage(); // 🔥 ЭТАП 7.4
+
   // === ЛОКАЛЬНОЕ СОСТОЯНИЕ ФИЛЬТРОВ ===
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedQuery = useDebounce(searchQuery, 300);
 
-  // === 🔥 СОСТОЯНИЕ СОРТИРОВКИ (ЭТАП 2.3) ===
-  // ПОЧЕМУ объект { field, direction }, а не просто строка?
-  // Нужно хранить два параметра: ЧТО сортировать и КАК (↑ или ↓).
-  // Объект позволяет атомарно обновлять оба поля через setSort.
+  // === СОСТОЯНИЕ СОРТИРОВКИ ===
   const [sort, setSort] = useState({
     field: 'popular',
-    direction: 'desc', // Популярные — сначала с высоким рейтингом
+    direction: 'desc',
   });
 
-  // === 🔥 ОБРАБОТЧИК КЛИКА ПО КНОПКЕ СОРТИРОВКИ (ЭТАП 2.3) ===
-  // ПОЧЕМУ такая логика toggle?
-  // UX-стандарт: первый клик — сортирует по полю в направлении по умолчанию,
-  // повторный клик на ту же кнопку — меняет направление.
-  // Клик на другую кнопку — сбрасывает направление на default.
+  // === ОБРАБОТЧИК КЛИКА ПО КНОПКЕ СОРТИРОВКИ ===
   const handleSortClick = (field) => {
     setSort((prev) => {
-      // Если кликнули на ту же кнопку — меняем направление
       if (prev.field === field) {
         return {
           field,
           direction: prev.direction === 'asc' ? 'desc' : 'asc',
         };
       }
-      // Если кликнули на новую кнопку — берём направление по умолчанию
       const option = SORT_OPTIONS.find((opt) => opt.field === field);
       return {
         field,
@@ -83,7 +72,6 @@ export default function ServiceSelector({
   };
 
   // === ФИЛЬТРАЦИЯ УСЛУГ ===
-  // ПОЧЕМУ useMemo? Пересчитываем только при изменении зависимостей
   const filteredServices = useMemo(() => {
     return services.filter((service) => {
       const categoryMatch =
@@ -98,53 +86,39 @@ export default function ServiceSelector({
     });
   }, [services, selectedCategory, debouncedQuery]);
 
-  // === 🔥 СОРТИРОВКА УСЛУГ (ЭТАП 2.3) ===
-  // ПОЧЕМУ отдельный useMemo, а не внутри filteredServices?
-  // Принцип "сначала filter, потом sort" (замечание В.В. из ПР-04):
-  // - Фильтруем весь массив services → получаем меньший массив
-  // - Сортируем уже отфильтрованный массив → быстрее
-  // Если бы делали всё в одном useMemo — пришлось бы сортировать ВСЕ услуги,
-  // а потом брать отфильтрованные, что неэффективно.
+  // === СОРТИРОВКА УСЛУГ ===
   const sortedServices = useMemo(() => {
-    // Создаём копию массива, т.к. sort() мутирует исходный массив
-    // ПОЧЕМУ [...filteredServices], а не filteredServices.slice()?
-    // Оба варианта работают, но spread-оператор короче и читаемее.
     const result = [...filteredServices];
-
+    
     result.sort((a, b) => {
       let comparison = 0;
 
       switch (sort.field) {
         case 'popular':
-          // Сортировка по рейтингу (популярности)
           comparison = a.rating - b.rating;
           break;
 
         case 'price':
-          // Сортировка по цене
           comparison = a.price - b.price;
           break;
 
         case 'name':
-          // Сортировка по названию (localeCompare учитывает кириллицу)
           comparison = a.name.localeCompare(b.name, 'ru');
           break;
 
         case 'category':
-          // Сортировка по категории, внутри категории — по названию
-          // ПОЧЕМУ составная сортировка?
-          // Иначе услуги одной категории шли бы в случайном порядке
           const categoryComparison = a.category.localeCompare(b.category, 'ru');
-          if (categoryComparison !== 0) return categoryComparison;
-          return a.name.localeCompare(b.name, 'ru');
+          if (categoryComparison !== 0) {
+            comparison = categoryComparison;
+          } else {
+            comparison = a.name.localeCompare(b.name, 'ru');
+          }
+          break;
 
         default:
           comparison = 0;
       }
 
-      // Применяем направление сортировки
-      // ПОЧЕМУ умножаем на -1 для desc?
-      // Это стандартный паттерн: меняем знак результата сравнения
       return sort.direction === 'asc' ? comparison : -comparison;
     });
 
@@ -152,17 +126,16 @@ export default function ServiceSelector({
   }, [filteredServices, sort]);
 
   // === ОПЦИИ ДЛЯ ФИЛЬТРА КАТЕГОРИЙ ===
+  // 🔥 ЭТАП 7.4: Локализованные названия категорий
   const categoryOptions = [
-    { value: 'all', label: 'Все категории' },
+    { value: 'all', label: t('catalog.categories.all') },
     ...Object.values(SERVICE_CATEGORIES).map((cat) => ({
       value: cat,
-      label: SERVICE_CATEGORY_LABELS[cat],
+      label: t(`catalog.categories.${cat}`),
     })),
   ];
 
   // === ПОЛУЧЕНИЕ ИКОНКИ ДЛЯ КНОПКИ СОРТИРОВКИ ===
-  // ПОЧЕМУ отдельная функция?
-  // Инкапсулирует логику выбора иконки: ↑ для asc, ↓ для desc, ничего для неактивной
   const getSortIcon = (field) => {
     if (sort.field !== field) return null;
     return sort.direction === 'asc' ? (
@@ -175,16 +148,21 @@ export default function ServiceSelector({
   return (
     <div className="service-selector">
       <div className="service-selector__header">
-        <h2>Выберите услугу</h2>
+        {/* 🔥 ЭТАП 7.4: Локализованный заголовок */}
+        <h2>{t('booking.steps.service')}</h2>
         <p className="service-selector__description">
-          У нас {services.length} услуг в {Object.keys(SERVICE_CATEGORIES).length} категориях
+          {/* 🔥 ЭТАП 7.4: Локализованное описание с интерполяцией */}
+          {t('booking.serviceCount', {
+            services: services.length,
+            categories: Object.keys(SERVICE_CATEGORIES).length,
+          })}
         </p>
       </div>
 
       {/* === ПАНЕЛЬ ФИЛЬТРОВ === */}
       <div className="service-selector__filters">
         <Input
-          placeholder="Поиск по названию..."
+          placeholder={t('catalog.search.placeholder')}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="service-selector__search"
@@ -208,15 +186,10 @@ export default function ServiceSelector({
         </div>
       </div>
 
-      {/* === 🔥 ПАНЕЛЬ СОРТИРОВКИ (ЭТАП 2.3) === */}
-      {/* 
-        ПОЧЕМУ отдельная панель, а не часть фильтров?
-        - Фильтры СУЖАЮТ выборку (логическое И)
-        - Сортировка УПОРЯДОЧИВАЕТ выборку
-        - Это разные по смыслу операции, их нужно визуально разделить
-      */}
+      {/* === ПАНЕЛЬ СОРТИРОВКИ === */}
       <div className="service-selector__sort">
-        <span className="service-selector__sort-label">Сортировка:</span>
+        {/* 🔥 ЭТАП 7.4: Локализованная метка */}
+        <span className="service-selector__sort-label">{t('catalog.sort.title')}:</span>
         <div className="service-selector__sort-buttons">
           {SORT_OPTIONS.map((option) => (
             <button
@@ -229,15 +202,9 @@ export default function ServiceSelector({
               }`}
               onClick={() => handleSortClick(option.field)}
               aria-pressed={sort.field === option.field}
-              aria-label={`Сортировать ${option.label.toLowerCase()} ${
-                sort.field === option.field
-                  ? sort.direction === 'asc'
-                    ? 'по возрастанию'
-                    : 'по убыванию'
-                  : ''
-              }`}
+              aria-label={`${t('catalog.sort.title')} ${t(option.labelKey).toLowerCase()}`}
             >
-              <span>{option.label}</span>
+              <span>{t(option.labelKey)}</span>
               <span className="service-selector__sort-icon">
                 {getSortIcon(option.field)}
               </span>
@@ -249,8 +216,8 @@ export default function ServiceSelector({
       {/* === СПИСОК УСЛУГ === */}
       {sortedServices.length === 0 ? (
         <EmptyState
-          title="Услуги не найдены"
-          description="Попробуйте изменить параметры поиска или выбрать другую категорию"
+          title={t('catalog.empty.services')}
+          description={t('catalog.empty.servicesDescription')}
           variant="info"
         />
       ) : (
@@ -280,7 +247,8 @@ export default function ServiceSelector({
                 )}
 
                 <div className="service-card__category">
-                  {SERVICE_CATEGORY_LABELS[service.category]}
+                  {/* 🔥 ЭТАП 7.4: Локализованная категория */}
+                  {t(`catalog.categories.${service.category}`)}
                 </div>
 
                 <h3 className="service-card__title">{service.name}</h3>

@@ -175,6 +175,7 @@
       "priceDesc": "Price: high to low",
       "rating": "By rating",
       "name": "Alphabetically",
+      "category": "By category",
       "experience": "By experience"
     }
   },
@@ -317,7 +318,7 @@
     }
   },
   "profile": {
-    "title": "👤 Personal Profile",
+    "title": " Personal Profile",
     "subtitle": "Manage your bookings and settings",
     "sections": {
       "profile": "📋 Profile",
