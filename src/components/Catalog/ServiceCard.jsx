@@ -25,7 +25,7 @@ export default function ServiceCard({
 }) {
   const { t, language } = useLanguage();
 
-  // 🔥 ЭТАП 5.2: Динамический выбор поля в зависимости от языка
+  // 🔥 Динамический выбор поля в зависимости от языка
   const displayName = language === 'en' && service.nameEn 
     ? service.nameEn 
     : service.name;
@@ -55,7 +55,7 @@ export default function ServiceCard({
       </button>
 
       <Badge variant="default" size="sm">
-        {/* 🔥 ЭТАП 7.4: Локализованная категория */}
+        {/*  Локализованная категория */}
         {t(`catalog.categories.${service.category}`)}
       </Badge>
 

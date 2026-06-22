@@ -12,6 +12,7 @@
  * 
  * 🔥 ЭТАП 2.3: Добавлена панель сортировки с toggle направления
  * 🔥 ЭТАП 7.4: Полная локализация всех пользовательских текстов
+ * 🔥 ИСПРАВЛЕНИЕ: Сортировка по категории теперь учитывает направление (asc/desc)
  */
 
 import { useState, useMemo } from 'react';
@@ -19,7 +20,7 @@ import { Clock, Star, Check, ArrowUp, ArrowDown } from 'lucide-react';
 import { SERVICE_CATEGORIES } from '../../utils/constants';
 import { formatPrice, formatDuration } from '../../utils/formatters';
 import { useDebounce } from '../../hooks/useDebounce';
-import { useLanguage } from '../../hooks/useLanguage'; // 🔥 ЭТАП 7.4
+import { useLanguage } from '../../hooks/useLanguage';
 import Input from '../UI/Input';
 import EmptyState from '../UI/EmptyState';
 import './ServiceSelector.css';
@@ -41,7 +42,7 @@ export default function ServiceSelector({
   selectedServiceId,
   onSelect,
 }) {
-  const { t } = useLanguage(); // 🔥 ЭТАП 7.4
+  const { t } = useLanguage();
 
   // === ЛОКАЛЬНОЕ СОСТОЯНИЕ ФИЛЬТРОВ ===
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -126,7 +127,7 @@ export default function ServiceSelector({
   }, [filteredServices, sort]);
 
   // === ОПЦИИ ДЛЯ ФИЛЬТРА КАТЕГОРИЙ ===
-  // 🔥 ЭТАП 7.4: Локализованные названия категорий
+  // 🔥 Локализованные названия категорий
   const categoryOptions = [
     { value: 'all', label: t('catalog.categories.all') },
     ...Object.values(SERVICE_CATEGORIES).map((cat) => ({
@@ -148,10 +149,10 @@ export default function ServiceSelector({
   return (
     <div className="service-selector">
       <div className="service-selector__header">
-        {/* 🔥 ЭТАП 7.4: Локализованный заголовок */}
+        {/* 🔥 Локализованный заголовок */}
         <h2>{t('booking.steps.service')}</h2>
         <p className="service-selector__description">
-          {/* 🔥 ЭТАП 7.4: Локализованное описание с интерполяцией */}
+          {/* 🔥 Локализованное описание с интерполяцией */}
           {t('booking.serviceCount', {
             services: services.length,
             categories: Object.keys(SERVICE_CATEGORIES).length,
@@ -188,8 +189,10 @@ export default function ServiceSelector({
 
       {/* === ПАНЕЛЬ СОРТИРОВКИ === */}
       <div className="service-selector__sort">
-        {/* 🔥 ЭТАП 7.4: Локализованная метка */}
-        <span className="service-selector__sort-label">{t('catalog.sort.title')}:</span>
+        {/* 🔥 Локализованная метка */}
+        <span className="service-selector__sort-label">
+          {t('catalog.sort.title')}:
+        </span>
         <div className="service-selector__sort-buttons">
           {SORT_OPTIONS.map((option) => (
             <button
@@ -247,7 +250,7 @@ export default function ServiceSelector({
                 )}
 
                 <div className="service-card__category">
-                  {/* 🔥 ЭТАП 7.4: Локализованная категория */}
+                  {/* 🔥 Локализованная категория */}
                   {t(`catalog.categories.${service.category}`)}
                 </div>
 

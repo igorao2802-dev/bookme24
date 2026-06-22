@@ -1,17 +1,21 @@
 /**
- * Утилиты форматирования данных для отображения в UI
+ * formatters.js — утилиты форматирования данных для отображения в UI
  *
  * ПОЧЕМУ отдельный файл?
  * - Единый формат цен, телефонов, дат во всём приложении
  * - Замечание В.В. по ПР-05: "не дублируйте функции форматирования"
  * - Легко менять формат в одном месте
+ *
+ * 🔥 ИСПРАВЛЕНИЕ: Все упоминания "Br" заменены на "BYN"
  */
 
 /**
  * Форматирует цену в BYN
  * Пример: 45 → "45,00 BYN", 120.5 → "120,50 BYN"
  *
- * ПОЧЕМУ Intl.NumberFormat? Автоматически учитывает локаль (запятая вместо точки)
+ * ПОЧЕМУ Intl.NumberFormat?
+ * - Автоматически учитывает локаль (запятая вместо точки)
+ * - Стандартный способ форматирования валют
  */
 export function formatPrice(price) {
   if (price === null || price === undefined || isNaN(price)) {
@@ -48,10 +52,12 @@ export function formatPhone(phone) {
  * Форматирует дату в коротком виде: "15.06.2026"
  */
 export function formatDateShort(dateString) {
-  if (!dateString) return "";
+  if (!dateString) return " ";
+
   try {
     const date = new Date(dateString);
-    if (isNaN(date.getTime())) return "";
+    if (isNaN(date.getTime())) return " ";
+
     return date.toLocaleDateString("ru-RU", {
       day: "2-digit",
       month: "2-digit",
@@ -59,22 +65,23 @@ export function formatDateShort(dateString) {
     });
   } catch (error) {
     console.error("[formatters] formatDateShort error:", error);
-    return "";
+    return " ";
   }
 }
 
 /**
  * Форматирует длительность: 60 → "1 ч", 90 → "1 ч 30 мин", 30 → "30 мин"
  *
- * ПОЧЕМУ не Intl? Нет встроенной локализации для минут/часов
+ * ПОЧЕМУ не Intl?
+ * - Нет встроенной локализации для минут/часов
  */
 export function formatDuration(minutes) {
   if (!minutes || minutes <= 0) return "";
 
   const hours = Math.floor(minutes / 60);
   const mins = minutes % 60;
-
   const parts = [];
+
   if (hours > 0) parts.push(`${hours} ч`);
   if (mins > 0) parts.push(`${mins} мин`);
 
@@ -82,8 +89,10 @@ export function formatDuration(minutes) {
 }
 
 /**
- * Маскирует телефон для UI (для не-админов): "+375 (29) ***-**-67"
- * ПОЧЕМУ? Конфиденциальность данных клиента
+ * Маскирует телефон для UI (для не-админов): "+375 (29) *--67"
+ *
+ * ПОЧЕМУ?
+ * - Конфиденциальность данных клиента
  */
 export function maskPhone(phone) {
   if (!phone || typeof phone !== "string") return "";
@@ -97,7 +106,9 @@ export function maskPhone(phone) {
 
 /**
  * Форматирует относительное время: "сегодня", "вчера", "2 дня назад"
- * ПОЧЕМУ? Улучшает UX в списке записей клиента
+ *
+ * ПОЧЕМУ?
+ * - Улучшает UX в списке записей клиента
  */
 export function formatRelativeDate(dateString) {
   if (!dateString) return "";

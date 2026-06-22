@@ -10,28 +10,24 @@
  * - Настройки профиля (SettingsForm)
  * 
  * 🔥 ЭТАП 5.1-5.5: Полная реализация личного кабинета
- * 🔥 ЭТАП 7.5/7.7: Локализация всех пользовательских текстов
- * 🔥 ИСПРАВЛЕНО: Добавлен импорт Navigate, исправлен порядок хуков
- * 🔥 ИСПРАВЛЕНИЕ 1.2: Умная фильтрация записей — показываем все, 
- *    если телефон клиента неизвестен (первый вход / записи от менеджера)
+ * 🔥 ЭТАП 7.5/7.7: Локализация табов и EmptyState через t()
+ * 🔥 ЭТАП 20: Удалён блок "Способ уведомлений"
+ * 🔥 ЭТАП 21: Убран дублирующий заголовок "❤️ Избранное (0)"
+ * 🔥 ЭТАП 22: Сохранение настроек телефона/email в профиле
  */
-
-import { useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { Phone, Mail, CalendarPlus } from 'lucide-react';
-
 import { USER_ROLES, BOOKING_STEPS, STORAGE_KEYS } from '../../utils/constants';
 import { formatPhone } from '../../utils/formatters';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
 import { useLanguage } from '../../hooks/useLanguage';
-
 import ProfileStats from './ProfileStats';
 import BookingHistory from './BookingHistory';
 import FavoritesSection from './FavoritesSection';
 import SettingsForm from './SettingsForm';
 import EmptyState from '../UI/EmptyState';
 import Toast from '../UI/Toast';
-
 import './ProfilePage.css';
 
 export default function ProfilePage({
@@ -61,30 +57,26 @@ export default function ProfilePage({
     {
       phone: '',
       email: '',
-      notification: 'sms',
     }
   );
 
-  // === 🔥 ИСПРАВЛЕНИЕ 1.2: УМНАЯ ФИЛЬТРАЦИЯ ЗАПИСЕЙ ===
-  // ПОЧЕМУ "умная" фильтрация вместо жёсткой по телефону?
-  // - Если телефон клиента ещё не известен (lastClientPhone пустой),
-  //   значит он впервые зашёл в ЛК или записи созданы менеджером в админке
-  // - В этом случае показываем ВСЕ записи — это единственный способ
-  //   синхронизировать данные клиента и менеджера (т.к. нет системы авторизации)
-  // - Как только клиент создаст первую запись через форму, появится lastClientPhone
-  //   и будет работать фильтрация только по его записям
-  // - Это компромисс для MVP без полноценной авторизации пользователей
+  // 🔥 ЭТАП 22: Состояние для редактирования
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState({
+    phone: '',
+    email: '',
+  });
+
+  // === УМНАЯ ФИЛЬТРАЦИЯ ЗАПИСЕЙ ===
   const clientBookings = useMemo(() => {
-    // СЛУЧАЙ 1: Телефон неизвестен — показываем ВСЕ записи
     if (!lastClientPhone) {
       return [...bookings].sort((a, b) => {
         const dateA = new Date(a.date);
         const dateB = new Date(b.date);
-        return dateB - dateA; // Новые сверху
+        return dateB - dateA;
       });
     }
 
-    // СЛУЧАЙ 2: Телефон известен — фильтруем по нему
     const normalizedPhone = lastClientPhone.replace(/\D/g, '');
     return bookings.filter((b) => {
       if (!b.clientPhone) return false;
@@ -112,6 +104,16 @@ export default function ProfilePage({
     };
   }, [clientBookings, t]);
 
+  // 🔥 ЭТАП 22: Отображаемые данные профиля (с приоритетом userSettings)
+  const displayProfileData = useMemo(() => {
+    if (!profileData) return null;
+    return {
+      ...profileData,
+      phone: userSettings.phone || profileData.phone,
+      email: userSettings.email || profileData.email,
+    };
+  }, [profileData, userSettings]);
+
   // === АВАТАР С ИНИЦИАЛАМИ ===
   const getInitials = (fullName) => {
     if (!fullName) return '?';
@@ -127,7 +129,6 @@ export default function ProfilePage({
   // === СТАТИСТИКА ===
   const stats = useMemo(() => {
     const total = clientBookings.length;
-
     const confirmed = clientBookings.filter((b) =>
       b.status === 'confirmed' ||
       b.status === 'inProgress' ||
@@ -198,10 +199,30 @@ export default function ProfilePage({
     });
   };
 
-  // === ОБРАБОТЧИК СОХРАНЕНИЯ НАСТРОЕК ===
+  // 🔥 ЭТАП 22: Обработчик сохранения настроек
   const handleSaveSettings = (newSettings) => {
-    setUserSettings(newSettings);
+    setUserSettings({
+      ...userSettings,
+      phone: newSettings.phone,
+      email: newSettings.email,
+      // 🔥 ЭТАП 20: Убрано notification
+    });
+    setIsEditing(false);
     Toast.success(t('profile.settings.saveSuccess'));
+  };
+
+  // 🔥 ЭТАП 22: Обработчик начала редактирования
+  const handleEdit = () => {
+    setEditData({
+      phone: displayProfileData?.phone || '',
+      email: displayProfileData?.email || '',
+    });
+    setIsEditing(true);
+  };
+
+  // 🔥 ЭТАП 22: Обработчик отмены редактирования
+  const handleCancelEdit = () => {
+    setIsEditing(false);
   };
 
   // === ОБРАБОТЧИК ОЧИСТКИ ИСТОРИИ ===
@@ -222,9 +243,7 @@ export default function ProfilePage({
   }
 
   // === СОСТОЯНИЕ: НЕТ ЗАПИСЕЙ ===
-  // 🔥 ИСПРАВЛЕНИЕ 1.2: Это состояние теперь срабатывает ТОЛЬКО если
-  // вообще нет ни одной записи в системе (ни от клиента, ни от менеджера)
-  if (!profileData) {
+  if (!displayProfileData) {
     return (
       <div className="profile-page">
         <div className="profile-page__header">
@@ -233,7 +252,6 @@ export default function ProfilePage({
             {t('profile.subtitle')}
           </p>
         </div>
-
         <EmptyState
           icon={<CalendarPlus size={48} />}
           title={t('profile.empty.title')}
@@ -246,11 +264,10 @@ export default function ProfilePage({
     );
   }
 
-  // === ПОДГОТОВКА ДАННЫХ ДЛЯ SETTINGS FORM ===
+  // 🔥 ЭТАП 20: Убран notification из settingsForForm
   const settingsForForm = {
-    phone: userSettings.phone || profileData.phone,
-    email: userSettings.email || profileData.email,
-    notification: userSettings.notification || 'sms',
+    phone: displayProfileData.phone,
+    email: displayProfileData.email,
   };
 
   return (
@@ -271,22 +288,22 @@ export default function ProfilePage({
 
         <div className="profile-card">
           <div className="profile-card__avatar">
-            {getInitials(profileData.name)}
+            {getInitials(displayProfileData.name)}
           </div>
 
           <div className="profile-card__info">
-            <h3 className="profile-card__name">{profileData.name}</h3>
+            <h3 className="profile-card__name">{displayProfileData.name}</h3>
 
             <div className="profile-card__contacts">
               <div className="profile-card__contact-item">
                 <Phone size={16} className="profile-card__contact-icon" />
-                <span>{formatPhone(profileData.phone)}</span>
+                <span>{formatPhone(displayProfileData.phone)}</span>
               </div>
 
-              {profileData.email && (
+              {displayProfileData.email && (
                 <div className="profile-card__contact-item">
                   <Mail size={16} className="profile-card__contact-icon" />
-                  <span>{profileData.email}</span>
+                  <span>{displayProfileData.email}</span>
                 </div>
               )}
             </div>
@@ -317,7 +334,9 @@ export default function ProfilePage({
       </section>
 
       {/* === СЕКЦИЯ 4: ИЗБРАННОЕ === */}
+      {/* 🔥 ЭТАП 21: Добавлен проп hideMainTitle */}
       <FavoritesSection
+        hideMainTitle={true}
         services={services}
         specialists={specialists}
         favorites={favorites}
@@ -333,6 +352,10 @@ export default function ProfilePage({
         </h2>
         <SettingsForm
           settings={settingsForForm}
+          isEditing={isEditing}
+          editData={editData}
+          onEdit={handleEdit}
+          onCancel={handleCancelEdit}
           onSave={handleSaveSettings}
           onClearHistory={handleClearHistory}
           onLogout={handleLogout}

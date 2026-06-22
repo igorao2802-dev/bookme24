@@ -7,7 +7,9 @@
  * 
  * 🔥 ЭТАП 6.3: Таблица услуг с CRUD
  * 🔥 ЭТАП 7.6: Полная локализация через t()
+ * 🔥 ЭТАП 8.1: Удалена колонка "Тип" из таблицы
  * 🔥 ИСПРАВЛЕНО: Опечатка closeM odal → closeModal
+ * 🔥 ЭТАП 10: Кнопки "Действия" активны для кастомных записей
  */
 import { useState } from 'react';
 import { Plus, Edit2, Trash2 } from 'lucide-react';
@@ -17,7 +19,7 @@ import EmptyState from '../UI/EmptyState';
 import ServiceModal from './ServiceModal';
 import { SERVICE_CATEGORY_LABELS } from '../../utils/constants';
 import { formatPrice, formatDuration } from '../../utils/formatters';
-import { useLanguage } from '../../hooks/useLanguage'; // 🔥 ЭТАП 7.6
+import { useLanguage } from '../../hooks/useLanguage';
 import './AdminServicesList.css';
 
 export default function AdminServicesList({
@@ -26,7 +28,7 @@ export default function AdminServicesList({
   onUpdate,
   onDelete,
 }) {
-  const { t } = useLanguage(); // 🔥 ЭТАП 7.6
+  const { t } = useLanguage();
 
   // === СОСТОЯНИЕ МОДАЛКИ ===
   const [modalState, setModalState] = useState({
@@ -60,7 +62,6 @@ export default function AdminServicesList({
 
   // === ОБРАБОТЧИК УДАЛЕНИЯ ===
   const handleDelete = (service) => {
-    // 🔥 ЭТАП 7.6: Локализованное подтверждение
     const confirmed = window.confirm(
       t('admin.services.confirmDelete', { name: service.name })
     );
@@ -70,6 +71,10 @@ export default function AdminServicesList({
   };
 
   // === ПРОВЕРКА: МОЖНО ЛИ РЕДАКТИРОВАТЬ/УДАЛЯТЬ ===
+  // ПОЧЕМУ проверяем isCustom или префикс 'custom_'?
+  // - JSON-записи (из services.json) не имеют флага isCustom
+  // - Кастомные записи создаются с id 'custom_svc_...' и isCustom: true
+  // - Это защита от случайного удаления стандартного каталога
   const canModify = (service) => {
     return service.isCustom || service.id?.startsWith('custom_');
   };
@@ -131,7 +136,7 @@ export default function AdminServicesList({
               <th>{t('admin.services.columns.duration')}</th>
               <th>{t('admin.services.columns.price')}</th>
               <th>{t('admin.services.columns.rating')}</th>
-              <th>{t('admin.services.columns.type')}</th>
+              {/* 🔥 ЭТАП 8.1: Колонка "Тип" удалена */}
               <th>{t('admin.services.columns.actions')}</th>
             </tr>
           </thead>
@@ -157,17 +162,7 @@ export default function AdminServicesList({
                       ⭐ {service.rating}
                     </span>
                   </td>
-                  <td>
-                    {isEditable ? (
-                      <Badge variant="success" size="sm">
-                        {t('admin.services.custom')}
-                      </Badge>
-                    ) : (
-                      <Badge variant="default" size="sm">
-                        {t('admin.services.standard')}
-                      </Badge>
-                    )}
-                  </td>
+                  {/* 🔥 ЭТАП 8.1: Ячейка "Тип" удалена */}
                   <td>
                     <div className="admin-services-list__actions">
                       <button

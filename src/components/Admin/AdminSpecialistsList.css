@@ -187,3 +187,20 @@
     flex-shrink: 0;
   }
 }
+/* === ЯЧЕЙКА С УСЛУГАМИ (ЭТАП 11) === */
+.admin-specialists-list__services-cell {
+  display: inline-flex;
+  align-items: center;
+  cursor: help; /* Указатель с вопросительным знаком — подсказка о tooltip */
+  padding: 4px 8px;
+  border-radius: var(--radius-sm, 4px);
+  transition: background-color var(--transition-fast, 150ms ease);
+}
+
+.admin-specialists-list__services-cell:hover {
+  background-color: var(--color-primary-soft, #fbf5ef);
+}
+
+[data-theme="dark"] .admin-specialists-list__services-cell:hover {
+  background-color: var(--color-primary-soft, #3d2f26);
+}

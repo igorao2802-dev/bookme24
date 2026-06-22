@@ -1,6 +1,15 @@
 /**
  * useServices.js — хук для управления каталогом услуг
+ *
+ * АРХИТЕКТУРНАЯ РОЛЬ:
+ * Предоставляет CRUD-операции для услуг.
+ * Разделяет JSON-данные (read-only) и кастомные данные (localStorage).
+ * Валидирует данные перед сохранением.
+ *
+ * 🔥 ЭТАП 6.3: Добавлены add/update/delete операции
+ * 🔥 ЭТАП 7.6: Локализация Toast-уведомлений
  * 🔥 ЭТАП 5.3: Добавлена поддержка двуязычных полей (nameEn, descriptionEn)
+ * 🔥 ИСПРАВЛЕНО: Все опечатки (setCustomSp ecialists, tri m(), succ ess, posi tion)
  */
 import { useMemo, useCallback } from "react";
 import { useLocalStorage } from "./useLocalStorage";
@@ -8,12 +17,14 @@ import { useLanguage } from "./useLanguage";
 import { STORAGE_KEYS, SERVICE_CATEGORIES } from "../utils/constants";
 import Toast from "../components/UI/Toast";
 
+// === ГЕНЕРАЦИЯ УНИКАЛЬНОГО ID ===
 function generateServiceId() {
   const timestamp = Date.now();
   const random = Math.random().toString(36).substring(2, 7);
   return `custom_svc_${timestamp}_${random}`;
 }
 
+// === ВАЛИДАЦИЯ ДАННЫХ УСЛУГИ ===
 function validateServiceData(data, existingServices = [], currentId = null) {
   const errors = {};
 
@@ -90,6 +101,7 @@ function validateServiceData(data, existingServices = [], currentId = null) {
   return { isValid: Object.keys(errors).length === 0, errors };
 }
 
+// === ОСНОВНОЙ ХУК ===
 export function useServices(jsonServices = []) {
   const { t } = useLanguage();
   const [customServices, setCustomServices] = useLocalStorage(
@@ -102,6 +114,7 @@ export function useServices(jsonServices = []) {
     [customServices, jsonServices],
   );
 
+  // === ДОБАВЛЕНИЕ УСЛУГИ ===
   const addService = useCallback(
     (serviceData) => {
       const validation = validateServiceData(serviceData, services);
@@ -116,12 +129,12 @@ export function useServices(jsonServices = []) {
       const newService = {
         id: generateServiceId(),
         name: serviceData.name.trim(),
-        nameEn: serviceData.nameEn ? serviceData.nameEn.trim() : "", // 🔥 ЭТАП 5.3
+        nameEn: serviceData.nameEn ? serviceData.nameEn.trim() : "",
         category: serviceData.category,
         description: serviceData.description.trim(),
         descriptionEn: serviceData.descriptionEn
           ? serviceData.descriptionEn.trim()
-          : "", // 🔥 ЭТАП 5.3
+          : "",
         duration: Number(serviceData.duration),
         price: Number(serviceData.price),
         specialistIds: serviceData.specialistIds,
@@ -137,6 +150,7 @@ export function useServices(jsonServices = []) {
     [services, setCustomServices, t],
   );
 
+  // === ОБНОВЛЕНИЕ УСЛУГИ ===
   const updateService = useCallback(
     (serviceId, updates) => {
       const existingService = services.find((s) => s.id === serviceId);
@@ -169,12 +183,12 @@ export function useServices(jsonServices = []) {
                 nameEn:
                   updates.nameEn !== undefined
                     ? updates.nameEn.trim()
-                    : s.nameEn || "", // 🔥 ЭТАП 5.3
+                    : s.nameEn || "",
                 description: updates.description?.trim() || s.description,
                 descriptionEn:
                   updates.descriptionEn !== undefined
                     ? updates.descriptionEn.trim()
-                    : s.descriptionEn || "", // 🔥 ЭТАП 5.3
+                    : s.descriptionEn || "",
                 duration:
                   updates.duration !== undefined
                     ? Number(updates.duration)
@@ -197,6 +211,7 @@ export function useServices(jsonServices = []) {
     [services, setCustomServices, t],
   );
 
+  // === УДАЛЕНИЕ УСЛУГИ ===
   const deleteService = useCallback(
     (serviceId) => {
       const existingService = services.find((s) => s.id === serviceId);

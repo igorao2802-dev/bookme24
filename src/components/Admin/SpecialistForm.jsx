@@ -1,6 +1,13 @@
 /**
  * SpecialistForm.jsx — форма добавления/редактирования специалиста
+ * 
+ * АРХИТЕКТУРНАЯ РОЛЬ:
+ * Презентационный компонент с локальным состоянием формы.
+ * 
+ * 🔥 ЭТАП 6.3: Форма с валидацией и двумя режимами
+ * 🔥 ЭТАП 7.8: Полная локализация через useLanguage
  * 🔥 ЭТАП 5.3: Добавлены поля fullNameEn и positionEn
+ * 🔥 ЭТАП 12: Убрано поле "Рейтинг" (рассчитывается автоматически)
  */
 import { useState, useEffect } from 'react';
 import { Save, X } from 'lucide-react';
@@ -9,6 +16,7 @@ import Button from '../UI/Button';
 import { useLanguage } from '../../hooks/useLanguage';
 import './SpecialistForm.css';
 
+// === ВАЛИДАЦИЯ ОДНОГО ПОЛЯ ===
 function validateSpecialistField(name, value, existingSpecialists = [], currentId = null) {
   switch (name) {
     case 'fullName':
@@ -19,9 +27,11 @@ function validateSpecialistField(name, value, existingSpecialists = [], currentI
         return 'validation.specialist.nameDuplicate';
       }
       return null;
+
     case 'position':
       if (!value || !value.trim()) return 'validation.specialist.positionRequired';
       return value.trim().length > 50 ? 'validation.specialist.positionTooLong' : null;
+
     case 'experience':
       if (value === undefined || value === null || value === '') return 'validation.specialist.experienceRequired';
       const numE = Number(value);
@@ -29,18 +39,18 @@ function validateSpecialistField(name, value, existingSpecialists = [], currentI
       if (numE < 0) return 'validation.specialist.experienceNegative';
       if (numE > 50) return 'validation.specialist.experienceTooHigh';
       return null;
-    case 'rating':
-      if (!value || value === '') return null;
-      const numR = Number(value);
-      if (isNaN(numR) || numR < 0 || numR > 5) return 'validation.specialist.ratingOutOfRange';
-      return null;
+
+    // 🔥 ЭТАП 12: case 'rating' УДАЛЁН
+
     case 'serviceIds':
       return !Array.isArray(value) || value.length === 0 ? 'validation.specialist.servicesEmpty' : null;
+
     // 🔥 ЭТАП 5.3: Валидация EN-полей
     case 'fullNameEn':
       return value && value.trim().length > 100 ? 'validation.specialist.nameTooLong' : null;
     case 'positionEn':
       return value && value.trim().length > 50 ? 'validation.specialist.positionTooLong' : null;
+
     default:
       return null;
   }
@@ -55,12 +65,24 @@ function validateAllSpecialistFields(formData, existingSpecialists, currentId) {
   return errors;
 }
 
-export default function SpecialistForm({ mode = 'add', specialist = null, services = [], existingSpecialists = [], onSave, onCancel }) {
+export default function SpecialistForm({
+  mode = 'add',
+  specialist = null,
+  services = [],
+  existingSpecialists = [],
+  onSave,
+  onCancel,
+}) {
   const { t } = useLanguage();
 
+  // 🔥 ЭТАП 12: rating УДАЛЁН из formData
   const [formData, setFormData] = useState({
-    fullName: '', position: '', experience: '', rating: '', serviceIds: [],
-    fullNameEn: '', positionEn: '', // 🔥 ЭТАП 5.3
+    fullName: '',
+    position: '',
+    experience: '',
+    serviceIds: [],
+    fullNameEn: '',
+    positionEn: '',
   });
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
@@ -71,10 +93,9 @@ export default function SpecialistForm({ mode = 'add', specialist = null, servic
         fullName: specialist.fullName || '',
         position: specialist.position || '',
         experience: specialist.experience !== undefined ? String(specialist.experience) : '',
-        rating: specialist.rating !== undefined ? String(specialist.rating) : '',
         serviceIds: specialist.serviceIds || [],
-        fullNameEn: specialist.fullNameEn || '', // 🔥 ЭТАП 5.3
-        positionEn: specialist.positionEn || '', // 🔥 ЭТАП 5.3
+        fullNameEn: specialist.fullNameEn || '',
+        positionEn: specialist.positionEn || '',
       });
       setErrors({});
       setTouched({});
@@ -84,7 +105,10 @@ export default function SpecialistForm({ mode = 'add', specialist = null, servic
   const handleChange = (name, value) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
     if (touched[name]) {
-      setErrors((prev) => ({ ...prev, [name]: validateSpecialistField(name, value, existingSpecialists, specialist?.id) }));
+      setErrors((prev) => ({
+        ...prev,
+        [name]: validateSpecialistField(name, value, existingSpecialists, specialist?.id),
+      }));
     }
   };
 
@@ -99,13 +123,19 @@ export default function SpecialistForm({ mode = 'add', specialist = null, servic
       const currentIds = formData.serviceIds.includes(serviceId)
         ? formData.serviceIds.filter((id) => id !== serviceId)
         : [...formData.serviceIds, serviceId];
-      setErrors((prev) => ({ ...prev, serviceIds: validateSpecialistField('serviceIds', currentIds, existingSpecialists, specialist?.id) }));
+      setErrors((prev) => ({
+        ...prev,
+        serviceIds: validateSpecialistField('serviceIds', currentIds, existingSpecialists, specialist?.id),
+      }));
     }
   };
 
   const handleBlur = (name) => {
     setTouched((prev) => ({ ...prev, [name]: true }));
-    setErrors((prev) => ({ ...prev, [name]: validateSpecialistField(name, formData[name], existingSpecialists, specialist?.id) }));
+    setErrors((prev) => ({
+      ...prev,
+      [name]: validateSpecialistField(name, formData[name], existingSpecialists, specialist?.id),
+    }));
   };
 
   const handleSubmit = (e) => {
@@ -116,62 +146,101 @@ export default function SpecialistForm({ mode = 'add', specialist = null, servic
 
     if (Object.keys(allErrors).length > 0) return;
 
+    // 🔥 ЭТАП 12: rating УДАЛЁН из передаваемого объекта
     onSave({
       fullName: formData.fullName.trim(),
-      fullNameEn: formData.fullNameEn.trim(), // 🔥 ЭТАП 5.3
+      fullNameEn: formData.fullNameEn.trim(),
       position: formData.position.trim(),
-      positionEn: formData.positionEn.trim(), // 🔥 ЭТАП 5.3
+      positionEn: formData.positionEn.trim(),
       experience: Number(formData.experience),
-      rating: formData.rating !== '' ? Number(formData.rating) : 4.5,
       serviceIds: formData.serviceIds,
     });
   };
 
-  const submitButtonText = mode === 'edit' ? t('admin.specialists.form.update') : t('admin.specialists.form.add');
+  const submitButtonText = mode === 'edit'
+    ? t('admin.specialists.form.update')
+    : t('admin.specialists.form.add');
 
   return (
     <form className="specialist-form" onSubmit={handleSubmit} noValidate>
-      <Input label={t('admin.specialists.form.fullName')} name="fullName" value={formData.fullName} onChange={(e) => handleChange('fullName', e.target.value)} onBlur={() => handleBlur('fullName')} error={touched.fullName && errors.fullName ? t(errors.fullName) : null} placeholder={t('admin.specialists.form.fullNamePlaceholder')} maxLength={100} required />
-      
-      <Input label={t('admin.specialists.form.position')} name="position" value={formData.position} onChange={(e) => handleChange('position', e.target.value)} onBlur={() => handleBlur('position')} error={touched.position && errors.position ? t(errors.position) : null} placeholder={t('admin.specialists.form.positionPlaceholder')} maxLength={50} required />
+      <Input
+        label={t('admin.specialists.form.fullName')}
+        name="fullName"
+        value={formData.fullName}
+        onChange={(e) => handleChange('fullName', e.target.value)}
+        onBlur={() => handleBlur('fullName')}
+        error={touched.fullName && errors.fullName ? t(errors.fullName) : null}
+        placeholder={t('admin.specialists.form.fullNamePlaceholder')}
+        maxLength={100}
+        required
+      />
 
+      <Input
+        label={t('admin.specialists.form.position')}
+        name="position"
+        value={formData.position}
+        onChange={(e) => handleChange('position', e.target.value)}
+        onBlur={() => handleBlur('position')}
+        error={touched.position && errors.position ? t(errors.position) : null}
+        placeholder={t('admin.specialists.form.positionPlaceholder')}
+        maxLength={50}
+        required
+      />
+
+      {/* 🔥 ЭТАП 12: Поле "Рейтинг" УДАЛЕНО — только опыт */}
       <div className="specialist-form__row">
-        <Input label={t('admin.specialists.form.experience')} name="experience" type="number" value={formData.experience} onChange={(e) => handleChange('experience', e.target.value)} onBlur={() => handleBlur('experience')} error={touched.experience && errors.experience ? t(errors.experience) : null} placeholder="5" min={0} max={50} required />
-        <Input label={t('admin.specialists.form.rating')} name="rating" type="number" value={formData.rating} onChange={(e) => handleChange('rating', e.target.value)} onBlur={() => handleBlur('rating')} error={touched.rating && errors.rating ? t(errors.rating) : null} placeholder="4.8" min={0} max={5} step={0.1} helperText={t('admin.specialists.form.ratingHelper')} />
+        <Input
+          label={t('admin.specialists.form.experience')}
+          name="experience"
+          type="number"
+          value={formData.experience}
+          onChange={(e) => handleChange('experience', e.target.value)}
+          onBlur={() => handleBlur('experience')}
+          error={touched.experience && errors.experience ? t(errors.experience) : null}
+          placeholder="5"
+          min={0}
+          max={50}
+          required
+        />
       </div>
 
       {/* 🔥 ЭТАП 5.3: Поля для английского языка */}
-      <div className="service-form__divider" style={{ marginTop: 'var(--spacing-md, 16px)' }}>
+      <div className="specialist-form__divider" style={{ marginTop: 'var(--spacing-md, 16px)' }}>
         <h4 style={{ fontSize: 'var(--font-size-base, 1rem)', color: 'var(--color-text-muted, #6b5d4f)', marginBottom: 'var(--spacing-sm, 8px)' }}>
-          {t('admin.specialists.form.englishVersion') || 'Английская версия (необязательно)'}
+          {t('admin.specialists.form.englishVersion')}
         </h4>
       </div>
 
-      <Input 
-        label="Full Name (EN)" 
-        name="fullNameEn" 
-        value={formData.fullNameEn} 
-        onChange={(e) => handleChange('fullNameEn', e.target.value)} 
-        onBlur={() => handleBlur('fullNameEn')} 
-        error={touched.fullNameEn && errors.fullNameEn ? t(errors.fullNameEn) : null} 
-        placeholder="e.g. Anna Smith" 
-        maxLength={100} 
+      <Input
+        label={t('admin.specialists.form.fullNameEn')}
+        name="fullNameEn"
+        value={formData.fullNameEn}
+        onChange={(e) => handleChange('fullNameEn', e.target.value)}
+        onBlur={() => handleBlur('fullNameEn')}
+        error={touched.fullNameEn && errors.fullNameEn ? t(errors.fullNameEn) : null}
+        placeholder={t('admin.specialists.form.fullNameEnPlaceholder')}
+        maxLength={100}
       />
 
-      <Input 
-        label="Position (EN)" 
-        name="positionEn" 
-        value={formData.positionEn} 
-        onChange={(e) => handleChange('positionEn', e.target.value)} 
-        onBlur={() => handleBlur('positionEn')} 
-        error={touched.positionEn && errors.positionEn ? t(errors.positionEn) : null} 
-        placeholder="e.g. Hair Stylist" 
-        maxLength={50} 
+      <Input
+        label={t('admin.specialists.form.positionEn')}
+        name="positionEn"
+        value={formData.positionEn}
+        onChange={(e) => handleChange('positionEn', e.target.value)}
+        onBlur={() => handleBlur('positionEn')}
+        error={touched.positionEn && errors.positionEn ? t(errors.positionEn) : null}
+        placeholder={t('admin.specialists.form.positionEnPlaceholder')}
+        maxLength={50}
       />
 
+      {/* === ВЫБОР УСЛУГ === */}
       <div className="specialist-form__field">
-        <label className="input__label">{t('admin.specialists.form.services')}<span className="input__required">*</span></label>
+        <label className="input__label">
+          {t('admin.specialists.form.services')}
+          <span className="input__required">*</span>
+        </label>
         <p className="specialist-form__hint">{t('admin.specialists.form.servicesHint')}</p>
+
         {services.length === 0 ? (
           <p className="specialist-form__empty">{t('admin.specialists.form.noServices')}</p>
         ) : (
@@ -179,21 +248,43 @@ export default function SpecialistForm({ mode = 'add', specialist = null, servic
             {services.map((service) => {
               const isChecked = formData.serviceIds.includes(service.id);
               return (
-                <label key={service.id} className={`specialist-form__service-checkbox ${isChecked ? 'specialist-form__service-checkbox--checked' : ''}`}>
-                  <input type="checkbox" checked={isChecked} onChange={() => handleServiceToggle(service.id)} className="specialist-form__checkbox-input" />
+                <label
+                  key={service.id}
+                  className={`specialist-form__service-checkbox ${
+                    isChecked ? 'specialist-form__service-checkbox--checked' : ''
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={isChecked}
+                    onChange={() => handleServiceToggle(service.id)}
+                    className="specialist-form__checkbox-input"
+                  />
                   <span className="specialist-form__service-name">{service.name}</span>
                 </label>
               );
             })}
           </div>
         )}
-        {touched.serviceIds && errors.serviceIds && <p className="input__message input__message--error">{t(errors.serviceIds)}</p>}
-        <span className="specialist-form__counter">{t('admin.specialists.form.servicesCounter', { selected: formData.serviceIds.length, total: services.length })}</span>
+
+        {touched.serviceIds && errors.serviceIds && (
+          <p className="input__message input__message--error">{t(errors.serviceIds)}</p>
+        )}
+        <span className="specialist-form__counter">
+          {t('admin.specialists.form.servicesCounter', {
+            selected: formData.serviceIds.length,
+            total: services.length,
+          })}
+        </span>
       </div>
 
       <div className="specialist-form__actions">
-        <Button type="button" variant="outline" leftIcon={<X size={16} />} onClick={onCancel}>{t('common.cancel')}</Button>
-        <Button type="submit" variant="primary" leftIcon={<Save size={16} />}>{submitButtonText}</Button>
+        <Button type="button" variant="outline" leftIcon={<X size={16} />} onClick={onCancel}>
+          {t('common.cancel')}
+        </Button>
+        <Button type="submit" variant="primary" leftIcon={<Save size={16} />}>
+          {submitButtonText}
+        </Button>
       </div>
     </form>
   );

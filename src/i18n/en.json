@@ -52,6 +52,7 @@
     "serviceSelected": "Service selected: {name}",
     "serviceNotFound": "Selected service not found",
     "specialistSelected": "Specialist selected: {name}",
+    "serviceCount": "We have {services} services in {categories} categories",
     "steps": {
       "service": "Service",
       "specialist": "Specialist",
@@ -86,7 +87,8 @@
       "total": "Total:",
       "success": "Booking created! {service}, {time}",
       "failed": "Failed to create booking",
-      "error": "An error occurred while creating the booking"
+      "error": "An error occurred while creating the booking",
+      "processing": "Please wait, processing your request..."
     },
     "contacts": {
       "title": "Contact Information",
@@ -231,6 +233,7 @@
       "cannotModifyStandard": "Cannot edit standard service from catalog",
       "cannotDeleteStandard": "Cannot delete standard service from catalog",
       "empty": "No services yet. Add your first service so clients can book.",
+      "emptyDescription": "Add your first service so clients can book",
       "searchPlaceholder": "Search by service name...",
       "noResults": "No services found",
       "previousPage": "Previous page",
@@ -262,6 +265,13 @@
         "descriptionHelper": "Maximum {max} characters",
         "duration": "Duration (min)",
         "price": "Price (BYN)",
+        "rating": "Rating (optional)",
+        "ratingHelper": "From 0 to 5. Default is 4.5",
+        "englishVersion": "English Version (optional)",
+        "nameEn": "Name in English",
+        "nameEnPlaceholder": "e.g. Women's Haircut",
+        "descriptionEn": "Description in English",
+        "descriptionEnPlaceholder": "Describe the service in detail...",
         "specialists": "Specialists",
         "specialistsHint": "Select specialists who provide this service",
         "specialistsCounter": "Selected: {selected} of {total}",
@@ -280,6 +290,7 @@
       "cannotModifyStandard": "Cannot edit standard specialist",
       "cannotDeleteStandard": "Cannot delete standard specialist",
       "empty": "No specialists yet. Add your first specialist so clients can choose a master.",
+      "emptyDescription": "Add your first specialist so clients can choose a master",
       "searchPlaceholder": "Search by name or position...",
       "noResults": "No specialists found",
       "previousPage": "Previous page",
@@ -309,6 +320,11 @@
         "experience": "Experience (years)",
         "rating": "Rating (optional)",
         "ratingHelper": "From 0 to 5. Default is 4.5",
+        "englishVersion": "English Version (optional)",
+        "fullNameEn": "Full Name in English",
+        "fullNameEnPlaceholder": "Anna Smith",
+        "positionEn": "Position in English",
+        "positionEnPlaceholder": "Hair Stylist",
         "services": "Specialist Services",
         "servicesHint": "Select services provided by this specialist",
         "servicesCounter": "Selected: {selected} of {total}",
@@ -318,7 +334,7 @@
     }
   },
   "profile": {
-    "title": " Personal Profile",
+    "title": "👤 Personal Profile",
     "subtitle": "Manage your bookings and settings",
     "sections": {
       "profile": "📋 Profile",
@@ -499,7 +515,7 @@
   "footer": {
     "title": "Health & Beauty Salon",
     "address": "Minsk, Primernaya st., 42",
-    "hours": "Daily from 9:00 to 21:00",
+    "hours": "Weekdays from 9:00 to 21:00",
     "contacts": "Contacts",
     "phone": "+375 (29) 123-45-67",
     "email": "info@bookme24.by",
@@ -507,4 +523,35 @@
     "onlineDesc": "bookme24.by — 24/7",
     "copyright": "© 2026 All rights reserved"
   }
-}
+,
+  "timeSlotPicker": {
+    "title": "Choose date and time",
+    "visitDate": "Visit date",
+    "freeTime": "Available time",
+    "windows": {
+      "one": "{count} slot",
+      "few": "{count} slots",
+      "many": "{count} slots"
+    },
+    "morning": "Morning",
+    "afternoon": "Afternoon",
+    "evening": "Evening",
+    "loading": "Loading slots...",
+    "noSlots": "No available slots for this date",
+    "tryAnotherDay": "Try selecting another day",
+    "pastDate": "Date has passed",
+    "notWorking": "Specialist is not working on {day}",
+    "busy": "Busy",
+    "selectTime": "select time",
+    "selectDate": "select date",
+    "unavailable": "unavailable",
+    "days": {
+      "0": "Sunday",
+      "1": "Monday",
+      "2": "Tuesday",
+      "3": "Wednesday",
+      "4": "Thursday",
+      "5": "Friday",
+      "6": "Saturday"
+    }
+  }}

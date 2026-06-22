@@ -1,14 +1,15 @@
 /**
- * ServiceSelector.css — стили для ServiceSelector (Шаг 1 многошаговой формы записи)
- * BEM-методология + адаптивность + поддержка тёмной темы
- * 
- * 🔥 ЭТАП 2.3: Добавлена панель сортировки
- * 🔥 ЭТАП 2.5: Улучшена читаемость в тёмной теме
- */
+Стили для ServiceSelector (Шаг 1 многошаговой формы записи)
+Особенности:
+Стабильный контраст текста при hover (текст не меняет цвет, меняется только фон/рамка).
+Защита от "разваливания" вёрстки длинными описаниями услуг (-webkit-line-clamp).
+Адаптивная сетка карточек.
+ ЭТАП 2.5: Улучшена читаемость в тёмной теме
+*/
 
-/* ═══════════════════════════════════════════════
-   ОБЩИЙ КОНТЕЙНЕР И ЗАГОЛОВОК
-   ═══════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════
+ОБЩИЙ КОНТЕЙНЕР И ЗАГОЛОВОК
+═══════════════════════════════════════════════ */
 .service-selector {
   width: 100%;
 }
@@ -28,9 +29,9 @@
   font-size: var(--font-size-base, 1rem);
 }
 
-/* ═══════════════════════════════════════════════
-   ПАНЕЛЬ ФИЛЬТРОВ (Поиск + Категории)
-   ═══════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════
+ПАНЕЛЬ ФИЛЬТРОВ (Поиск + Категории)
+═══════════════════════════════════════════════ */
 .service-selector__filters {
   display: flex;
   flex-direction: column;
@@ -49,8 +50,8 @@
 }
 
 /* ═══════════════════════════════════════════════
-   ЧИПСЫ КАТЕГОРИЙ
-   ═══════════════════════════════════════════════ */
+ЧИПСЫ КАТЕГОРИЙ (ИСПРАВЛЕН КОНТРАСТ)
+═══════════════════════════════════════════════ */
 .service-selector__category {
   padding: 6px 16px;
   min-height: 36px;
@@ -83,18 +84,37 @@
 }
 
 /* ═══════════════════════════════════════════════
-   СЕТКА КАРТОЧЕК
-   Mobile-first подход с явными breakpoints
-   ═══════════════════════════════════════════════ */
+СЕТКА КАРТОЧЕК
+Mobile-first подход с явными breakpoints.
+═══════════════════════════════════════════════ */
 .service-selector__grid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(4, 1fr);
   gap: var(--spacing-md, 16px);
+}
+
+@media (max-width: 1024px) {
+  .service-selector__grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .service-selector__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .service-selector__grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (min-width: 481px) {
   .service-selector__grid {
     grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-md, 16px);
   }
 }
 
@@ -113,8 +133,8 @@
 }
 
 /* ═══════════════════════════════════════════════
-   КАРТОЧКА УСЛУГИ
-   ═══════════════════════════════════════════════ */
+КАРТОЧКА УСЛУГИ
+═══════════════════════════════════════════════ */
 .service-card {
   position: relative;
   background: var(--color-surface, #ffffff);
@@ -161,8 +181,8 @@
 }
 
 /* ═══════════════════════════════════════════════
-   ТИПОГРАФИКА КАРТОЧКИ
-   ═══════════════════════════════════════════════ */
+ТИПОГРАФИКА КАРТОЧКИ
+═══════════════════════════════════════════════ */
 .service-card__category {
   font-size: var(--font-size-xs, 0.75rem);
   font-weight: 600;
@@ -194,8 +214,8 @@
 }
 
 /* ═══════════════════════════════════════════════
-   МЕТА-ИНФОРМАЦИЯ И ЦЕНА
-   ═══════════════════════════════════════════════ */
+МЕТА-ИНФОРМАЦИЯ И ЦЕНА
+═══════════════════════════════════════════════ */
 .service-card__meta {
   display: flex;
   gap: var(--spacing-md, 16px);
@@ -223,8 +243,8 @@
 }
 
 /* ═══════════════════════════════════════════════
-   ПАНЕЛЬ СОРТИРОВКИ (ЭТАП 2.3)
-   ═══════════════════════════════════════════════ */
+ПАНЕЛЬ СОРТИРОВКИ (ЭТАП 2.3)
+═══════════════════════════════════════════════ */
 .service-selector__sort {
   display: flex;
   align-items: center;
@@ -297,23 +317,133 @@
 }
 
 /* ═══════════════════════════════════════════════
-   АДАПТИВНОСТЬ
-   ═══════════════════════════════════════════════ */
+🔥 ПОДДЕРЖКА ТЁМНОЙ ТЕМЫ (ЭТАП 2.5)
+═══════════════════════════════════════════════ */
+
+/* Заголовок */
+[data-theme="dark"] .service-selector__header h2 {
+  color: var(--color-text, #f2ebe0);
+}
+
+[data-theme="dark"] .service-selector__description {
+  color: var(--color-text-muted, #b5a28d);
+}
+
+/* Категории */
+[data-theme="dark"] .service-selector__category {
+  background: var(--color-surface, #2d2419);
+  border-color: var(--color-border, #4a3a2a);
+  color: var(--color-text, #f2ebe0);
+}
+
+[data-theme="dark"] .service-selector__category:hover {
+  /* 🔥 Более тёмный фон для читаемости белого текста */
+  background-color: var(--color-primary-700, #7f5e44);
+  border-color: var(--color-primary-600, #9c7558);
+  color: var(--color-text-inverse, #ffffff);
+}
+
+[data-theme="dark"] .service-selector__category--active {
+  background: var(--color-primary-600, #9c7558);
+  border-color: var(--color-primary-600, #9c7558);
+  color: var(--color-text-inverse, #ffffff);
+}
+
+[data-theme="dark"] .service-selector__category--active:hover {
+  background: var(--color-primary-700, #7f5e44);
+  border-color: var(--color-primary-500, #b8957a);
+}
+
+/* Панель сортировки */
+[data-theme="dark"] .service-selector__sort {
+  background: var(--color-surface-alt, #3d2f26);
+}
+
+[data-theme="dark"] .service-selector__sort-label {
+  color: var(--color-text, #f2ebe0);
+}
+
+[data-theme="dark"] .service-selector__sort-btn {
+  background: var(--color-surface, #2d2419);
+  border-color: var(--color-border, #4a3a2a);
+  color: var(--color-text, #f2ebe0);
+}
+
+[data-theme="dark"] .service-selector__sort-btn:hover {
+  /* 🔥 Более тёмный фон для читаемости белого текста */
+  background-color: var(--color-primary-700, #7f5e44);
+  border-color: var(--color-primary-600, #9c7558);
+  color: var(--color-text-inverse, #ffffff);
+}
+
+[data-theme="dark"] .service-selector__sort-btn--active {
+  background: var(--color-primary-600, #9c7558);
+  border-color: var(--color-primary-600, #9c7558);
+  color: var(--color-text-inverse, #ffffff);
+}
+
+[data-theme="dark"] .service-selector__sort-btn--active:hover {
+  background: var(--color-primary-700, #7f5e44);
+  border-color: var(--color-primary-500, #b8957a);
+}
+
+/* Карточки услуг */
+[data-theme="dark"] .service-card {
+  background: var(--color-surface, #2d2419);
+  border-color: var(--color-border, #4a3a2a);
+}
+
+[data-theme="dark"] .service-card:hover {
+  border-color: var(--color-primary-400, #c9a88c);
+  background: var(--color-surface-alt, #3d2f26);
+}
+
+[data-theme="dark"] .service-card--selected {
+  background: var(--color-primary-soft, #3d2f26);
+  border-color: var(--color-primary-600, #9c7558);
+}
+
+[data-theme="dark"] .service-card__title {
+  color: var(--color-text, #f2ebe0);
+}
+
+[data-theme="dark"] .service-card__description {
+  color: var(--color-text-muted, #b5a28d);
+}
+
+[data-theme="dark"] .service-card__meta {
+  border-top-color: var(--color-border, #4a3a2a);
+}
+
+[data-theme="dark"] .service-card__meta-item {
+  color: var(--color-text-muted, #b5a28d);
+}
+
+[data-theme="dark"] .service-card__price {
+  color: var(--color-primary-400, #c9a88c);
+}
+
+/* ══════════════════════════════════════════════
+АДАПТИВНОСТЬ (Mobile-first)
+═══════════════════════════════════════════════ */
 @media (max-width: 480px) {
+  .service-selector__grid {
+    grid-template-columns: 1fr;
+  }
   .service-selector__header h2 {
     font-size: var(--font-size-lg, 1.125rem);
   }
+}
 
+@media (max-width: 480px) {
   .service-selector__sort {
     flex-direction: column;
     align-items: flex-start;
     gap: var(--spacing-sm, 8px);
   }
-
   .service-selector__sort-buttons {
     width: 100%;
   }
-
   .service-selector__sort-btn {
     flex: 1;
     justify-content: center;

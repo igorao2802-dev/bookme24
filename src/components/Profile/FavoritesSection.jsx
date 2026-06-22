@@ -14,9 +14,8 @@
  * 
  * 🔥 ЭТАП 5.4: Реализация раздела избранного в личном кабинете
  * 🔥 ЭТАП 7.7: Локализация всех текстов
- * 🔥 ИСПРАВЛЕНО: Синтаксические ошибки JSX-комментариев
+ * 🔥 ЭТАП 21: Убран дублирующий заголовок "❤️ Избранное (0)"
  */
-
 import { Heart } from 'lucide-react';
 import { useLanguage } from '../../hooks/useLanguage';
 import FavoritesList from '../Catalog/FavoritesList';
@@ -65,14 +64,15 @@ export default function FavoritesSection({
   // === ЗАПОЛНЕННОЕ СОСТОЯНИЕ ===
   return (
     <section className="favorites-section">
+      {/* 🔥 ЭТАП 21: Заголовок БЕЗ дублирующего "(0)" */}
       <h2 className="favorites-section__title">
         <Heart size={24} />
         {t('profile.sections.favorites')}
-        <span className="favorites-section__count">
-          ({totalCount})
-        </span>
       </h2>
+      
+      {/* 🔥 ЭТАП 21: Передаём проп hideMainTitle в FavoritesList */}
       <FavoritesList
+        hideMainTitle={true}
         services={favoriteServices}
         specialists={favoriteSpecialists}
         onToggleFavorite={onToggleFavorite}

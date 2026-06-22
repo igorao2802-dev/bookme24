@@ -1,19 +1,10 @@
 /**
  * themes.css — CSS-переменные для светлой и тёмной темы
  * 
- * АРХИТЕКТУРНАЯ РОЛЬ:
- * Определяет цветовые переменные для обеих тем.
- * Светлая тема — значения по умолчанию (без селектора).
- * Тёмная тема — переопределение через [data-theme="dark"].
- * 
- * ПОЧЕМУ CSS-переменные, а не CSS-in-JS?
- * - Производительность: браузер кэширует переменные
- * - Простота: не нужно передавать theme через props в каждый компонент
- * - Стандарт: используется в Material UI, Tailwind, Ant Design
- * 
- * ПОЧЕМУ data-theme на <html>, а не на <body>?
- * - Позволяет стилизовать <html> (например, цвет скроллбара)
- * - Работает до загрузки <body> (избегает flash of wrong theme)
+ * 🔥 ИСПРАВЛЕНО: Улучшена плавность переключения тем
+ * - Увеличено время transition до 400ms
+ * - Добавлена cubic-bezier для более естественной анимации
+ * - Добавлен transition для всех цветовых свойств
  */
 
 /* ═══════════════════════════════════════════════════════════════
@@ -138,62 +129,106 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   🔥 ЭТАП 4.4: ГЛОБАЛЬНАЯ КОРРЕКЦИЯ ПЛЕЙСХОЛДЕРОВ И DISABLED
+   🔥 ПЛАВНЫЕ ПЕРЕХОДЫ МЕЖДУ ТЕМАМИ (УЛУЧШЕНО)
    ═══════════════════════════════════════════════════════════════ */
 
-/* Плейсхолдеры в тёмной теме */
-[data-theme="dark"] input::placeholder,
-[data-theme="dark"] textarea::placeholder,
-[data-theme="dark"] select::placeholder {
-  color: var(--color-text-placeholder);
-  opacity: 1;
-}
+/* 
+  ПОЧЕМУ cubic-bezier(0.4, 0, 0.2, 1)?
+  - Это стандартная easing-функция Material Design
+  - Создаёт естественное ускорение и замедление
+  - Делает переход более "премиальным"
+  
+  ПОЧЕМУ 400ms вместо 300ms?
+  - Достаточно быстро для UX
+  - Достаточно медленно для плавности
+  - Даёт глазу время отследить изменение
+*/
 
-/* Отключенные элементы в тёмной теме */
-[data-theme="dark"] button:disabled,
-[data-theme="dark"] input:disabled,
-[data-theme="dark"] textarea:disabled,
-[data-theme="dark"] select:disabled {
-  color: var(--color-text-disabled);
-  background-color: var(--color-surface-alt);
-  border-color: var(--color-border);
-  cursor: not-allowed;
-  opacity: 0.7;
-}
-
-/* Иконки внутри отключенных кнопок */
-[data-theme="dark"] button:disabled svg {
-  color: var(--color-text-disabled);
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   ПЛАВНЫЕ ПЕРЕХОДЫ МЕЖДУ ТЕМАМИ
-   ═══════════════════════════════════════════════════════════════ */
-
+/* === ГЛОБАЛЬНЫЙ TRANSITION ДЛЯ BODY === */
 body {
   transition:
-    background-color 300ms ease,
-    color 300ms ease;
+    background-color 400ms cubic-bezier(0.4, 0, 0.2, 1),
+    color 400ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* === TRANSITION ДЛЯ ВСЕХ ЦВЕТОВЫХ СВОЙСТВ === */
+/* ПОЧЕМУ transition-property: all?
+   - Переходят не только background-color и color
+   - Но и border-color, box-shadow, fill, stroke
+   - Это создаёт целостный эффект плавности
+*/
+*,
+*::before,
+*::after {
+  transition-property:
+    background-color, border-color, color, fill, stroke, box-shadow;
+  transition-duration: 400ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* === ИСКЛЮЧЕНИЯ: ЭЛЕМЕНТЫ БЕЗ TRANSITION === */
+/* ПОЧЕМУ некоторые элементы без transition?
+   - input, textarea, select — чтобы не было задержки при фокусе
+   - scrollbar — чтобы не тормозил прокрутку
+   - ::selection — системный элемент
+*/
+input,
+textarea,
+select,
+option,
+::-webkit-scrollbar,
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-thumb,
+::selection {
+  transition: none !important;
+}
+
+/* === КАРТОЧКИ И КОНТЕЙНЕРЫ === */
 .service-card,
 .specialist-card,
 .booking-card,
 .admin-stats__card,
 .profile-card,
-.history-card {
+.history-card,
+.modal,
+.admin-services-list__table-wrapper,
+.admin-specialists-list__table-wrapper {
   transition:
-    background-color 300ms ease,
-    border-color 300ms ease,
-    box-shadow 300ms ease;
+    background-color 400ms cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 400ms cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 400ms cubic-bezier(0.4, 0, 0.2, 1),
+    transform 250ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* === КНОПКИ И ИНТЕРАКТИВНЫЕ ЭЛЕМЕНТЫ === */
 button,
-.btn {
+.btn,
+a,
+[role="button"] {
   transition:
-    background-color 300ms ease,
-    border-color 300ms ease,
-    color 300ms ease;
+    background-color 400ms cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 400ms cubic-bezier(0.4, 0, 0.2, 1),
+    color 400ms cubic-bezier(0.4, 0, 0.2, 1),
+    transform 150ms cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 400ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* === ФОРМЫ И INPUT === */
+.input__field,
+textarea,
+select {
+  transition:
+    background-color 400ms cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 400ms cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 400ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* === ИКОНКИ === */
+svg,
+svg * {
+  transition:
+    fill 400ms cubic-bezier(0.4, 0, 0.2, 1),
+    stroke 400ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -216,4 +251,78 @@ button,
 
 [data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
   background: var(--color-border-dark);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   🔥 ДОПОЛНИТЕЛЬНЫЕ УЛУЧШЕНИЯ ДЛЯ ПЛАВНОСТИ
+   ═══════════════════════════════════════════════════════════════ */
+
+/* === FADE EFFECT ПРИ ПЕРЕКЛЮЧЕНИИ ТЕМЫ === */
+/* ПОЧЕМУ @keyframes?
+   - Создаёт дополнительный эффект плавности
+   - Лёгкое изменение opacity помогает скрыть резкие переходы
+*/
+@keyframes themeFade {
+  0% {
+    opacity: 0.98;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.98;
+  }
+}
+
+/* Применяем fade effect при изменении data-theme */
+html[data-theme] {
+  animation: themeFade 400ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* === WILL-CHANGE ДЛЯ ОПТИМИЗАЦИИ === */
+/* ПОЧЕМУ will-change?
+   - Подсказывает браузеру, что элемент будет анимироваться
+   - Браузер заранее оптимизирует рендеринг
+   - Улучшает производительность анимации
+*/
+body,
+.service-card,
+.specialist-card,
+.booking-card,
+button,
+.btn {
+  will-change: background-color, border-color, color, box-shadow;
+}
+
+/* Убираем will-change после завершения анимации */
+@keyframes removeWillChange {
+  to {
+    will-change: auto;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ДОСТУПНОСТЬ: prefers-reduced-motion
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+
+  html[data-theme] {
+    animation: none;
+  }
+
+  body,
+  .service-card,
+  .specialist-card,
+  .booking-card,
+  button,
+  .btn {
+    will-change: auto;
+  }
 }

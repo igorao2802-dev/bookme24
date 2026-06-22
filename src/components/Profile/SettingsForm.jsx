@@ -1,11 +1,19 @@
 /**
  * SettingsForm.jsx — форма настроек профиля
  * 
+ * АРХИТЕКТУРНАЯ РОЛЬ:
+ * Управляет настройками пользователя:
+ * - Контактные данные (телефон, email)
+ * - Уведомления (SMS, email, не беспокоить)
+ * - Очистка истории
+ * - Выход из аккаунта
+ * 
  * 🔥 ЭТАП 5.5: Настройки профиля
  * 🔥 ЭТАП 7.8: Локализация всех текстов и ошибок валидации
+ * 🔥 ЭТАП 20: Удалён блок "Способ уведомлений"
+ * 🔥 ЭТАП 22: Добавлена поддержка редактирования телефона/email
  */
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLanguage } from '../../hooks/useLanguage';
 import { validatePhone, validateEmail } from '../../utils/validators';
 import Input from '../UI/Input';
@@ -13,28 +21,34 @@ import Button from '../UI/Button';
 import Toast from '../UI/Toast';
 import './SettingsForm.css';
 
-export default function SettingsForm({ settings, onSave, onClearHistory, onLogout }) {
+export default function SettingsForm({ 
+  settings, 
+  isEditing = false,
+  editData = {},
+  onEdit,
+  onCancel,
+  onSave,
+  onClearHistory,
+  onLogout 
+}) {
   const { t } = useLanguage(); // 🔥 ЭТАП 7.8
-  
-  const [formData, setFormData] = useState({
-    phone: settings.phone || '',
-    email: settings.email || '',
-    notification: settings.notification || 'sms',
-  });
 
+  // 🔥 ЭТАП 22: Локальное состояние для редактирования
+  const [localEditData, setLocalEditData] = useState({
+    phone: '',
+    email: '',
+  });
+  
   const [errors, setErrors] = useState({});
 
-  // === ВАРИАНТЫ УВЕДОМЛЕНИЙ ===
-  const NOTIFICATION_OPTIONS = [
-    { value: 'sms', label: t('profile.settings.sms'), icon: '📱' },
-    { value: 'email', label: t('profile.settings.emailNotifications'), icon: '✉️' },
-    { value: 'none', label: t('profile.settings.doNotDisturb'), icon: '🔕' },
-  ];
+  // 🔥 ЭТАП 22: Синхронизация с props при изменении editData
+  useEffect(() => {
+    setLocalEditData(editData);
+  }, [editData]);
 
   // === ОБРАБОТЧИК ИЗМЕНЕНИЯ ПОЛЯ ===
   const handleChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    
+    setLocalEditData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: null }));
     }
@@ -45,13 +59,13 @@ export default function SettingsForm({ settings, onSave, onClearHistory, onLogou
     const newErrors = {};
 
     // Валидация телефона
-    const phoneResult = validatePhone(formData.phone);
+    const phoneResult = validatePhone(localEditData.phone);
     if (!phoneResult.isValid) {
       newErrors.phone = phoneResult.errorKey;
     }
 
     // Валидация email
-    const emailResult = validateEmail(formData.email);
+    const emailResult = validateEmail(localEditData.email);
     if (!emailResult.isValid) {
       newErrors.email = emailResult.errorKey;
     }
@@ -62,7 +76,7 @@ export default function SettingsForm({ settings, onSave, onClearHistory, onLogou
       return;
     }
 
-    onSave(formData);
+    onSave(localEditData);
     Toast.success(t('profile.settings.saveSuccess'));
   };
 
@@ -71,7 +85,6 @@ export default function SettingsForm({ settings, onSave, onClearHistory, onLogou
     const confirmed = window.confirm(
       `${t('profile.settings.clearHistoryConfirm')}\n\n${t('profile.settings.clearHistoryWarning')}`
     );
-
     if (confirmed) {
       onClearHistory();
       Toast.success(t('profile.settings.clearHistorySuccess'));
@@ -83,7 +96,6 @@ export default function SettingsForm({ settings, onSave, onClearHistory, onLogou
     const confirmed = window.confirm(
       `${t('profile.settings.logoutConfirm')}\n\n${t('profile.settings.logoutWarning')}`
     );
-
     if (confirmed) {
       onLogout();
     }
@@ -97,14 +109,16 @@ export default function SettingsForm({ settings, onSave, onClearHistory, onLogou
           {t('profile.settings.contacts')}
         </h3>
 
+        {/* 🔥 ЭТАП 22: Условный рендеринг для режима редактирования */}
         <Input
           label={t('profile.settings.phone')}
           name="phone"
           type="tel"
-          value={formData.phone}
+          value={localEditData.phone || settings.phone}
           onChange={(e) => handleChange('phone', e.target.value)}
           error={errors.phone ? t(errors.phone) : null}
           placeholder="+375 (29) 123-45-67"
+          disabled={!isEditing}
           required
         />
 
@@ -112,53 +126,43 @@ export default function SettingsForm({ settings, onSave, onClearHistory, onLogou
           label={t('profile.settings.email')}
           name="email"
           type="email"
-          value={formData.email}
+          value={localEditData.email || settings.email}
           onChange={(e) => handleChange('email', e.target.value)}
           error={errors.email ? t(errors.email) : null}
           placeholder="anna@example.com"
+          disabled={!isEditing}
         />
       </section>
 
-      {/* === СЕКЦИЯ 2: УВЕДОМЛЕНИЯ === */}
-      <section className="settings-form__section">
-        <h3 className="settings-form__section-title">
-          {t('profile.settings.notifications')}
-        </h3>
+      {/* 🔥 ЭТАП 20: Блок "Способ уведомлений" УДАЛЁН */}
 
-        <div className="settings-form__radio-group">
-          {NOTIFICATION_OPTIONS.map((option) => (
-            <label
-              key={option.value}
-              className={`settings-form__radio-option ${
-                formData.notification === option.value
-                  ? 'settings-form__radio-option--active'
-                  : ''
-              }`}
-            >
-              <input
-                type="radio"
-                name="notification"
-                value={option.value}
-                checked={formData.notification === option.value}
-                onChange={(e) => handleChange('notification', e.target.value)}
-                className="settings-form__radio-input"
-              />
-              <span className="settings-form__radio-icon">{option.icon}</span>
-              <span className="settings-form__radio-label">{option.label}</span>
-            </label>
-          ))}
-        </div>
-      </section>
-
-      {/* === СЕКЦИЯ 3: ДЕЙСТВИЯ === */}
+      {/* === СЕКЦИЯ 2: КНОПКИ ДЕЙСТВИЙ === */}
       <section className="settings-form__section settings-form__actions">
-        <Button
-          variant="primary"
-          onClick={handleSave}
-          className="settings-form__btn-save"
-        >
-          {t('profile.settings.save')}
-        </Button>
+        {/* 🔥 ЭТАП 22: Условный рендеринг кнопок */}
+        {isEditing ? (
+          <>
+            <Button
+              variant="outline"
+              onClick={onCancel}
+            >
+              {t('common.cancel')}
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleSave}
+              className="settings-form__btn-save"
+            >
+              {t('profile.settings.save')}
+            </Button>
+          </>
+        ) : (
+          <Button
+            variant="outline"
+            onClick={onEdit}
+          >
+            {t('common.edit')}
+          </Button>
+        )}
 
         <div className="settings-form__danger-actions">
           <Button

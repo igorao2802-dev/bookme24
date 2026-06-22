@@ -1,11 +1,15 @@
 /**
  * ServiceModal.jsx — модальное окно для формы услуги
  * 
+ * АРХИТЕКТУРНАЯ РОЛЬ:
+ * Управляет состоянием открытия/закрытия модального окна.
+ * Предотвращает случайное закрытие при несохранённых изменениях.
+ * 
  * 🔥 ИСПРАВЛЕНИЕ 1.4: Заголовок только здесь
  * 🔥 ЭТАП 7.8: Полная локализация
  * 🔥 ИСПРАВЛЕНИЕ 1.6: Корректная обработка результата сохранения
+ * 🔥 ЭТАП 9: Передаёт список специалистов в ServiceForm
  */
-
 import { useRef } from 'react';
 import Modal from '../UI/Modal';
 import ServiceForm from './ServiceForm';
@@ -15,7 +19,7 @@ export default function ServiceModal({
   isOpen,
   mode = 'add',
   service = null,
-  specialists = [],
+  specialists = [], // 🔥 ЭТАП 9: новый prop
   existingServices = [],
   onSave,
   onClose,
@@ -23,52 +27,51 @@ export default function ServiceModal({
   const { t } = useLanguage();
   const isDirtyRef = useRef(false);
 
-  // 🔥 ИСПРАВЛЕНИЕ 1.6: обрабатываем результат сохранения
-  const handleSave = (serviceData) => {
-    const result = onSave(serviceData);
-    
-    // Закрываем модалку и сбрасываем флаг только при успехе
-    if (result?.success !== false) {
-      isDirtyRef.current = false;
-      onClose();
-    }
-    // При ошибке модалка остаётся открытой — пользователь видит ошибки валидации
-  };
+  // === ЗАГОЛОВОК В ЗАВИСИМОСТИ ОТ РЕЖИМА ===
+  const modalTitle =
+    mode === 'add'
+      ? t('admin.services.form.addTitle')
+      : t('admin.services.form.editTitle');
 
+  // === ОБРАБОТЧИК ЗАКРЫТИЯ С ПРОВЕРКОЙ СОСТОЯНИЯ ===
   const handleClose = () => {
     if (isDirtyRef.current) {
       const confirmed = window.confirm(t('admin.services.form.unsavedChanges'));
       if (!confirmed) return;
     }
-    isDirtyRef.current = false;
     onClose();
   };
 
+  // === ОБРАБОТЧИК СОХРАНЕНИЯ ===
+  const handleSave = (serviceData) => {
+    const result = onSave(serviceData);
+    if (result?.success) {
+      isDirtyRef.current = false;
+      onClose();
+    }
+  };
+
+  // === ОТСЛЕЖИВАНИЕ ИЗМЕНЕНИЙ ===
   const handleFormChange = () => {
     isDirtyRef.current = true;
   };
-
-  const title = mode === 'edit'
-    ? t('admin.services.form.editTitle')
-    : t('admin.services.form.addTitle');
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title={title}
+      title={modalTitle}
       size="lg"
     >
-      <div onChange={handleFormChange}>
-        <ServiceForm
-          mode={mode}
-          service={service}
-          specialists={specialists}
-          existingServices={existingServices}
-          onSave={handleSave}
-          onCancel={handleClose}
-        />
-      </div>
+      <ServiceForm
+        mode={mode}
+        service={service}
+        specialists={specialists} // 🔥 ЭТАП 9
+        existingServices={existingServices}
+        onSave={handleSave}
+        onCancel={handleClose}
+        onChange={handleFormChange}
+      />
     </Modal>
   );
 }

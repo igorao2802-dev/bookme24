@@ -1,24 +1,39 @@
-.confirmation-modal__intro {
-  color: var(--color-text-muted, #6b5d4f);
-  margin-bottom: var(--spacing-md, 16px);
-}
+/**
+ * ConfirmationModal.css — стили для модального окна подтверждения записи
+ * BEM-методология + поддержка тёмной темы
+ * 
+ * 🔥 ИСПРАВЛЕНО: Добавлены отступы между иконками и текстом
+ */
 
-.confirmation-modal__summary {
-  background: var(--color-bg, #fdfaf6);
-  padding: var(--spacing-lg, 24px);
-  border-radius: var(--radius-md, 8px);
-  margin-bottom: var(--spacing-lg, 24px);
+/* === ОСНОВНОЙ КОНТЕЙНЕР === */
+.confirmation-modal {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-sm, 8px);
+  gap: var(--spacing-lg, 24px);
 }
 
+.confirmation-modal__intro {
+  font-size: var(--font-size-base, 1rem);
+  color: var(--color-text-muted, #6b5d4f);
+  margin: 0;
+}
+
+/* === СВОДКА === */
+.confirmation-modal__summary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md, 16px);
+  padding: var(--spacing-lg, 24px);
+  background: var(--color-surface-alt, #f2ebe0);
+  border-radius: var(--radius-md, 8px);
+}
+
+/* === СТРОКА СВОДКИ === */
 .confirmation-modal__row {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   gap: var(--spacing-md, 16px);
-  padding: var(--spacing-xs, 4px) 0;
 }
 
 .confirmation-modal__row--column {
@@ -26,107 +41,173 @@
   align-items: flex-start;
 }
 
+/* 🔥 ИСПРАВЛЕНИЕ: ЛЕЙБЛ С ИКОНКОЙ */
 .confirmation-modal__label {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 4px;
-  color: var(--color-text-muted, #6b5d4f);
+  gap: var(--spacing-sm, 8px); /*  Отступ между иконкой и текстом */
   font-size: var(--font-size-sm, 0.875rem);
-  flex-shrink: 0;
-}
-
-.confirmation-modal__value {
   font-weight: 500;
-  color: var(--color-text, #2d2419);
-  text-align: right;
-}
-
-.confirmation-modal__meta {
-  display: flex;
-  gap: var(--spacing-sm, 8px);
-  justify-content: flex-end;
-  font-size: var(--font-size-sm, 0.875rem);
   color: var(--color-text-muted, #6b5d4f);
-  margin-top: var(--spacing-xs, 4px);
+  white-space: nowrap;
 }
 
+.confirmation-modal__label svg {
+  flex-shrink: 0; /* 🔥 Иконка не сжимается */
+}
+
+/* === ЗНАЧЕНИЕ === */
+.confirmation-modal__value {
+  font-size: var(--font-size-base, 1rem);
+  color: var(--color-text, #3d2f26);
+  text-align: right;
+  word-break: break-word;
+}
+
+/* === РАЗДЕЛИТЕЛЬ === */
 .confirmation-modal__divider {
   height: 1px;
   background: var(--color-border, #e8dcc4);
   margin: var(--spacing-sm, 8px) 0;
 }
 
+/* === КОММЕНТАРИЙ === */
 .confirmation-modal__comment {
-  background: var(--color-surface, #ffffff);
-  padding: var(--spacing-sm, 8px);
-  border-radius: var(--radius-sm, 4px);
-  font-size: var(--font-size-sm, 0.875rem);
-  color: var(--color-text, #2d2419);
   margin: 0;
-  width: 100%;
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--color-text, #3d2f26);
+  line-height: 1.5;
+  padding: var(--spacing-sm, 8px);
+  background: var(--color-surface, #ffffff);
+  border-radius: var(--radius-sm, 4px);
+  border: 1px solid var(--color-border, #e8dcc4);
 }
 
+/* === ИТОГО === */
 .confirmation-modal__total {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding-top: var(--spacing-md, 16px);
-  margin-top: var(--spacing-sm, 8px);
   border-top: 2px solid var(--color-border, #e8dcc4);
-  font-size: var(--font-size-lg, 1.125rem);
+}
+
+/* 🔥 ИСПРАВЛЕНИЕ: ЛЕЙБЛ "К ОПЛАТЕ" С ИКОНКОЙ */
+.confirmation-modal__total-label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm, 8px); /* 🔥 Отступ между иконкой кошелька и текстом */
+  font-size: var(--font-size-base, 1rem);
+  font-weight: 600;
+  color: var(--color-text, #3d2f26);
+}
+
+.confirmation-modal__total-label svg {
+  flex-shrink: 0;
+}
+
+.confirmation-modal__money-icon {
+  color: var(--color-primary-600, #9c7558);
 }
 
 .confirmation-modal__total strong {
   font-size: var(--font-size-xl, 1.5rem);
-  color: var(--color-primary-dark, #b8895a);
+  color: var(--color-primary-700, #7f5e44);
 }
 
+/* === КНОПКИ === */
 .confirmation-modal__actions {
   display: flex;
-  gap: var(--spacing-md, 16px);
   justify-content: flex-end;
-}
-
-@media (max-width: 480px) {
-  .confirmation-modal__actions {
-    flex-direction: column;
-  }
-}
-
-/* === ЗАЩИТА ОТ ДЛИННЫХ КОММЕНТАРИЕВ === */
-.confirmation-modal__comment {
-  background: var(--color-surface, #ffffff);
-  padding: var(--spacing-sm, 8px);
-  border-radius: var(--radius-sm, 4px);
-  font-size: var(--font-size-sm, 0.875rem);
-  color: var(--color-text, #2d2419);
-  margin: 0;
-  width: 100%;
-
-  /* ↓ ДОБАВЬТЕ ЭТИ 3 СТРОКИ ↓ */
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-  hyphens: auto;
+  gap: var(--spacing-sm, 8px);
+  padding-top: var(--spacing-md, 16px);
+  border-top: 1px solid var(--color-border, #e8dcc4);
 }
 
 /* ═══════════════════════════════════════════════
-    ИКОНКА "К ОПЛАТЕ" (ЭТАП 4.2)
-   Визуальный акцент на финальной сумме.
-   Терракотовый цвет соответствует бренду салона.
+   ПОДДЕРЖКА ТЁМНОЙ ТЕМЫ
    ═══════════════════════════════════════════════ */
 
-.confirmation-modal__total-label {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-xs, 4px);
+[data-theme="dark"] .confirmation-modal__intro {
+  color: var(--color-text-muted, #b5a28d);
 }
 
-.confirmation-modal__money-icon {
-  color: var(--color-primary-700, #7f5e44);
-  flex-shrink: 0;
+[data-theme="dark"] .confirmation-modal__summary {
+  background: var(--color-surface-alt, #3d2f26);
 }
 
-/* На тёмном фоне (если модалка в тёмной теме) — белый цвет */
+[data-theme="dark"] .confirmation-modal__label {
+  color: var(--color-text-muted, #b5a28d);
+}
+
+[data-theme="dark"] .confirmation-modal__value {
+  color: var(--color-text, #f2ebe0);
+}
+
+[data-theme="dark"] .confirmation-modal__divider {
+  background: var(--color-border, #4a3a2a);
+}
+
+[data-theme="dark"] .confirmation-modal__comment {
+  background: var(--color-surface, #2d2419);
+  border-color: var(--color-border, #4a3a2a);
+  color: var(--color-text, #f2ebe0);
+}
+
+[data-theme="dark"] .confirmation-modal__total {
+  border-top-color: var(--color-border, #4a3a2a);
+}
+
+[data-theme="dark"] .confirmation-modal__total-label {
+  color: var(--color-text, #f2ebe0);
+}
+
 [data-theme="dark"] .confirmation-modal__money-icon {
-  color: var(--color-primary-200, #eacfb5);
+  color: var(--color-primary-400, #c9a88c);
+}
+
+[data-theme="dark"] .confirmation-modal__total strong {
+  color: var(--color-primary-400, #c9a88c);
+}
+
+[data-theme="dark"] .confirmation-modal__actions {
+  border-top-color: var(--color-border, #4a3a2a);
+}
+
+/* ═══════════════════════════════════════════════
+   АДАПТИВНОСТЬ
+   ═══════════════════════════════════════════════ */
+
+@media (max-width: 640px) {
+  .confirmation-modal__summary {
+    padding: var(--spacing-md, 16px);
+  }
+
+  .confirmation-modal__row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-xs, 4px);
+  }
+
+  .confirmation-modal__value {
+    text-align: left;
+    font-weight: 500;
+  }
+
+  .confirmation-modal__actions {
+    flex-direction: column-reverse;
+  }
+
+  .confirmation-modal__actions button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* === ДОСТУПНОСТЬ: prefers-reduced-motion === */
+@media (prefers-reduced-motion: reduce) {
+  .confirmation-modal__summary,
+  .confirmation-modal__comment {
+    transition: none;
+  }
 }

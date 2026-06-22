@@ -1,6 +1,15 @@
 /**
  * useSpecialists.js — хук для управления списком специалистов
+ *
+ * АРХИТЕКТУРНАЯ РОЛЬ:
+ * Предоставляет CRUD-операции для специалистов.
+ * Разделяет JSON-данные (read-only) и кастомные данные (localStorage).
+ * Валидирует данные перед сохранением.
+ *
+ * 🔥 ЭТАП 6.3: Добавлены add/update/delete операции
+ * 🔥 ЭТАП 7.6: Локализация Toast-уведомлений
  * 🔥 ЭТАП 5.3: Добавлена поддержка двуязычных полей (fullNameEn, positionEn)
+ * 🔥 ЭТАП 12: Удалена валидация rating, дефолтное значение 4.5 при создании
  */
 import { useMemo, useCallback } from "react";
 import { useLocalStorage } from "./useLocalStorage";
@@ -8,12 +17,14 @@ import { useLanguage } from "./useLanguage";
 import { STORAGE_KEYS } from "../utils/constants";
 import Toast from "../components/UI/Toast";
 
+// === ГЕНЕРАЦИЯ УНИКАЛЬНОГО ID ===
 function generateSpecialistId() {
   const timestamp = Date.now();
   const random = Math.random().toString(36).substring(2, 7);
   return `custom_spec_${timestamp}_${random}`;
 }
 
+// === ВАЛИДАЦИЯ ДАННЫХ СПЕЦИАЛИСТА ===
 function validateSpecialistData(
   data,
   existingSpecialists = [],
@@ -21,29 +32,39 @@ function validateSpecialistData(
 ) {
   const errors = {};
 
-  if (!data.fullName || !data.fullName.trim()) {
+  if (!data.fullName || typeof data.fullName !== "string") {
     errors.fullName = "validation.specialist.nameRequired";
   } else {
-    const trimmed = data.fullName.trim();
-    if (trimmed.length > 100)
+    const trimmedName = data.fullName.trim();
+    if (trimmedName.length === 0) {
+      errors.fullName = "validation.specialist.nameRequired";
+    } else if (trimmedName.length > 100) {
       errors.fullName = "validation.specialist.nameTooLong";
-    else if (trimmed.split(/\s+/).length < 2)
-      errors.fullName = "validation.specialist.nameMinTwoWords";
-    else if (
-      existingSpecialists.some(
-        (s) =>
-          s.id !== currentId &&
-          s.fullName.toLowerCase() === trimmed.toLowerCase(),
-      )
-    ) {
-      errors.fullName = "validation.specialist.nameDuplicate";
+    } else {
+      const wordsCount = trimmedName.split(/\s+/).length;
+      if (wordsCount < 2) {
+        errors.fullName = "validation.specialist.nameMinTwoWords";
+      }
+      const isDuplicate = existingSpecialists.some(
+        (spec) =>
+          spec.id !== currentId &&
+          spec.fullName.toLowerCase() === trimmedName.toLowerCase(),
+      );
+      if (isDuplicate) {
+        errors.fullName = "validation.specialist.nameDuplicate";
+      }
     }
   }
 
-  if (!data.position || !data.position.trim()) {
+  if (!data.position || typeof data.position !== "string") {
     errors.position = "validation.specialist.positionRequired";
-  } else if (data.position.trim().length > 50) {
-    errors.position = "validation.specialist.positionTooLong";
+  } else {
+    const trimmedPosition = data.position.trim();
+    if (trimmedPosition.length === 0) {
+      errors.position = "validation.specialist.positionRequired";
+    } else if (trimmedPosition.length > 50) {
+      errors.position = "validation.specialist.positionTooLong";
+    }
   }
 
   if (
@@ -53,21 +74,17 @@ function validateSpecialistData(
   ) {
     errors.experience = "validation.specialist.experienceRequired";
   } else {
-    const exp = Number(data.experience);
-    if (isNaN(exp))
+    const experience = Number(data.experience);
+    if (isNaN(experience)) {
       errors.experience = "validation.specialist.experienceInvalid";
-    else if (exp < 0)
+    } else if (experience < 0) {
       errors.experience = "validation.specialist.experienceNegative";
-    else if (exp > 50)
+    } else if (experience > 50) {
       errors.experience = "validation.specialist.experienceTooHigh";
-  }
-
-  if (data.rating !== undefined && data.rating !== null && data.rating !== "") {
-    const rating = Number(data.rating);
-    if (isNaN(rating) || rating < 0 || rating > 5) {
-      errors.rating = "validation.specialist.ratingOutOfRange";
     }
   }
+
+  // 🔥 ЭТАП 12: Валидация rating УДАЛЕНА — рейтинг рассчитывается автоматически
 
   if (
     !data.serviceIds ||
@@ -88,6 +105,7 @@ function validateSpecialistData(
   return { isValid: Object.keys(errors).length === 0, errors };
 }
 
+// === ОСНОВНОЙ ХУК ===
 export function useSpecialists(jsonSpecialists = []) {
   const { t } = useLanguage();
   const [customSpecialists, setCustomSpecialists] = useLocalStorage(
@@ -100,6 +118,7 @@ export function useSpecialists(jsonSpecialists = []) {
     [customSpecialists, jsonSpecialists],
   );
 
+  // === ДОБАВЛЕНИЕ СПЕЦИАЛИСТА ===
   const addSpecialist = useCallback(
     (specialistData) => {
       const validation = validateSpecialistData(specialistData, specialists);
@@ -116,16 +135,14 @@ export function useSpecialists(jsonSpecialists = []) {
         fullName: specialistData.fullName.trim(),
         fullNameEn: specialistData.fullNameEn
           ? specialistData.fullNameEn.trim()
-          : "", // 🔥 ЭТАП 5.3
+          : "",
         position: specialistData.position.trim(),
         positionEn: specialistData.positionEn
           ? specialistData.positionEn.trim()
-          : "", // 🔥 ЭТАП 5.3
+          : "",
         experience: Number(specialistData.experience),
-        rating:
-          specialistData.rating !== undefined && specialistData.rating !== ""
-            ? Number(specialistData.rating)
-            : 4.5,
+        // 🔥 ЭТАП 12: Дефолтное значение рейтинга 4.5 (рассчитывается автоматически)
+        rating: 4.5,
         serviceIds: specialistData.serviceIds,
         isCustom: true,
         createdAt: new Date().toISOString(),
@@ -140,11 +157,13 @@ export function useSpecialists(jsonSpecialists = []) {
     [specialists, setCustomSpecialists, t],
   );
 
+  // === ОБНОВЛЕНИЕ СПЕЦИАЛИСТА ===
   const updateSpecialist = useCallback(
     (specialistId, updates) => {
       const existingSpecialist = specialists.find((s) => s.id === specialistId);
-      if (!existingSpecialist)
+      if (!existingSpecialist) {
         return { success: false, error: "validation.specialist.notFound" };
+      }
       if (!existingSpecialist.isCustom && !specialistId.startsWith("custom_")) {
         return {
           success: false,
@@ -176,20 +195,17 @@ export function useSpecialists(jsonSpecialists = []) {
                 fullNameEn:
                   updates.fullNameEn !== undefined
                     ? updates.fullNameEn.trim()
-                    : s.fullNameEn || "", // 🔥 ЭТАП 5.3
+                    : s.fullNameEn || "",
                 position: updates.position?.trim() || s.position,
                 positionEn:
                   updates.positionEn !== undefined
                     ? updates.positionEn.trim()
-                    : s.positionEn || "", // 🔥 ЭТАП 5.3
+                    : s.positionEn || "",
                 experience:
                   updates.experience !== undefined
                     ? Number(updates.experience)
                     : s.experience,
-                rating:
-                  updates.rating !== undefined
-                    ? Number(updates.rating)
-                    : s.rating,
+                // 🔥 ЭТАП 12: rating НЕ обновляется из формы — рассчитывается автоматически
                 updatedAt: new Date().toISOString(),
               }
             : s,
@@ -207,11 +223,13 @@ export function useSpecialists(jsonSpecialists = []) {
     [specialists, setCustomSpecialists, t],
   );
 
+  // === УДАЛЕНИЕ СПЕЦИАЛИСТА ===
   const deleteSpecialist = useCallback(
     (specialistId) => {
       const existingSpecialist = specialists.find((s) => s.id === specialistId);
-      if (!existingSpecialist)
+      if (!existingSpecialist) {
         return { success: false, error: "validation.specialist.notFound" };
+      }
       if (!existingSpecialist.isCustom && !specialistId.startsWith("custom_")) {
         return {
           success: false,
