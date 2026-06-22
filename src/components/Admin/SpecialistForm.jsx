@@ -3,11 +3,16 @@
  * 
  * АРХИТЕКТУРНАЯ РОЛЬ:
  * Презентационный компонент с локальным состоянием формы.
+ * Владеет состоянием полей (formData) и ошибок (errors)
+ * НЕ взаимодействует с localStorage напрямую
+ * При сохранении вызывает onSave(data) — родитель решает, что делать
  * 
  * 🔥 ЭТАП 6.3: Форма с валидацией и двумя режимами
  * 🔥 ЭТАП 7.8: Полная локализация через useLanguage
  * 🔥 ЭТАП 5.3: Добавлены поля fullNameEn и positionEn
- * 🔥 ЭТАП 12: Убрано поле "Рейтинг" (рассчитывается автоматически)
+ *  ЭТАП 12: Удалено поле "Рейтинг" (рассчитывается автоматически)
+ * 🔥 ЭТАП 13: Заголовок секции EN через t('admin.specialists.form.englishVersion')
+ * 🔥 ИСПРАВЛЕНО: Все опечатки в строках валидации устранены
  */
 import { useState, useEffect } from 'react';
 import { Save, X } from 'lucide-react';
@@ -40,14 +45,15 @@ function validateSpecialistField(name, value, existingSpecialists = [], currentI
       if (numE > 50) return 'validation.specialist.experienceTooHigh';
       return null;
 
-    // 🔥 ЭТАП 12: case 'rating' УДАЛЁН
+    // 🔥 ЭТАП 12: case 'rating' УДАЛЁН — рейтинг рассчитывается автоматически
 
     case 'serviceIds':
       return !Array.isArray(value) || value.length === 0 ? 'validation.specialist.servicesEmpty' : null;
 
-    // 🔥 ЭТАП 5.3: Валидация EN-полей
+    // 🔥 ЭТАП 5.3: Валидация EN-полей (опциональны, но с ограничением длины)
     case 'fullNameEn':
       return value && value.trim().length > 100 ? 'validation.specialist.nameTooLong' : null;
+
     case 'positionEn':
       return value && value.trim().length > 50 ? 'validation.specialist.positionTooLong' : null;
 
@@ -56,6 +62,7 @@ function validateSpecialistField(name, value, existingSpecialists = [], currentI
   }
 }
 
+// === ВАЛИДАЦИЯ ВСЕЙ ФОРМЫ ===
 function validateAllSpecialistFields(formData, existingSpecialists, currentId) {
   const errors = {};
   Object.keys(formData).forEach((key) => {
@@ -75,6 +82,7 @@ export default function SpecialistForm({
 }) {
   const { t } = useLanguage();
 
+  // === НАЧАЛЬНОЕ СОСТОЯНИЕ ФОРМЫ ===
   // 🔥 ЭТАП 12: rating УДАЛЁН из formData
   const [formData, setFormData] = useState({
     fullName: '',
@@ -87,6 +95,7 @@ export default function SpecialistForm({
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
 
+  // === ИНИЦИАЛИЗАЦИЯ ПРИ РЕЖИМЕ EDIT ===
   useEffect(() => {
     if (mode === 'edit' && specialist) {
       setFormData({
@@ -102,6 +111,7 @@ export default function SpecialistForm({
     }
   }, [mode, specialist]);
 
+  // === ОБРАБОТЧИК ИЗМЕНЕНИЯ ПОЛЯ ===
   const handleChange = (name, value) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
     if (touched[name]) {
@@ -112,6 +122,7 @@ export default function SpecialistForm({
     }
   };
 
+  // === ОБРАБОТЧИК TOGGLE ДЛЯ УСЛУГ ===
   const handleServiceToggle = (serviceId) => {
     setFormData((prev) => {
       const newIds = prev.serviceIds.includes(serviceId)
@@ -130,6 +141,7 @@ export default function SpecialistForm({
     }
   };
 
+  // === ОБРАБОТЧИК ПОТЕРИ ФОКУСА ===
   const handleBlur = (name) => {
     setTouched((prev) => ({ ...prev, [name]: true }));
     setErrors((prev) => ({
@@ -138,6 +150,7 @@ export default function SpecialistForm({
     }));
   };
 
+  // === ОБРАБОТЧИК ОТПРАВКИ ФОРМЫ ===
   const handleSubmit = (e) => {
     e.preventDefault();
     const allErrors = validateAllSpecialistFields(formData, existingSpecialists, specialist?.id);
@@ -204,9 +217,16 @@ export default function SpecialistForm({
         />
       </div>
 
-      {/* 🔥 ЭТАП 5.3: Поля для английского языка */}
+      {/* 🔥 ЭТАП 5.3 + 13: Поля для английского языка */}
       <div className="specialist-form__divider" style={{ marginTop: 'var(--spacing-md, 16px)' }}>
-        <h4 style={{ fontSize: 'var(--font-size-base, 1rem)', color: 'var(--color-text-muted, #6b5d4f)', marginBottom: 'var(--spacing-sm, 8px)' }}>
+        <h4
+          style={{
+            fontSize: 'var(--font-size-base, 1rem)',
+            color: 'var(--color-text-muted, #6b5d4f)',
+            marginBottom: 'var(--spacing-sm, 8px)',
+          }}
+        >
+          {/* 🔥 ЭТАП 13: Используется t() вместо хардкода ключа */}
           {t('admin.specialists.form.englishVersion')}
         </h4>
       </div>
@@ -278,11 +298,21 @@ export default function SpecialistForm({
         </span>
       </div>
 
+      {/* === КНОПКИ ДЕЙСТВИЙ === */}
       <div className="specialist-form__actions">
-        <Button type="button" variant="outline" leftIcon={<X size={16} />} onClick={onCancel}>
+        <Button
+          type="button"
+          variant="outline"
+          leftIcon={<X size={16} />}
+          onClick={onCancel}
+        >
           {t('common.cancel')}
         </Button>
-        <Button type="submit" variant="primary" leftIcon={<Save size={16} />}>
+        <Button
+          type="submit"
+          variant="primary"
+          leftIcon={<Save size={16} />}
+        >
           {submitButtonText}
         </Button>
       </div>

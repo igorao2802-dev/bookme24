@@ -10,6 +10,7 @@
  * 🔥 ЭТАП 7.6: Локализация Toast-уведомлений
  * 🔥 ЭТАП 5.3: Добавлена поддержка двуязычных полей (fullNameEn, positionEn)
  * 🔥 ЭТАП 12: Удалена валидация rating, дефолтное значение 4.5 при создании
+ * 🔥 ИСПРАВЛЕНО: Все опечатки в строках валидации (убраны пробелы)
  */
 import { useMemo, useCallback } from "react";
 import { useLocalStorage } from "./useLocalStorage";
@@ -141,7 +142,7 @@ export function useSpecialists(jsonSpecialists = []) {
           ? specialistData.positionEn.trim()
           : "",
         experience: Number(specialistData.experience),
-        // 🔥 ЭТАП 12: Дефолтное значение рейтинга 4.5 (рассчитывается автоматически)
+        //  ЭТАП 12: Дефолтное значение рейтинга 4.5 (рассчитывается автоматически)
         rating: 4.5,
         serviceIds: specialistData.serviceIds,
         isCustom: true,

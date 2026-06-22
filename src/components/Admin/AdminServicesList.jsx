@@ -1,16 +1,15 @@
 /**
- * AdminServicesList.jsx — список услуг с CRUD-операциями
- * 
- * АРХИТЕКТУРНАЯ РОЛЬ:
- * Отображает все услуги (JSON + кастомные) в виде таблицы.
- * Управляет открытием/закрытием модалки добавления/редактирования.
- * 
- * 🔥 ЭТАП 6.3: Таблица услуг с CRUD
- * 🔥 ЭТАП 7.6: Полная локализация через t()
- * 🔥 ЭТАП 8.1: Удалена колонка "Тип" из таблицы
- * 🔥 ИСПРАВЛЕНО: Опечатка closeM odal → closeModal
- * 🔥 ЭТАП 10: Кнопки "Действия" активны для кастомных записей
- */
+AdminServicesList.jsx — список услуг с CRUD-операциями
+АРХИТЕКТУРНАЯ РОЛЬ:
+Отображает все услуги (JSON + кастомные) в виде таблицы.
+Управляет открытием/закрытием модалки добавления/редактирования.
+🔥 ЭТАП 6.3: Таблица услуг с CRUD
+🔥 ЭТАП 7.6: Полная локализация через t()
+🔥 ЭТАП 8.1: Удалена колонка "Тип" из таблицы
+🔥 ЭТАП 20: Разрешено редактирование стандартных услуг
+🔥 ЭТАП 20: Удаление запрещено только для стандартных услуг
+🔥 ИСПРАВЛЕНО: Передача specialists в ServiceModal
+*/
 import { useState } from 'react';
 import { Plus, Edit2, Trash2 } from 'lucide-react';
 import Button from '../UI/Button';
@@ -24,6 +23,7 @@ import './AdminServicesList.css';
 
 export default function AdminServicesList({
   services,
+  specialists = [], // 🔥 ЭТАП 20: список специалистов для назначения
   onAdd,
   onUpdate,
   onDelete,
@@ -70,12 +70,10 @@ export default function AdminServicesList({
     }
   };
 
-  // === ПРОВЕРКА: МОЖНО ЛИ РЕДАКТИРОВАТЬ/УДАЛЯТЬ ===
-  // ПОЧЕМУ проверяем isCustom или префикс 'custom_'?
-  // - JSON-записи (из services.json) не имеют флага isCustom
-  // - Кастомные записи создаются с id 'custom_svc_...' и isCustom: true
-  // - Это защита от случайного удаления стандартного каталога
-  const canModify = (service) => {
+  // 🔥 ЭТАП 20: Разделение прав на редактирование и удаление
+  const canEdit = (service) => true; // Всегда можно редактировать
+  
+  const canDelete = (service) => {
     return service.isCustom || service.id?.startsWith('custom_');
   };
 
@@ -102,6 +100,7 @@ export default function AdminServicesList({
           isOpen={modalState.isOpen}
           mode={modalState.mode}
           service={modalState.service}
+          specialists={specialists} // 🔥 ЭТАП 20: передаём специалистов
           existingServices={services}
           onSave={handleSave}
           onClose={closeModal}
@@ -136,13 +135,13 @@ export default function AdminServicesList({
               <th>{t('admin.services.columns.duration')}</th>
               <th>{t('admin.services.columns.price')}</th>
               <th>{t('admin.services.columns.rating')}</th>
-              {/* 🔥 ЭТАП 8.1: Колонка "Тип" удалена */}
               <th>{t('admin.services.columns.actions')}</th>
             </tr>
           </thead>
           <tbody>
             {services.map((service) => {
-              const isEditable = canModify(service);
+              const isEditable = canEdit(service);
+              const isDeletable = canDelete(service);
               return (
                 <tr key={service.id}>
                   <td className="admin-services-list__name">
@@ -162,7 +161,6 @@ export default function AdminServicesList({
                       ⭐ {service.rating}
                     </span>
                   </td>
-                  {/* 🔥 ЭТАП 8.1: Ячейка "Тип" удалена */}
                   <td>
                     <div className="admin-services-list__actions">
                       <button
@@ -182,9 +180,9 @@ export default function AdminServicesList({
                         type="button"
                         className="admin-services-list__action-btn admin-services-list__action-btn--danger"
                         onClick={() => handleDelete(service)}
-                        disabled={!isEditable}
+                        disabled={!isDeletable}
                         title={
-                          isEditable
+                          isDeletable
                             ? t('common.delete')
                             : t('admin.services.cannotDeleteStandard')
                         }
@@ -205,6 +203,7 @@ export default function AdminServicesList({
         isOpen={modalState.isOpen}
         mode={modalState.mode}
         service={modalState.service}
+        specialists={specialists} //  ЭТАП 20: передаём специалистов
         existingServices={services}
         onSave={handleSave}
         onClose={closeModal}

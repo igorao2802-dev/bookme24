@@ -1,17 +1,9 @@
 /**
  * ServiceForm.jsx — форма добавления/редактирования услуги
  * 
- * АРХИТЕКТУРНАЯ РОЛЬ:
- * Презентационный компонент с локальным состоянием формы.
- * Владеет состоянием полей (formData) и ошибок (errors)
- * НЕ взаимодействует с localStorage напрямую
- * При сохранении вызывает onSave(data) — родитель решает, что делать
- * 
- * 🔥 ЭТАП 6.3: Форма с валидацией и двумя режимами
- * 🔥 ЭТАП 7.8: Полная локализация через useLanguage
- * 🔥 ЭТАП 8.1: Добавлены поля EN (nameEn, descriptionEn)
- * 🔥 ЭТАП 9: Добавлено поле назначения специалистов (specialistIds)
- * 🔥 ЭТАП 12: Убрано поле "Рейтинг" (рассчитывается автоматически)
+ * 🔥 ИСПРАВЛЕНО: Все опечатки устранены
+ * 🔥 ЭТАП 12: Удалено поле "Рейтинг"
+ * 🔥 ЭТАП 9: specialistIds опционален
  */
 import { useState, useEffect } from 'react';
 import { Save, X } from 'lucide-react';
@@ -93,15 +85,15 @@ function validateServiceField(name, value, existingServices = [], currentId = nu
       return null;
     }
 
-    // 🔥 ЭТАП 9: Валидация specialistIds (опционально)
+    // 🔥 ЭТАП 9: specialistIds опционален
     case 'specialistIds':
       return null;
 
-    // 🔥 ЭТАП 8.1: Валидация EN-полей
     case 'nameEn':
       return value && value.trim().length > 100
         ? 'validation.service.nameTooLong'
         : null;
+
     case 'descriptionEn':
       return value && value.trim().length > FIELD_LIMITS.COMMENT_MAX_LENGTH
         ? 'validation.service.descriptionTooLong'
@@ -112,7 +104,6 @@ function validateServiceField(name, value, existingServices = [], currentId = nu
   }
 }
 
-// === ВАЛИДАЦИЯ ВСЕЙ ФОРМЫ ===
 function validateAllFields(formData, existingServices, currentId) {
   const errors = {};
   Object.keys(formData).forEach((key) => {
@@ -125,29 +116,27 @@ function validateAllFields(formData, existingServices, currentId) {
 export default function ServiceForm({
   mode = 'add',
   service = null,
-  specialists = [], // 🔥 ЭТАП 9: новый prop
+  specialists = [],
   existingServices = [],
   onSave,
   onCancel,
 }) {
   const { t } = useLanguage();
 
-  // === НАЧАЛЬНОЕ СОСТОЯНИЕ ФОРМЫ ===
-  // 🔥 ЭТАП 12: rating УДАЛЁН из formData
+  //  ЭТАП 12: rating УДАЛЁН
   const [formData, setFormData] = useState({
     name: '',
     category: '',
     description: '',
     duration: '',
     price: '',
-    specialistIds: [], //  ЭТАП 9
+    specialistIds: [],
     nameEn: '',
     descriptionEn: '',
   });
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
 
-  // === ИНИЦИАЛИЗАЦИЯ ПРИ РЕЖИМЕ EDIT ===
   useEffect(() => {
     if (mode === 'edit' && service) {
       setFormData({
@@ -156,7 +145,7 @@ export default function ServiceForm({
         description: service.description || '',
         duration: service.duration !== undefined ? String(service.duration) : '',
         price: service.price !== undefined ? String(service.price) : '',
-        specialistIds: service.specialistIds || [], // 🔥 ЭТАП 9
+        specialistIds: service.specialistIds || [],
         nameEn: service.nameEn || '',
         descriptionEn: service.descriptionEn || '',
       });
@@ -165,7 +154,6 @@ export default function ServiceForm({
     }
   }, [mode, service]);
 
-  // === ЛОКАЛИЗОВАННЫЕ ОПЦИИ КАТЕГОРИЙ ===
   const categoryOptions = [
     { value: '', label: t('admin.services.form.selectCategory') },
     ...Object.values(SERVICE_CATEGORIES).map((cat) => ({
@@ -174,7 +162,6 @@ export default function ServiceForm({
     })),
   ];
 
-  // === ОБРАБОТЧИК ИЗМЕНЕНИЯ ПОЛЯ ===
   const handleChange = (name, value) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
     if (touched[name]) {
@@ -183,14 +170,12 @@ export default function ServiceForm({
     }
   };
 
-  // === ОБРАБОТЧИК ПОТЕРИ ФОКУСА ===
   const handleBlur = (name) => {
     setTouched((prev) => ({ ...prev, [name]: true }));
     const errorKey = validateServiceField(name, formData[name], existingServices, service?.id);
     setErrors((prev) => ({ ...prev, [name]: errorKey }));
   };
 
-  // 🔥 ЭТАП 9: Обработчик toggle для специалистов
   const handleSpecialistToggle = (specialistId) => {
     setFormData((prev) => {
       const newSpecialistIds = prev.specialistIds.includes(specialistId)
@@ -200,7 +185,6 @@ export default function ServiceForm({
     });
   };
 
-  // === ОБРАБОТЧИК ОТПРАВКИ ФОРМЫ ===
   const handleSubmit = (e) => {
     e.preventDefault();
     const allErrors = validateAllFields(formData, existingServices, service?.id);
@@ -215,22 +199,21 @@ export default function ServiceForm({
       return;
     }
 
-    // 🔥 ЭТАП 12: rating УДАЛЁН из передаваемого объекта
     const serviceData = {
       name: formData.name.trim(),
       category: formData.category,
       description: formData.description.trim(),
       duration: Number(formData.duration),
       price: Number(formData.price),
-      specialistIds: formData.specialistIds, // 🔥 ЭТАП 9
+      specialistIds: formData.specialistIds,
       nameEn: formData.nameEn.trim(),
       descriptionEn: formData.descriptionEn.trim(),
     };
 
-    onSave(serviceData);
+    const result = onSave(serviceData);
+    return result;
   };
 
-  // === ТЕКСТ КНОПКИ В ЗАВИСИМОСТИ ОТ РЕЖИМА ===
   const isEditMode = mode === 'edit';
   const submitButtonText = isEditMode
     ? t('admin.services.form.update')
@@ -238,7 +221,6 @@ export default function ServiceForm({
 
   return (
     <form className="service-form" onSubmit={handleSubmit} noValidate>
-      {/* === НАЗВАНИЕ === */}
       <Input
         label={t('admin.services.form.name')}
         name="name"
@@ -251,7 +233,6 @@ export default function ServiceForm({
         required
       />
 
-      {/* === КАТЕГОРИЯ === */}
       <Select
         label={t('admin.services.form.category')}
         name="category"
@@ -263,7 +244,6 @@ export default function ServiceForm({
         required
       />
 
-      {/* === ОПИСАНИЕ === */}
       <div className="service-form__field">
         <label className="input__label" htmlFor="service-description">
           {t('admin.services.form.description')}
@@ -299,7 +279,6 @@ export default function ServiceForm({
         </span>
       </div>
 
-      {/* === ДЛИТЕЛЬНОСТЬ И ЦЕНА (в одну строку) === */}
       <div className="service-form__row">
         <Input
           label={t('admin.services.form.duration')}
@@ -330,7 +309,7 @@ export default function ServiceForm({
         />
       </div>
 
-      {/* 🔥 ЭТАП 9: ВЫБОР СПЕЦИАЛИСТОВ */}
+      {/* 🔥 ВЫБОР СПЕЦИАЛИСТОВ */}
       <div className="service-form__divider">
         <h4
           style={{
@@ -341,7 +320,9 @@ export default function ServiceForm({
         >
           {t('admin.services.form.specialists')}
         </h4>
-        <p className="service-form__hint">{t('admin.services.form.specialistsHint')}</p>
+        <p className="service-form__hint">
+          {t('admin.services.form.specialistsHint')}
+        </p>
       </div>
 
       <div className="service-form__field">
@@ -390,7 +371,7 @@ export default function ServiceForm({
         </span>
       </div>
 
-      {/* 🔥 ЭТАП 8.1: СЕКЦИЯ АНГЛИЙСКОЙ ВЕРСИИ */}
+      {/* 🔥 СЕКЦИЯ АНГЛИЙСКОЙ ВЕРСИИ */}
       <div className="service-form__divider">
         <h4
           style={{
@@ -438,7 +419,6 @@ export default function ServiceForm({
         )}
       </div>
 
-      {/* === КНОПКИ ДЕЙСТВИЙ === */}
       <div className="service-form__actions">
         <Button
           type="button"

@@ -1,46 +1,41 @@
 /**
- * SpecialistForm.css — стили для формы специалиста
+ * ServiceForm.css — стили для формы услуги
  * BEM-методология + адаптивность + поддержка тёмной темы
  * 
- * 🔥 ЭТАП 14: Увеличены отступы между чекбоксами услуг
- * 🔥 ЭТАП 15: Добавлены стили кнопок действий (аналогично ServiceForm)
- * 🔥 ИСПРАВЛЕНО: Все классы переименованы на specialist-form__* (совпадают с JSX)
+ * 🔥 ИСПРАВЛЕНО: Отступы между чекбоксами специалистов
  */
 
-/* ═══════════════════════════════════════════════
-   ОСНОВНОЙ КОНТЕЙНЕР ФОРМЫ
-   ═══════════════════════════════════════════════ */
-.specialist-form {
+/* === ОСНОВНАЯ ФОРМА === */
+.service-form {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-md, 16px);
+  gap: var(--spacing-lg, 24px);
   padding: var(--spacing-lg, 24px);
 }
 
 /* === СТРОКА С ДВУМЯ ПОЛЯМИ === */
-.specialist-form__row {
+.service-form__row {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--spacing-md, 16px);
 }
 
-/* === ПОЛЕ ФОРМЫ (для textarea и кастомных блоков) === */
-.specialist-form__field {
+/* === ПОЛЕ ФОРМЫ === */
+.service-form__field {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-xs, 4px);
-  position: relative;
 }
 
 /* === ПОДСКАЗКА === */
-.specialist-form__hint {
+.service-form__hint {
   font-size: var(--font-size-sm, 0.875rem);
   color: var(--color-text-muted, #6b5d4f);
   margin: 0;
 }
 
 /* === ПУСТОЕ СОСТОЯНИЕ === */
-.specialist-form__empty {
+.service-form__empty {
   font-size: var(--font-size-sm, 0.875rem);
   color: var(--color-text-subtle, #8a7968);
   padding: var(--spacing-md, 16px);
@@ -50,23 +45,19 @@
   font-style: italic;
 }
 
-/* === СЧЁТЧИК ВЫБРАННЫХ УСЛУГ === */
-.specialist-form__counter {
+/* === СЧЁТЧИК === */
+.service-form__counter {
   font-size: var(--font-size-xs, 0.75rem);
   color: var(--color-text-muted, #6b5d4f);
   text-align: right;
   margin-top: var(--spacing-xs, 4px);
 }
 
-/* ═══════════════════════════════════════════════
-   🔥 ЭТАП 14: СЕТКА CHECKBOX УСЛУГ
-   Увеличен gap между элементами для читаемости
-   ═══════════════════════════════════════════════ */
-.specialist-form__services-grid {
+/* 🔥 ИСПРАВЛЕНО: СЕТКА CHECKBOX СПЕЦИАЛИСТОВ */
+.service-form__specialists-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  /* 🔥 Увеличен gap с 8px до 16px */
-  gap: var(--spacing-md, 16px);
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: var(--spacing-sm, 12px);
   max-height: 300px;
   overflow-y: auto;
   padding: var(--spacing-md, 16px);
@@ -75,8 +66,8 @@
   border-radius: var(--radius-md, 8px);
 }
 
-/* === ОДИН CHECKBOX УСЛУГИ === */
-.specialist-form__service-checkbox {
+/* 🔥 ИСПРАВЛЕНО: ОДИН CHECKBOX СПЕЦИАЛИСТА */
+.service-form__specialist-checkbox {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-xs, 4px);
@@ -88,45 +79,63 @@
   transition: all var(--transition-fast, 150ms ease);
 }
 
-.specialist-form__service-checkbox:hover {
+.service-form__specialist-checkbox:hover {
   border-color: var(--color-primary-400, #c9a88c);
   background: var(--color-primary-soft, #fbf5ef);
 }
 
 /* === СОСТОЯНИЕ "ВЫБРАНО" === */
-.specialist-form__service-checkbox--checked {
+.service-form__specialist-checkbox--checked {
   background: var(--color-primary-soft, #fbf5ef);
   border-color: var(--color-primary-600, #9c7558);
 }
 
-.specialist-form__service-checkbox--checked .specialist-form__service-name {
+.service-form__specialist-checkbox--checked .service-form__specialist-name {
   color: var(--color-primary-700, #7f5e44);
   font-weight: 600;
 }
 
-/* === САМ INPUT CHECKBOX === */
-.specialist-form__checkbox-input {
+/* === INPUT CHECKBOX === */
+.service-form__checkbox-input {
   width: 18px;
   height: 18px;
   cursor: pointer;
   accent-color: var(--color-primary-600, #9c7558);
   flex-shrink: 0;
-  margin-bottom: 4px;
+  margin: 0;
 }
 
-/* === НАЗВАНИЕ УСЛУГИ === */
-.specialist-form__service-name {
+/* === ИМЯ СПЕЦИАЛИСТА === */
+.service-form__specialist-name {
   font-size: var(--font-size-sm, 0.875rem);
-  font-weight: 500;
+  font-weight: 600;
   color: var(--color-text, #3d2f26);
+  user-select: none;
+  word-break: break-word;
+}
+
+/* === ДОЛЖНОСТЬ СПЕЦИАЛИСТА === */
+.service-form__specialist-position {
+  font-size: var(--font-size-xs, 0.75rem);
+  color: var(--color-text-muted, #6b5d4f);
   user-select: none;
 }
 
-/* ═══════════════════════════════════════════════
-   🔥 ЭТАП 15: КНОПКИ ДЕЙСТВИЙ
-   Скопировано из ServiceForm.css для единообразия
-   ═══════════════════════════════════════════════ */
-.specialist-form__actions {
+/* === РАЗДЕЛИТЕЛЬ === */
+.service-form__divider {
+  margin-top: var(--spacing-md, 16px);
+  padding-top: var(--spacing-md, 16px);
+  border-top: 1px solid var(--color-border, #e8dcc4);
+}
+
+.service-form__divider h4 {
+  font-size: var(--font-size-base, 1rem);
+  color: var(--color-text-muted, #6b5d4f);
+  margin: 0 0 var(--spacing-sm, 8px) 0;
+}
+
+/* === КНОПКИ ДЕЙСТВИЙ === */
+.service-form__actions {
   display: flex;
   justify-content: flex-end;
   gap: var(--spacing-sm, 8px);
@@ -135,99 +144,91 @@
   margin-top: var(--spacing-sm, 8px);
 }
 
-/* === АНИМАЦИЯ ПОЯВЛЕНИЯ ОШИБОК === */
-.input__message--error {
-  animation: slideDown 200ms ease-out;
+/* ═══════════════════════════════════════════════
+   ПОДДЕРЖКА ТЁМНОЙ ТЕМЫ
+   ═══════════════════════════════════════════════ */
+[data-theme="dark"] .service-form__hint {
+  color: var(--color-text-muted, #b5a28d);
 }
 
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+[data-theme="dark"] .service-form__empty {
+  color: var(--color-text-subtle, #8a7968);
+  background: var(--color-bg, #1a1410);
+}
+
+[data-theme="dark"] .service-form__counter {
+  color: var(--color-text-muted, #b5a28d);
+}
+
+[data-theme="dark"] .service-form__specialists-grid {
+  background: var(--color-bg, #1a1410);
+  border-color: var(--color-border, #4a3a2a);
+}
+
+[data-theme="dark"] .service-form__specialist-checkbox {
+  background: var(--color-surface, #2d2419);
+  border-color: var(--color-border, #4a3a2a);
+}
+
+[data-theme="dark"] .service-form__specialist-checkbox:hover {
+  border-color: var(--color-primary-400, #c9a88c);
+  background: var(--color-primary-soft, #3d2f26);
+}
+
+[data-theme="dark"] .service-form__specialist-checkbox--checked {
+  background: var(--color-primary-soft, #3d2f26);
+  border-color: var(--color-primary-600, #9c7558);
+}
+
+[data-theme="dark"]
+  .service-form__specialist-checkbox--checked
+  .service-form__specialist-name {
+  color: var(--color-primary-400, #c9a88c);
+}
+
+[data-theme="dark"] .service-form__specialist-name {
+  color: var(--color-text, #f2ebe0);
+}
+
+[data-theme="dark"] .service-form__specialist-position {
+  color: var(--color-text-muted, #b5a28d);
+}
+
+[data-theme="dark"] .service-form__checkbox-input {
+  accent-color: var(--color-primary-400, #c9a88c);
+}
+
+[data-theme="dark"] .service-form__divider {
+  border-top-color: var(--color-border, #4a3a2a);
+}
+
+[data-theme="dark"] .service-form__actions {
+  border-top-color: var(--color-border, #4a3a2a);
 }
 
 /* ═══════════════════════════════════════════════
    АДАПТИВНОСТЬ
    ═══════════════════════════════════════════════ */
 @media (max-width: 640px) {
-  .specialist-form {
+  .service-form {
     padding: var(--spacing-md, 16px);
   }
 
-  .specialist-form__row {
+  .service-form__row {
     grid-template-columns: 1fr;
   }
 
-  .specialist-form__services-grid {
+  .service-form__specialists-grid {
     grid-template-columns: 1fr;
     max-height: 250px;
   }
 
-  .specialist-form__actions {
+  .service-form__actions {
     flex-direction: column-reverse;
   }
 
-  .specialist-form__actions button {
+  .service-form__actions button {
     width: 100%;
     justify-content: center;
   }
-}
-
-/* ═══════════════════════════════════════════════
-   🔥 ПОДДЕРЖКА ТЁМНОЙ ТЕМЫ
-   ═══════════════════════════════════════════════ */
-[data-theme="dark"] .specialist-form__hint {
-  color: var(--color-text-muted, #b5a28d);
-}
-
-[data-theme="dark"] .specialist-form__empty {
-  color: var(--color-text-subtle, #8a7968);
-  background: var(--color-bg, #1a1410);
-}
-
-[data-theme="dark"] .specialist-form__counter {
-  color: var(--color-text-muted, #b5a28d);
-}
-
-[data-theme="dark"] .specialist-form__services-grid {
-  background: var(--color-bg, #1a1410);
-  border-color: var(--color-border, #4a3a2a);
-}
-
-[data-theme="dark"] .specialist-form__service-checkbox {
-  background: var(--color-surface, #2d2419);
-  border-color: var(--color-border, #4a3a2a);
-}
-
-[data-theme="dark"] .specialist-form__service-checkbox:hover {
-  border-color: var(--color-primary-400, #c9a88c);
-  background: var(--color-primary-soft, #3d2f26);
-}
-
-[data-theme="dark"] .specialist-form__service-checkbox--checked {
-  background: var(--color-primary-soft, #3d2f26);
-  border-color: var(--color-primary-600, #9c7558);
-}
-
-[data-theme="dark"]
-  .specialist-form__service-checkbox--checked
-  .specialist-form__service-name {
-  color: var(--color-primary-400, #c9a88c);
-}
-
-[data-theme="dark"] .specialist-form__service-name {
-  color: var(--color-text, #f2ebe0);
-}
-
-[data-theme="dark"] .specialist-form__checkbox-input {
-  accent-color: var(--color-primary-400, #c9a88c);
-}
-
-[data-theme="dark"] .specialist-form__actions {
-  border-top-color: var(--color-border, #4a3a2a);
 }

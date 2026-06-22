@@ -1,5 +1,5 @@
 /**
- * ServiceModal.jsx — модальное окно для формы услуги
+ * SpecialistModal.jsx — модальное окно для формы специалиста
  * 
  * АРХИТЕКТУРНАЯ РОЛЬ:
  * Управляет состоянием открытия/закрытия модального окна.
@@ -8,70 +8,68 @@
  * 🔥 ИСПРАВЛЕНИЕ 1.4: Заголовок только здесь
  * 🔥 ЭТАП 7.8: Полная локализация
  * 🔥 ИСПРАВЛЕНИЕ 1.6: Корректная обработка результата сохранения
- * 🔥 ЭТАП 9: Передаёт список специалистов в ServiceForm
+ * 🔥 ИСПРАВЛЕНО: Безопасный доступ к specialist?.id
  */
 import { useRef } from 'react';
 import Modal from '../UI/Modal';
-import ServiceForm from './ServiceForm';
+import SpecialistForm from './SpecialistForm';
 import { useLanguage } from '../../hooks/useLanguage';
 
-export default function ServiceModal({
+export default function SpecialistModal({
   isOpen,
   mode = 'add',
-  service = null,
-  specialists = [], // 🔥 ЭТАП 9: новый prop
-  existingServices = [],
+  specialist = null,
+  services = [],
+  existingSpecialists = [],
   onSave,
   onClose,
 }) {
   const { t } = useLanguage();
   const isDirtyRef = useRef(false);
 
-  // === ЗАГОЛОВОК В ЗАВИСИМОСТИ ОТ РЕЖИМА ===
-  const modalTitle =
-    mode === 'add'
-      ? t('admin.services.form.addTitle')
-      : t('admin.services.form.editTitle');
-
-  // === ОБРАБОТЧИК ЗАКРЫТИЯ С ПРОВЕРКОЙ СОСТОЯНИЯ ===
-  const handleClose = () => {
-    if (isDirtyRef.current) {
-      const confirmed = window.confirm(t('admin.services.form.unsavedChanges'));
-      if (!confirmed) return;
-    }
-    onClose();
-  };
-
-  // === ОБРАБОТЧИК СОХРАНЕНИЯ ===
-  const handleSave = (serviceData) => {
-    const result = onSave(serviceData);
-    if (result?.success) {
+  // 🔥 ИСПРАВЛЕНИЕ 1.6: обрабатываем результат сохранения
+  const handleSave = (specialistData) => {
+    const result = onSave(specialistData);
+    if (result?.success !== false) {
       isDirtyRef.current = false;
       onClose();
     }
   };
 
-  // === ОТСЛЕЖИВАНИЕ ИЗМЕНЕНИЙ ===
+  const handleClose = () => {
+    if (isDirtyRef.current) {
+      const confirmed = window.confirm(t('admin.specialists.form.unsavedChanges'));
+      if (!confirmed) return;
+    }
+    isDirtyRef.current = false;
+    onClose();
+  };
+
   const handleFormChange = () => {
     isDirtyRef.current = true;
   };
+
+  const title = mode === 'edit'
+    ? t('admin.specialists.form.editTitle')
+    : t('admin.specialists.form.addTitle');
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title={modalTitle}
+      title={title}
       size="lg"
     >
-      <ServiceForm
-        mode={mode}
-        service={service}
-        specialists={specialists} // 🔥 ЭТАП 9
-        existingServices={existingServices}
-        onSave={handleSave}
-        onCancel={handleClose}
-        onChange={handleFormChange}
-      />
+      <div onChange={handleFormChange}>
+        <SpecialistForm
+          mode={mode}
+          specialist={specialist}
+          services={services}
+          existingSpecialists={existingSpecialists}
+          onSave={handleSave}
+          onCancel={handleClose}
+        />
+      </div>
     </Modal>
   );
 }

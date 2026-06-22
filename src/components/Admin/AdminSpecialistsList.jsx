@@ -8,11 +8,10 @@
  * 🔥 ЭТАП 6.3: Таблица специалистов с CRUD
  * 🔥 ЭТАП 7.6: Полная локализация через t()
  * 🔥 ЭТАП 8.1: Удалена колонка "Тип" из таблицы
- * 🔥 ЭТАП 11: Tooltip с перечнем услуг при наведении на количество
  * 🔥 ИСПРАВЛЕНО: Опечатка onCl ose → onClose
- * 🔥 ИСПРАВЛЕНО: Стаж теперь отображается корректно (в годах, не в минутах)
+ * 🔥 ЭТАП 10: Кнопки "Действия" активны для кастомных записей
  */
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { Plus, Edit2, Trash2 } from 'lucide-react';
 import Button from '../UI/Button';
 import Badge from '../UI/Badge';
@@ -75,28 +74,12 @@ export default function AdminSpecialistsList({
     return specialist.isCustom || specialist.id?.startsWith('custom_');
   };
 
-  // 🔥 ЭТАП 11: ПОЛУЧЕНИЕ УСЛУГ СПЕЦИАЛИСТА
-  // ПОЧЕМУ useMemo с зависимостью от services?
-  // - Услуги могут обновляться (добавление/удаление)
-  // - При изменении services нужно пересчитать список для каждого специалиста
-  const getSpecialistServices = (specialist) => {
+  // === ПОДСЧЁТ УСЛУГ МАСТЕРА ===
+  const getServiceCount = (specialist) => {
     if (!specialist.serviceIds || !Array.isArray(specialist.serviceIds)) {
-      return [];
+      return 0;
     }
-    return services.filter((s) => specialist.serviceIds.includes(s.id));
-  };
-
-  // 🔥 ЭТАП 11: ФОРМИРОВАНИЕ СТРОКИ С НАЗВАНИЯМИ УСЛУГ ДЛЯ TOOLTIP
-  // ПОЧЕМУ отдельная функция?
-  // - Инкапсулирует логику формирования строки
-  // - Легко переиспользовать в рендере
-  // - Возвращает fallback, если услуг нет
-  const getServiceNamesString = (specialist) => {
-    const specialistServices = getSpecialistServices(specialist);
-    if (specialistServices.length === 0) {
-      return t('admin.specialists.noServicesAssigned') || 'Нет назначенных услуг';
-    }
-    return specialistServices.map((s) => s.name).join(', ');
+    return specialist.serviceIds.length;
   };
 
   // === ПУСТОЕ СОСТОЯНИЕ ===
@@ -164,41 +147,23 @@ export default function AdminSpecialistsList({
           <tbody>
             {specialists.map((specialist) => {
               const isEditable = canModify(specialist);
-              const specialistServices = getSpecialistServices(specialist);
-              const serviceCount = specialistServices.length;
-              // 🔥 ЭТАП 11: Строка с названиями услуг для tooltip
-              const serviceNamesTooltip = getServiceNamesString(specialist);
-
+              const serviceCount = getServiceCount(specialist);
               return (
                 <tr key={specialist.id}>
                   <td className="admin-specialists-list__name">
                     {specialist.fullName}
                   </td>
                   <td>{specialist.position}</td>
-                  {/* 🔥 ИСПРАВЛЕНО: Стаж теперь отображается корректно (в годах) */}
-                  <td>
-                    {t('catalog.specialist.experience', { 
-                      years: specialist.experience 
-                    })}
-                  </td>
+                  <td>{specialist.experience} {t('time.minutes')}</td>
                   <td>
                     <span className="admin-specialists-list__rating">
                       ⭐ {specialist.rating}
                     </span>
                   </td>
-                  {/* 🔥 ЭТАП 11: Ячейка с tooltip, показывающим перечень услуг */}
                   <td>
-                    <div 
-                      className="admin-specialists-list__services-cell"
-                      title={serviceNamesTooltip}
-                    >
-                      <Badge 
-                        variant={serviceCount > 0 ? 'default' : 'warning'} 
-                        size="sm"
-                      >
-                        {serviceCount}
-                      </Badge>
-                    </div>
+                    <Badge variant="default" size="sm">
+                      {serviceCount}
+                    </Badge>
                   </td>
                   {/* 🔥 ЭТАП 8.1: Ячейка "Тип" удалена */}
                   <td>

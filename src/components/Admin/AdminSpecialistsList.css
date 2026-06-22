@@ -1,11 +1,9 @@
 /**
- * Стили для AdminSpecialistsList
- * BEM-методология + адаптивность
- * 
- * 🔥 ЭТАП 6.3: Таблица специалистов с CRUD
- * Структура аналогична AdminServicesList для консистентности UI
- */
-
+Стили для AdminSpecialistsList
+BEM-методология + адаптивность
+🔥 ЭТАП 6.3: Таблица специалистов с CRUD
+Структура аналогична AdminServicesList для консистентности UI
+*/
 .admin-specialists-list {
   display: flex;
   flex-direction: column;
@@ -187,6 +185,7 @@
     flex-shrink: 0;
   }
 }
+
 /* === ЯЧЕЙКА С УСЛУГАМИ (ЭТАП 11) === */
 .admin-specialists-list__services-cell {
   display: inline-flex;

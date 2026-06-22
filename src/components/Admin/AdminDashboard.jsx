@@ -1,15 +1,21 @@
 /**
  * AdminDashboard.jsx — главная панель администратора
  * 
+ * АРХИТЕКТУРНАЯ РОЛЬ:
+ * Дирижёр админ-панели. Управляет:
+ * - Переключением табов (Записи/Услуги/Специалисты)
+ * - Состоянием фильтров и сортировки
+ * - Открытием/закрытием модалок
+ * 
  * 🔥 ЭТАП 6.3: Интеграция CRUD для услуг и специалистов
  * 🔥 ЭТАП 7.6: Локализация табов через t()
  * 🔥 ЭТАП 8.8: Полная интеграция модалок и таблиц
- * 🔥 ИСПРАВЛЕНО: Опечатки (se tSortBy, onCa ncelBooking, onDelete Specialist)
+ * 🔥 ИСПРАВЛЕНО: Все опечатки (se tSortBy, onCa ncelBooking, onDelete Specialist)
+ * 🔥 ИСПРАВЛЕНО: handleAddService → handleOpenAddService
+ * 🔥 ИСПРАВЛЕНО: Добавлены handleDeleteService и handleDeleteSpecialist
  */
-
 import { useState, useCallback } from 'react';
 import { Calendar, Scissors, Users } from 'lucide-react';
-
 import AdminStats from './AdminStats';
 import AdminFilterPanel from './AdminFilterPanel';
 import AdminBookingsTable from './AdminBookingsTable';
@@ -17,9 +23,7 @@ import AdminServicesList from './AdminServicesList';
 import AdminSpecialistsList from './AdminSpecialistsList';
 import ServiceModal from './ServiceModal';
 import SpecialistModal from './SpecialistModal';
-
-import { useLanguage } from '../../hooks/useLanguage'; // 🔥 ЭТАП 7.6
-
+import { useLanguage } from '../../hooks/useLanguage';
 import './AdminDashboard.css';
 
 export default function AdminDashboard({
@@ -40,7 +44,7 @@ export default function AdminDashboard({
   onUpdateSpecialist,
   onDeleteSpecialist,
 }) {
-  const { t } = useLanguage(); // 🔥 ЭТАП 7.6
+  const { t } = useLanguage();
 
   // === АКТИВНЫЙ ТАБ ===
   const [activeTab, setActiveTab] = useState('bookings');
@@ -61,7 +65,6 @@ export default function AdminDashboard({
     mode: 'add',
     service: null,
   });
-
   const [specialistModal, setSpecialistModal] = useState({
     isOpen: false,
     mode: 'add',
@@ -69,7 +72,6 @@ export default function AdminDashboard({
   });
 
   // === КОНФИГУРАЦИЯ ТАБОВ ===
-  // 🔥 ЭТАП 7.6: локализация через t()
   const ADMIN_TABS = [
     { id: 'bookings', label: t('admin.tabs.bookings'), icon: Calendar },
     { id: 'services', label: t('admin.tabs.services'), icon: Scissors },
@@ -160,12 +162,19 @@ export default function AdminDashboard({
       } else {
         result = onUpdateService(serviceModal.service.id, serviceData);
       }
-
       if (result?.success) {
         handleCloseServiceModal();
       }
     },
     [serviceModal, onAddService, onUpdateService, handleCloseServiceModal]
+  );
+
+  // 🔥 ИСПРАВЛЕНО: Добавлен обработчик удаления услуги
+  const handleDeleteService = useCallback(
+    (serviceId) => {
+      onDeleteService(serviceId);
+    },
+    [onDeleteService]
   );
 
   // === ОБРАБОТЧИКИ МОДАЛКИ СПЕЦИАЛИСТОВ ===
@@ -189,12 +198,19 @@ export default function AdminDashboard({
       } else {
         result = onUpdateSpecialist(specialistModal.specialist.id, specialistData);
       }
-
       if (result?.success) {
         handleCloseSpecialistModal();
       }
     },
     [specialistModal, onAddSpecialist, onUpdateSpecialist, handleCloseSpecialistModal]
+  );
+
+  // 🔥 ИСПРАВЛЕНО: Добавлен обработчик удаления специалиста
+  const handleDeleteSpecialist = useCallback(
+    (specialistId) => {
+      onDeleteSpecialist(specialistId);
+    },
+    [onDeleteSpecialist]
   );
 
   return (
@@ -248,9 +264,10 @@ export default function AdminDashboard({
         {activeTab === 'services' && (
           <AdminServicesList
             services={services}
+            specialists={specialists}
             onAdd={handleOpenAddService}
-            onEdit={handleOpenEditService}
-            onDelete={onDeleteService}
+            onUpdate={handleOpenEditService}
+            onDelete={handleDeleteService}
           />
         )}
 
@@ -260,8 +277,8 @@ export default function AdminDashboard({
             specialists={specialists}
             services={services}
             onAdd={handleOpenAddSpecialist}
-            onEdit={handleOpenEditSpecialist}
-            onDelete={onDeleteSpecialist}
+            onUpdate={handleOpenEditSpecialist}
+            onDelete={handleDeleteSpecialist}
           />
         )}
       </div>
@@ -271,7 +288,7 @@ export default function AdminDashboard({
         isOpen={serviceModal.isOpen}
         mode={serviceModal.mode}
         service={serviceModal.service}
-        specialists={specialists} // 🔥 ИСПРАВЛЕНИЕ 1.5: передаём specialists
+        specialists={specialists}
         existingServices={services}
         onSave={handleSaveService}
         onClose={handleCloseServiceModal}
