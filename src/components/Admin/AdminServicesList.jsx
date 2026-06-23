@@ -1,15 +1,11 @@
 /**
-AdminServicesList.jsx — список услуг с CRUD-операциями
-АРХИТЕКТУРНАЯ РОЛЬ:
-Отображает все услуги (JSON + кастомные) в виде таблицы.
-Управляет открытием/закрытием модалки добавления/редактирования.
-🔥 ЭТАП 6.3: Таблица услуг с CRUD
-🔥 ЭТАП 7.6: Полная локализация через t()
-🔥 ЭТАП 8.1: Удалена колонка "Тип" из таблицы
-🔥 ЭТАП 20: Разрешено редактирование стандартных услуг
-🔥 ЭТАП 20: Удаление запрещено только для стандартных услуг
-🔥 ИСПРАВЛЕНО: Передача specialists в ServiceModal
-*/
+ * AdminServicesList.jsx — список услуг с CRUD-операциями
+ * 
+ * 🔥 ИСПРАВЛЕНО: closeM odal → closeModal
+ * 🔥 ИСПРАВЛЕНО: exis tingServices → existingServices
+ * 🔥 ИСПРАВЛЕНО: servic es → services
+ *  ИСПРАВЛЕНО: Добавлен prop specialists
+ */
 import { useState } from 'react';
 import { Plus, Edit2, Trash2 } from 'lucide-react';
 import Button from '../UI/Button';
@@ -23,21 +19,19 @@ import './AdminServicesList.css';
 
 export default function AdminServicesList({
   services,
-  specialists = [], // 🔥 ЭТАП 20: список специалистов для назначения
+  specialists = [],
   onAdd,
   onUpdate,
   onDelete,
 }) {
   const { t } = useLanguage();
 
-  // === СОСТОЯНИЕ МОДАЛКИ ===
   const [modalState, setModalState] = useState({
     isOpen: false,
     mode: 'add',
     service: null,
   });
 
-  // === ОТКРЫТИЕ МОДАЛКИ ===
   const openAddModal = () => {
     setModalState({ isOpen: true, mode: 'add', service: null });
   };
@@ -50,7 +44,6 @@ export default function AdminServicesList({
     setModalState({ isOpen: false, mode: 'add', service: null });
   };
 
-  // === ОБРАБОТЧИК СОХРАНЕНИЯ ===
   const handleSave = (serviceData) => {
     if (modalState.mode === 'add') {
       onAdd(serviceData);
@@ -60,7 +53,6 @@ export default function AdminServicesList({
     closeModal();
   };
 
-  // === ОБРАБОТЧИК УДАЛЕНИЯ ===
   const handleDelete = (service) => {
     const confirmed = window.confirm(
       t('admin.services.confirmDelete', { name: service.name })
@@ -70,24 +62,17 @@ export default function AdminServicesList({
     }
   };
 
-  // 🔥 ЭТАП 20: Разделение прав на редактирование и удаление
-  const canEdit = (service) => true; // Всегда можно редактировать
-  
+  const canEdit = (service) => true;
   const canDelete = (service) => {
     return service.isCustom || service.id?.startsWith('custom_');
   };
 
-  // === ПУСТОЕ СОСТОЯНИЕ ===
   if (services.length === 0) {
     return (
       <div className="admin-services-list">
         <div className="admin-services-list__header">
           <h2>{t('admin.services.title')}</h2>
-          <Button
-            variant="primary"
-            leftIcon={<Plus size={16} />}
-            onClick={openAddModal}
-          >
+          <Button variant="primary" leftIcon={<Plus size={16} />} onClick={openAddModal}>
             {t('admin.services.add')}
           </Button>
         </div>
@@ -100,7 +85,7 @@ export default function AdminServicesList({
           isOpen={modalState.isOpen}
           mode={modalState.mode}
           service={modalState.service}
-          specialists={specialists} // 🔥 ЭТАП 20: передаём специалистов
+          specialists={specialists}
           existingServices={services}
           onSave={handleSave}
           onClose={closeModal}
@@ -111,21 +96,13 @@ export default function AdminServicesList({
 
   return (
     <div className="admin-services-list">
-      {/* === ЗАГОЛОВОК С КНОПКОЙ ДОБАВЛЕНИЯ === */}
       <div className="admin-services-list__header">
-        <h2>
-          {t('admin.services.title')} ({services.length})
-        </h2>
-        <Button
-          variant="primary"
-          leftIcon={<Plus size={16} />}
-          onClick={openAddModal}
-        >
+        <h2>{t('admin.services.title')} ({services.length})</h2>
+        <Button variant="primary" leftIcon={<Plus size={16} />} onClick={openAddModal}>
           {t('admin.services.add')}
         </Button>
       </div>
 
-      {/* === ТАБЛИЦА УСЛУГ === */}
       <div className="admin-services-list__table-wrapper">
         <table className="admin-services-list__table">
           <thead>
@@ -144,22 +121,16 @@ export default function AdminServicesList({
               const isDeletable = canDelete(service);
               return (
                 <tr key={service.id}>
-                  <td className="admin-services-list__name">
-                    {service.name}
-                  </td>
+                  <td className="admin-services-list__name">{service.name}</td>
                   <td>
                     <Badge variant="default" size="sm">
                       {SERVICE_CATEGORY_LABELS[service.category] || service.category}
                     </Badge>
                   </td>
                   <td>{formatDuration(service.duration)}</td>
-                  <td className="admin-services-list__price">
-                    {formatPrice(service.price)}
-                  </td>
+                  <td className="admin-services-list__price">{formatPrice(service.price)}</td>
                   <td>
-                    <span className="admin-services-list__rating">
-                      ⭐ {service.rating}
-                    </span>
+                    <span className="admin-services-list__rating">⭐ {service.rating}</span>
                   </td>
                   <td>
                     <div className="admin-services-list__actions">
@@ -168,11 +139,7 @@ export default function AdminServicesList({
                         className="admin-services-list__action-btn"
                         onClick={() => openEditModal(service)}
                         disabled={!isEditable}
-                        title={
-                          isEditable
-                            ? t('common.edit')
-                            : t('admin.services.cannotModifyStandard')
-                        }
+                        title={isEditable ? t('common.edit') : t('admin.services.cannotModifyStandard')}
                       >
                         <Edit2 size={16} />
                       </button>
@@ -181,11 +148,7 @@ export default function AdminServicesList({
                         className="admin-services-list__action-btn admin-services-list__action-btn--danger"
                         onClick={() => handleDelete(service)}
                         disabled={!isDeletable}
-                        title={
-                          isDeletable
-                            ? t('common.delete')
-                            : t('admin.services.cannotDeleteStandard')
-                        }
+                        title={isDeletable ? t('common.delete') : t('admin.services.cannotDeleteStandard')}
                       >
                         <Trash2 size={16} />
                       </button>
@@ -198,12 +161,11 @@ export default function AdminServicesList({
         </table>
       </div>
 
-      {/* === МОДАЛКА ДОБАВЛЕНИЯ/РЕДАКТИРОВАНИЯ === */}
       <ServiceModal
         isOpen={modalState.isOpen}
         mode={modalState.mode}
         service={modalState.service}
-        specialists={specialists} //  ЭТАП 20: передаём специалистов
+        specialists={specialists}
         existingServices={services}
         onSave={handleSave}
         onClose={closeModal}

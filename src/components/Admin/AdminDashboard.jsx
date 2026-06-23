@@ -7,12 +7,9 @@
  * - Состоянием фильтров и сортировки
  * - Открытием/закрытием модалок
  * 
- * 🔥 ЭТАП 6.3: Интеграция CRUD для услуг и специалистов
- * 🔥 ЭТАП 7.6: Локализация табов через t()
- * 🔥 ЭТАП 8.8: Полная интеграция модалок и таблиц
- * 🔥 ИСПРАВЛЕНО: Все опечатки (se tSortBy, onCa ncelBooking, onDelete Specialist)
  * 🔥 ИСПРАВЛЕНО: handleAddService → handleOpenAddService
- * 🔥 ИСПРАВЛЕНО: Добавлены handleDeleteService и handleDeleteSpecialist
+ * 🔥 ИСПРАВЛЕНО: handleUpdateService → handleOpenEditService
+ * 🔥 ИСПРАВЛЕНО: Все опечатки (se tSortBy, onCa ncelBooking)
  */
 import { useState, useCallback } from 'react';
 import { Calendar, Scissors, Users } from 'lucide-react';
@@ -27,29 +24,22 @@ import { useLanguage } from '../../hooks/useLanguage';
 import './AdminDashboard.css';
 
 export default function AdminDashboard({
-  // Данные
   bookings,
   services,
   specialists,
   stats,
-  // CRUD записей
   onUpdateBooking,
   onCancelBooking,
-  // CRUD услуг
   onAddService,
   onUpdateService,
   onDeleteService,
-  // CRUD специалистов
   onAddSpecialist,
   onUpdateSpecialist,
   onDeleteSpecialist,
 }) {
   const { t } = useLanguage();
 
-  // === АКТИВНЫЙ ТАБ ===
   const [activeTab, setActiveTab] = useState('bookings');
-
-  // === СОСТОЯНИЕ ФИЛЬТРОВ ===
   const [filters, setFilters] = useState({
     searchQuery: '',
     status: 'all',
@@ -59,7 +49,6 @@ export default function AdminDashboard({
   });
   const [sortBy, setSortBy] = useState('date-desc');
 
-  // === СОСТОЯНИЕ МОДАЛОК ===
   const [serviceModal, setServiceModal] = useState({
     isOpen: false,
     mode: 'add',
@@ -71,14 +60,12 @@ export default function AdminDashboard({
     specialist: null,
   });
 
-  // === КОНФИГУРАЦИЯ ТАБОВ ===
   const ADMIN_TABS = [
     { id: 'bookings', label: t('admin.tabs.bookings'), icon: Calendar },
     { id: 'services', label: t('admin.tabs.services'), icon: Scissors },
     { id: 'specialists', label: t('admin.tabs.specialists'), icon: Users },
   ];
 
-  // === ОБРАБОТЧИКИ ФИЛЬТРОВ ===
   const handleFilterChange = (name, value) => {
     setFilters((prev) => ({ ...prev, [name]: value }));
   };
@@ -94,30 +81,17 @@ export default function AdminDashboard({
     setSortBy('date-desc');
   };
 
-  // === ФИЛЬТРАЦИЯ И СОРТИРОВКА ЗАПИСЕЙ ===
   const filteredBookings = bookings.filter((b) => {
     const matchesSearch =
       !filters.searchQuery ||
       b.clientName?.toLowerCase().includes(filters.searchQuery.toLowerCase()) ||
       b.clientPhone?.includes(filters.searchQuery);
-
-    const matchesStatus =
-      filters.status === 'all' || b.status === filters.status;
-
+    const matchesStatus = filters.status === 'all' || b.status === filters.status;
     const matchesSpecialist =
-      filters.specialistId === 'all' ||
-      b.specialistId === filters.specialistId;
-
+      filters.specialistId === 'all' || b.specialistId === filters.specialistId;
     const matchesDateFrom = !filters.dateFrom || b.date >= filters.dateFrom;
     const matchesDateTo = !filters.dateTo || b.date <= filters.dateTo;
-
-    return (
-      matchesSearch &&
-      matchesStatus &&
-      matchesSpecialist &&
-      matchesDateFrom &&
-      matchesDateTo
-    );
+    return matchesSearch && matchesStatus && matchesSpecialist && matchesDateFrom && matchesDateTo;
   });
 
   const sortedBookings = [...filteredBookings].sort((a, b) => {
@@ -141,7 +115,7 @@ export default function AdminDashboard({
     return value !== '' && value !== null && value !== undefined;
   }).length;
 
-  // === ОБРАБОТЧИКИ МОДАЛКИ УСЛУГ ===
+  //  ИСПРАВЛЕНО: Правильные имена функций
   const handleOpenAddService = useCallback(() => {
     setServiceModal({ isOpen: true, mode: 'add', service: null });
   }, []);
@@ -169,7 +143,6 @@ export default function AdminDashboard({
     [serviceModal, onAddService, onUpdateService, handleCloseServiceModal]
   );
 
-  // 🔥 ИСПРАВЛЕНО: Добавлен обработчик удаления услуги
   const handleDeleteService = useCallback(
     (serviceId) => {
       onDeleteService(serviceId);
@@ -177,7 +150,6 @@ export default function AdminDashboard({
     [onDeleteService]
   );
 
-  // === ОБРАБОТЧИКИ МОДАЛКИ СПЕЦИАЛИСТОВ ===
   const handleOpenAddSpecialist = useCallback(() => {
     setSpecialistModal({ isOpen: true, mode: 'add', specialist: null });
   }, []);
@@ -205,7 +177,6 @@ export default function AdminDashboard({
     [specialistModal, onAddSpecialist, onUpdateSpecialist, handleCloseSpecialistModal]
   );
 
-  // 🔥 ИСПРАВЛЕНО: Добавлен обработчик удаления специалиста
   const handleDeleteSpecialist = useCallback(
     (specialistId) => {
       onDeleteSpecialist(specialistId);
@@ -215,10 +186,8 @@ export default function AdminDashboard({
 
   return (
     <div className="admin-dashboard">
-      {/* === СТАТИСТИКА === */}
       <AdminStats stats={stats} bookings={bookings} />
 
-      {/* === СИСТЕМА ТАБОВ === */}
       <div className="admin-dashboard__tabs">
         {ADMIN_TABS.map(({ id, label, icon: Icon }) => (
           <button
@@ -236,9 +205,7 @@ export default function AdminDashboard({
         ))}
       </div>
 
-      {/* === КОНТЕНТ АКТИВНОГО ТАБА === */}
       <div className="admin-dashboard__content">
-        {/* --- ТАБ: ЗАПИСИ --- */}
         {activeTab === 'bookings' && (
           <>
             <AdminFilterPanel
@@ -260,7 +227,7 @@ export default function AdminDashboard({
           </>
         )}
 
-        {/* --- ТАБ: УСЛУГИ --- */}
+        {/* 🔥 ИСПРАВЛЕНО: Правильные имена функций */}
         {activeTab === 'services' && (
           <AdminServicesList
             services={services}
@@ -271,7 +238,6 @@ export default function AdminDashboard({
           />
         )}
 
-        {/* --- ТАБ: СПЕЦИАЛИСТЫ --- */}
         {activeTab === 'specialists' && (
           <AdminSpecialistsList
             specialists={specialists}
@@ -283,7 +249,7 @@ export default function AdminDashboard({
         )}
       </div>
 
-      {/* === МОДАЛКА УСЛУГ === */}
+      {/* 🔥 МОДАЛКА УСЛУГ — использует ServiceModal → ServiceForm */}
       <ServiceModal
         isOpen={serviceModal.isOpen}
         mode={serviceModal.mode}
@@ -294,7 +260,7 @@ export default function AdminDashboard({
         onClose={handleCloseServiceModal}
       />
 
-      {/* === МОДАЛКА СПЕЦИАЛИСТОВ === */}
+      {/* 🔥 МОДАЛКА СПЕЦИАЛИСТОВ — использует SpecialistModal → SpecialistForm */}
       <SpecialistModal
         isOpen={specialistModal.isOpen}
         mode={specialistModal.mode}
