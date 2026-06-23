@@ -133,9 +133,8 @@
     .time-slot-picker__date--selected
   ) {
   border-color: var(--color-primary-400, #c9a88c);
-  border-top-color: transparent;
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-md);
+  background: var(--color-primary-soft, #fbf5ef);
+  box-shadow: 0 4px 8px rgba(61, 47, 38, 0.12);
 }
 
 /* ВЫБРАННАЯ ДАТА */
@@ -154,9 +153,7 @@
 .time-slot-picker__date--selected:hover {
   background: var(--color-primary-700, #7f5e44);
   border-color: var(--color-primary-700, #7f5e44);
-  border-top-color: transparent;
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 4px 8px rgba(61, 47, 38, 0.2);
 }
 
 /* ПРОШЕДШАЯ ДАТА */

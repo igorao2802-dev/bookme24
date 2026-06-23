@@ -1,35 +1,27 @@
 /**
- * SpecialistModal.jsx — модальное окно для формы специалиста
- * 
- * АРХИТЕКТУРНАЯ РОЛЬ:
- * Управляет состоянием открытия/закрытия модального окна.
- * Предотвращает случайное закрытие при несохранённых изменениях.
- * 
- * 🔥 ИСПРАВЛЕНИЕ 1.4: Заголовок только здесь
- * 🔥 ЭТАП 7.8: Полная локализация
- * 🔥 ИСПРАВЛЕНИЕ 1.6: Корректная обработка результата сохранения
- * 🔥 ИСПРАВЛЕНО: Безопасный доступ к specialist?.id
+ * ServiceModal.jsx — модальное окно для формы услуги
+ *
+ * 🔥 ИСПРАВЛЕНО: Корректная передача specialists в форму
  */
 import { useRef } from 'react';
 import Modal from '../UI/Modal';
-import SpecialistForm from './SpecialistForm';
+import ServiceForm from './ServiceForm';
 import { useLanguage } from '../../hooks/useLanguage';
 
-export default function SpecialistModal({
+export default function ServiceModal({
   isOpen,
   mode = 'add',
-  specialist = null,
-  services = [],
-  existingSpecialists = [],
+  service = null,
+  specialists = [],
+  existingServices = [],
   onSave,
   onClose,
 }) {
   const { t } = useLanguage();
   const isDirtyRef = useRef(false);
 
-  // 🔥 ИСПРАВЛЕНИЕ 1.6: обрабатываем результат сохранения
-  const handleSave = (specialistData) => {
-    const result = onSave(specialistData);
+  const handleSave = (serviceData) => {
+    const result = onSave(serviceData);
     if (result?.success !== false) {
       isDirtyRef.current = false;
       onClose();
@@ -38,7 +30,7 @@ export default function SpecialistModal({
 
   const handleClose = () => {
     if (isDirtyRef.current) {
-      const confirmed = window.confirm(t('admin.specialists.form.unsavedChanges'));
+      const confirmed = window.confirm(t('admin.services.form.unsavedChanges'));
       if (!confirmed) return;
     }
     isDirtyRef.current = false;
@@ -49,23 +41,19 @@ export default function SpecialistModal({
     isDirtyRef.current = true;
   };
 
-  const title = mode === 'edit'
-    ? t('admin.specialists.form.editTitle')
-    : t('admin.specialists.form.addTitle');
+  const title =
+    mode === 'edit'
+      ? t('admin.services.form.editTitle')
+      : t('admin.services.form.addTitle');
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={handleClose}
-      title={title}
-      size="lg"
-    >
+    <Modal isOpen={isOpen} onClose={handleClose} title={title} size="lg">
       <div onChange={handleFormChange}>
-        <SpecialistForm
+        <ServiceForm
           mode={mode}
-          specialist={specialist}
-          services={services}
-          existingSpecialists={existingSpecialists}
+          service={service}
+          specialists={specialists}
+          existingServices={existingServices}
           onSave={handleSave}
           onCancel={handleClose}
         />

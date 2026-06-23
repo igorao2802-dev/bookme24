@@ -506,24 +506,6 @@
     "busy": "Busy",
     "minutes": "min"
   },
-  "theme": {
-    "toggle": "Toggle theme",
-    "light": "Light theme",
-    "dark": "Dark theme",
-    "auto": "Auto (by time of day)"
-  },
-  "footer": {
-    "title": "Health & Beauty Salon",
-    "address": "Minsk, Primernaya st., 42",
-    "hours": "Weekdays from 9:00 to 21:00",
-    "contacts": "Contacts",
-    "phone": "+375 (29) 123-45-67",
-    "email": "info@bookme24.by",
-    "online": "Online Booking",
-    "onlineDesc": "bookme24.by — 24/7",
-    "copyright": "© 2026 All rights reserved"
-  }
-,
   "timeSlotPicker": {
     "title": "Choose date and time",
     "visitDate": "Visit date",
@@ -554,4 +536,22 @@
       "5": "Friday",
       "6": "Saturday"
     }
-  }}
+  },
+  "theme": {
+    "toggle": "Toggle theme",
+    "light": "Light theme",
+    "dark": "Dark theme",
+    "auto": "Auto (by time of day)"
+  },
+  "footer": {
+    "title": "Health & Beauty Salon",
+    "address": "Minsk, Primernaya st., 42",
+    "hours": "Weekdays from 9:00 to 21:00",
+    "contacts": "Contacts",
+    "phone": "+375 (29) 123-45-67",
+    "email": "info@bookme24.by",
+    "online": "Online Booking",
+    "onlineDesc": "bookme24.by — 24/7",
+    "copyright": "© 2026 All rights reserved"
+  }
+}

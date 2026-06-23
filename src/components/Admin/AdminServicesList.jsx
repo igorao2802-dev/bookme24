@@ -1,10 +1,11 @@
 /**
  * AdminServicesList.jsx — список услуг с CRUD-операциями
- * 
- * 🔥 ИСПРАВЛЕНО: closeM odal → closeModal
- * 🔥 ИСПРАВЛЕНО: exis tingServices → existingServices
- * 🔥 ИСПРАВЛЕНО: servic es → services
- *  ИСПРАВЛЕНО: Добавлен prop specialists
+ *
+ * 🔥 ИСПРАВЛЕНО:
+ * - Передаётся prop specialists для назначения в форме
+ * - Редактирование разрешено для всех услуг (для стандартных создаётся копия)
+ * - Удаление запрещено только для стандартных услуг
+ * - Строковое сравнение ID для корректной работы со старыми записями
  */
 import { useState } from 'react';
 import { Plus, Edit2, Trash2 } from 'lucide-react';
@@ -55,16 +56,19 @@ export default function AdminServicesList({
 
   const handleDelete = (service) => {
     const confirmed = window.confirm(
-      t('admin.services.confirmDelete', { name: service.name })
+      t('admin.services.confirmDelete', { name: service.name }),
     );
     if (confirmed) {
       onDelete(service.id);
     }
   };
 
-  const canEdit = (service) => true;
+  // 🔥 Редактирование разрешено для всех
+  const canEdit = () => true;
+
+  // 🔥 Удаление только для кастомных
   const canDelete = (service) => {
-    return service.isCustom || service.id?.startsWith('custom_');
+    return service.isCustom || String(service.id).startsWith('custom_');
   };
 
   if (services.length === 0) {
@@ -97,7 +101,9 @@ export default function AdminServicesList({
   return (
     <div className="admin-services-list">
       <div className="admin-services-list__header">
-        <h2>{t('admin.services.title')} ({services.length})</h2>
+        <h2>
+          {t('admin.services.title')} ({services.length})
+        </h2>
         <Button variant="primary" leftIcon={<Plus size={16} />} onClick={openAddModal}>
           {t('admin.services.add')}
         </Button>
@@ -128,9 +134,13 @@ export default function AdminServicesList({
                     </Badge>
                   </td>
                   <td>{formatDuration(service.duration)}</td>
-                  <td className="admin-services-list__price">{formatPrice(service.price)}</td>
+                  <td className="admin-services-list__price">
+                    {formatPrice(service.price)}
+                  </td>
                   <td>
-                    <span className="admin-services-list__rating">⭐ {service.rating}</span>
+                    <span className="admin-services-list__rating">
+                      ⭐ {service.rating}
+                    </span>
                   </td>
                   <td>
                     <div className="admin-services-list__actions">
@@ -139,7 +149,11 @@ export default function AdminServicesList({
                         className="admin-services-list__action-btn"
                         onClick={() => openEditModal(service)}
                         disabled={!isEditable}
-                        title={isEditable ? t('common.edit') : t('admin.services.cannotModifyStandard')}
+                        title={
+                          isEditable
+                            ? t('common.edit')
+                            : t('admin.services.cannotModifyStandard')
+                        }
                       >
                         <Edit2 size={16} />
                       </button>
@@ -148,7 +162,11 @@ export default function AdminServicesList({
                         className="admin-services-list__action-btn admin-services-list__action-btn--danger"
                         onClick={() => handleDelete(service)}
                         disabled={!isDeletable}
-                        title={isDeletable ? t('common.delete') : t('admin.services.cannotDeleteStandard')}
+                        title={
+                          isDeletable
+                            ? t('common.delete')
+                            : t('admin.services.cannotDeleteStandard')
+                        }
                       >
                         <Trash2 size={16} />
                       </button>

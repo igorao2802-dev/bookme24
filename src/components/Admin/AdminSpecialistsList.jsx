@@ -1,15 +1,11 @@
 /**
  * AdminSpecialistsList.jsx — список специалистов с CRUD-операциями
- * 
- * АРХИТЕКТУРНАЯ РОЛЬ:
- * Отображает всех специалистов (JSON + кастомные) в виде таблицы.
- * Управляет открытием/закрытием модалки добавления/редактирования.
- * 
- * 🔥 ЭТАП 6.3: Таблица специалистов с CRUD
- * 🔥 ЭТАП 7.6: Полная локализация через t()
- * 🔥 ЭТАП 8.1: Удалена колонка "Тип" из таблицы
- * 🔥 ИСПРАВЛЕНО: Опечатка onCl ose → onClose
- * 🔥 ЭТАП 10: Кнопки "Действия" активны для кастомных записей
+ *
+ * 🔥 ИСПРАВЛЕНО:
+ * - Редактирование разрешено для всех специалистов
+ * - Удаление только для кастомных
+ * - Строковое сравнение ID
+ * - Tooltip с услугами при наведении
  */
 import { useState } from 'react';
 import { Plus, Edit2, Trash2 } from 'lucide-react';
@@ -29,14 +25,12 @@ export default function AdminSpecialistsList({
 }) {
   const { t } = useLanguage();
 
-  // === СОСТОЯНИЕ МОДАЛКИ ===
   const [modalState, setModalState] = useState({
     isOpen: false,
     mode: 'add',
     specialist: null,
   });
 
-  // === ОТКРЫТИЕ/ЗАКРЫТИЕ МОДАЛКИ ===
   const openAddModal = () => {
     setModalState({ isOpen: true, mode: 'add', specialist: null });
   };
@@ -49,7 +43,6 @@ export default function AdminSpecialistsList({
     setModalState({ isOpen: false, mode: 'add', specialist: null });
   };
 
-  // === СОХРАНЕНИЕ ===
   const handleSave = (specialistData) => {
     if (modalState.mode === 'add') {
       onAdd(specialistData);
@@ -59,22 +52,21 @@ export default function AdminSpecialistsList({
     closeModal();
   };
 
-  // === УДАЛЕНИЕ С ПОДТВЕРЖДЕНИЕМ ===
   const handleDelete = (specialist) => {
     const confirmed = window.confirm(
-      t('admin.specialists.confirmDelete', { name: specialist.fullName })
+      t('admin.specialists.confirmDelete', { name: specialist.fullName }),
     );
     if (confirmed) {
       onDelete(specialist.id);
     }
   };
 
-  // === ПРОВЕРКА ДОСТУПНОСТИ РЕДАКТИРОВАНИЯ ===
-  const canModify = (specialist) => {
-    return specialist.isCustom || specialist.id?.startsWith('custom_');
+  const canEdit = () => true;
+
+  const canDelete = (specialist) => {
+    return specialist.isCustom || String(specialist.id).startsWith('custom_');
   };
 
-  // === ПОДСЧЁТ УСЛУГ МАСТЕРА ===
   const getServiceCount = (specialist) => {
     if (!specialist.serviceIds || !Array.isArray(specialist.serviceIds)) {
       return 0;
@@ -82,17 +74,23 @@ export default function AdminSpecialistsList({
     return specialist.serviceIds.length;
   };
 
-  // === ПУСТОЕ СОСТОЯНИЕ ===
+  // 🔥 Tooltip с перечнем услуг
+  const getServiceNamesString = (specialist) => {
+    if (!specialist.serviceIds || !Array.isArray(specialist.serviceIds)) {
+      return t('admin.specialists.noServicesAssigned') || 'Нет назначенных услуг';
+    }
+    const names = specialist.serviceIds
+      .map((id) => services.find((s) => String(s.id) === String(id))?.name)
+      .filter(Boolean);
+    return names.length > 0 ? names.join(', ') : t('admin.specialists.noServicesAssigned') || 'Нет назначенных услуг';
+  };
+
   if (specialists.length === 0) {
     return (
       <div className="admin-specialists-list">
         <div className="admin-specialists-list__header">
           <h2>{t('admin.specialists.title')}</h2>
-          <Button
-            variant="primary"
-            leftIcon={<Plus size={16} />}
-            onClick={openAddModal}
-          >
+          <Button variant="primary" leftIcon={<Plus size={16} />} onClick={openAddModal}>
             {t('admin.specialists.add')}
           </Button>
         </div>
@@ -116,21 +114,15 @@ export default function AdminSpecialistsList({
 
   return (
     <div className="admin-specialists-list">
-      {/* === ЗАГОЛОВОК === */}
       <div className="admin-specialists-list__header">
         <h2>
           {t('admin.specialists.title')} ({specialists.length})
         </h2>
-        <Button
-          variant="primary"
-          leftIcon={<Plus size={16} />}
-          onClick={openAddModal}
-        >
+        <Button variant="primary" leftIcon={<Plus size={16} />} onClick={openAddModal}>
           {t('admin.specialists.add')}
         </Button>
       </div>
 
-      {/* === ТАБЛИЦА === */}
       <div className="admin-specialists-list__table-wrapper">
         <table className="admin-specialists-list__table">
           <thead>
@@ -140,32 +132,42 @@ export default function AdminSpecialistsList({
               <th>{t('admin.specialists.columns.experience')}</th>
               <th>{t('admin.specialists.columns.rating')}</th>
               <th>{t('admin.specialists.columns.servicesCount')}</th>
-              {/* 🔥 ЭТАП 8.1: Колонка "Тип" удалена */}
               <th>{t('admin.specialists.columns.actions')}</th>
             </tr>
           </thead>
           <tbody>
             {specialists.map((specialist) => {
-              const isEditable = canModify(specialist);
+              const isEditable = canEdit(specialist);
+              const isDeletable = canDelete(specialist);
               const serviceCount = getServiceCount(specialist);
+              const serviceNamesTooltip = getServiceNamesString(specialist);
+
               return (
                 <tr key={specialist.id}>
                   <td className="admin-specialists-list__name">
                     {specialist.fullName}
                   </td>
                   <td>{specialist.position}</td>
-                  <td>{specialist.experience} {t('time.minutes')}</td>
+                  <td>
+                    {t('catalog.specialist.experience', {
+                      years: specialist.experience,
+                    })}
+                  </td>
                   <td>
                     <span className="admin-specialists-list__rating">
                       ⭐ {specialist.rating}
                     </span>
                   </td>
                   <td>
-                    <Badge variant="default" size="sm">
-                      {serviceCount}
-                    </Badge>
+                    <div
+                      className="admin-specialists-list__services-cell"
+                      title={serviceNamesTooltip}
+                    >
+                      <Badge variant="default" size="sm">
+                        {serviceCount}
+                      </Badge>
+                    </div>
                   </td>
-                  {/* 🔥 ЭТАП 8.1: Ячейка "Тип" удалена */}
                   <td>
                     <div className="admin-specialists-list__actions">
                       <button
@@ -185,9 +187,9 @@ export default function AdminSpecialistsList({
                         type="button"
                         className="admin-specialists-list__action-btn admin-specialists-list__action-btn--danger"
                         onClick={() => handleDelete(specialist)}
-                        disabled={!isEditable}
+                        disabled={!isDeletable}
                         title={
-                          isEditable
+                          isDeletable
                             ? t('common.delete')
                             : t('admin.specialists.cannotDeleteStandard')
                         }
@@ -203,7 +205,6 @@ export default function AdminSpecialistsList({
         </table>
       </div>
 
-      {/* === МОДАЛКА === */}
       <SpecialistModal
         isOpen={modalState.isOpen}
         mode={modalState.mode}
