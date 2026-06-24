@@ -58,7 +58,6 @@ export default function BookingList({
   // Раньше при пустом futureBookings показывалось "У вас пока нет записей".
   // Но если есть lastCreatedBooking — запись есть, просто она ещё не попала
   // в отфильтрованный список. Нужно показать её.
-  const hasAnyBookings = displayedFutureBookings.length > 0 || pastBookings.length > 0;
 
   return (
     <div className="booking-list">

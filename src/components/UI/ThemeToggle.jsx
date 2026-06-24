@@ -90,8 +90,7 @@ function isNightTime() {
 }
 
 export default function ThemeToggle() {
-  const { theme, toggleTheme, isDark } = useTheme();
-  
+const { theme, toggleTheme } = useTheme();  
   // === НАХОДИМ ТЕКУЩИЙ РЕЖИМ ===
   const currentTheme = THEMES.find((t) => t.value === theme) || THEMES[0];
   const { Icon, nextLabel } = currentTheme;

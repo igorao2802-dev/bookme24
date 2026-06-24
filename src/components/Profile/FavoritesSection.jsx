@@ -1,9 +1,6 @@
 /**
  * FavoritesSection.jsx — раздел "Избранное" в Личном кабинете
- *
- * 🔥 ИСПРАВЛЕНО: Убран дублирующий заголовок "❤️ Избранное (0)"
- * Оставлен только один заголовок с счётчиком.
- */
+  */
 import { Heart } from 'lucide-react';
 import { useLanguage } from '../../hooks/useLanguage';
 import FavoritesList from '../Catalog/FavoritesList';
@@ -32,11 +29,6 @@ export default function FavoritesSection({
   if (isEmpty) {
     return (
       <section className="favorites-section">
-        {/* 🔥 Единый заголовок без дублирования */}
-        <h2 className="favorites-section__title">
-          <Heart size={24} />
-          {t('profile.sections.favorites')}
-        </h2>
         <EmptyState
           icon={<Heart size={48} />}
           title={t('catalog.favorites.empty')}
@@ -49,12 +41,6 @@ export default function FavoritesSection({
 
   return (
     <section className="favorites-section">
-      {/* 🔥 Единый заголовок с счётчиком — без дублирования */}
-      <h2 className="favorites-section__title">
-        <Heart size={24} />
-        {t('profile.sections.favorites')}
-        <span className="favorites-section__count">({totalCount})</span>
-      </h2>
       <FavoritesList
         services={favoriteServices}
         specialists={favoriteSpecialists}

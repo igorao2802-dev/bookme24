@@ -1,13 +1,11 @@
 /**
- * Безопасная обёртка над localStorage
+ * storageHelper.js — безопасная обёртка над localStorage
  *
  * ПОЧЕМУ обёртка, а не прямой localStorage.getItem?
- * 1. try/catch защищает от битого JSON (не ломает приложение)
- * 2. Обработка QuotaExceededError (переполнение ~5MB)
- * 3. Защита от приватного режима Safari (где localStorage может кидать ошибку)
- * 4. Централизованное логирование ошибок
- *
- * Замечание В.В. к ПР-05: "localStorage — штука капризная, как старый телевизор"
+ * - try/catch защищает от битого JSON (не ломает приложение)
+ * - Обработка QuotaExceededError (переполнение ~5MB)
+ * - Защита от приватного режима Safari
+ * - Централизованное логирование ошибок
  */
 
 /**
@@ -33,8 +31,9 @@ export function safeGetItem(key, fallback = null) {
     // JSON.parse может вернуть null, если в хранилище строка "null"
     const parsed = JSON.parse(raw);
 
-    // Защита от NaN (JSON.parse не парсит NaN, но мало ли)
-    if (parsed !== parsed) {
+    // 🔥 ИСПРАВЛЕНО: Number.isNaN вместо self-compare (parsed !== parsed)
+    // ESLint ругался на no-self-compare
+    if (Number.isNaN(parsed)) {
       console.warn(`[storageHelper] NaN при чтении "${key}", возврат fallback`);
       return fallback;
     }
@@ -65,17 +64,15 @@ export function safeSetItem(key, value) {
     return true;
   } catch (error) {
     // === ОСОБАЯ ОБРАБОТКА QuotaExceededError ===
-    // ПОЧЕМУ это важно? При переполнении (~5MB) пользователь должен знать
     if (
       error.name === "QuotaExceededError" ||
       error.code === 22 ||
       error.code === 1014
     ) {
       console.error(
-        `[storageHelper] Переполнение localStorage при записи "${key}". ` +
+        `[storageHelper] Переполнение localStorage при записи "${key}".` +
           `Рекомендуем очистить старые данные.`,
       );
-      // Здесь можно вызвать глобальное уведомление пользователю
     } else {
       console.error(`[storageHelper] Ошибка записи ключа "${key}":`, error);
     }
@@ -90,6 +87,7 @@ export function safeRemoveItem(key) {
   if (typeof window === "undefined" || !window.localStorage) {
     return false;
   }
+
   try {
     localStorage.removeItem(key);
     return true;
@@ -101,8 +99,6 @@ export function safeRemoveItem(key) {
 
 /**
  * Инициализация хранилища начальными данными (если пусто)
- * ПОЧЕМУ эта функция? Первый запуск приложения — нужно заполнить справочники
- *
  * @param {string} key
  * @param {*} initialData
  * @returns {*} текущее значение в хранилище (или initialData)
@@ -110,7 +106,6 @@ export function safeRemoveItem(key) {
 export function initializeStorage(key, initialData) {
   const existing = safeGetItem(key, null);
 
-  // Если данных нет или они не массив/объект — записываем initialData
   if (existing === null) {
     safeSetItem(key, initialData);
     return initialData;
@@ -121,14 +116,6 @@ export function initializeStorage(key, initialData) {
 
 /**
  * Функция-инициализатор для useState (выполняется 1 раз)
- *
- * ПОЧЕМУ именно так? В React useState(() => ...) вызывается только при
- * первом рендере, а не при каждом. Это оптимизация.
- *
- * Использование в компоненте:
- *   const [bookings, setBookings] = useState(
- *     () => createStateInitializer(STORAGE_KEYS.BOOKINGS, [])
- *   );
  */
 export function createStateInitializer(key, fallback) {
   return safeGetItem(key, fallback);

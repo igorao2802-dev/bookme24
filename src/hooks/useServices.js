@@ -1,15 +1,8 @@
 /**
  * useServices.js — хук для управления каталогом услуг
- *
- * АРХИТЕКТУРНАЯ РОЛЬ:
- * Предоставляет CRUD-операции для услуг.
- * Разделяет JSON-данные (read-only) и кастомные данные (localStorage).
- * Валидирует данные перед сохранением.
- *
- * 🔥 ЭТАП 5.3: Добавлена поддержка двуязычных полей (nameEn, descriptionEn)
- * 🔥 ЭТАП 9: Добавлена поддержка specialistIds
- * 🔥 ЭТАП 20: Разрешено редактирование стандартных услуг (создаётся кастомная копия)
- * 🔥 ЭТАП 20: Удаление стандартных услуг запрещено
+ * - При создании/обновлении услуги автоматически обновляется serviceIds у специалистов
+ * - Разрешено редактирование стандартных услуг (создаётся кастомная копия)
+ * - Удаление стандартных услуг запрещено
  */
 import { useMemo, useCallback } from "react";
 import { useLocalStorage } from "./useLocalStorage";
@@ -25,6 +18,7 @@ function generateServiceId() {
 
 function validateServiceData(data, existingServices = [], currentId = null) {
   const errors = {};
+
   if (!data.name || typeof data.name !== "string" || !data.name.trim()) {
     errors.name = "validation.service.nameRequired";
   } else if (data.name.trim().length > 100) {
@@ -37,17 +31,20 @@ function validateServiceData(data, existingServices = [], currentId = null) {
     );
     if (isDuplicate) errors.name = "validation.service.nameDuplicate";
   }
+
   if (
     !data.category ||
     !Object.values(SERVICE_CATEGORIES).includes(data.category)
   ) {
     errors.category = "validation.service.categoryRequired";
   }
+
   if (!data.description || !data.description.trim()) {
     errors.description = "validation.service.descriptionRequired";
   } else if (data.description.trim().length > 500) {
     errors.description = "validation.service.descriptionTooLong";
   }
+
   if (
     data.duration === undefined ||
     data.duration === null ||
@@ -63,6 +60,7 @@ function validateServiceData(data, existingServices = [], currentId = null) {
           : "validation.service.durationTooLong";
     }
   }
+
   if (data.price === undefined || data.price === null || data.price === "") {
     errors.price = "validation.service.priceRequired";
   } else {
@@ -74,16 +72,19 @@ function validateServiceData(data, existingServices = [], currentId = null) {
           : "validation.service.priceTooHigh";
     }
   }
-  // 🔥 ЭТАП 9: specialistIds опционален
+
+  // specialistIds опционален — может быть пустым массивом
   if (data.specialistIds !== undefined && !Array.isArray(data.specialistIds)) {
     errors.specialistIds = "validation.service.specialistsRequired";
   }
+
   if (data.nameEn && data.nameEn.trim().length > 100) {
     errors.nameEn = "validation.service.nameTooLong";
   }
   if (data.descriptionEn && data.descriptionEn.trim().length > 500) {
     errors.descriptionEn = "validation.service.descriptionTooLong";
   }
+
   return { isValid: Object.keys(errors).length === 0, errors };
 }
 
@@ -93,24 +94,21 @@ export function useServices(jsonServices = []) {
     STORAGE_KEYS.CUSTOM_SERVICES,
     [],
   );
+  //  Храним кастомных специалистов для синхронизации serviceIds
+  const [customSpecialists, setCustomSpecialists] = useLocalStorage(
+    STORAGE_KEYS.CUSTOM_SPECIALISTS,
+    [],
+  );
 
-  // 🔥 ЭТАП 20: Слияние услуг с приоритетом кастомных над стандартными
-  // ПОЧЕМУ такая логика?
-  // - Если менеджер отредактировал стандартную услугу, создаётся кастомная копия
-  // - Кастомная копия имеет тот же id, что и стандартная (для замены)
-  // - При рендере кастомная перекрывает стандартную
+  //  Слияние: кастомные услуги перекрывают стандартные с тем же id
   const services = useMemo(() => {
     const customMap = new Map(customServices.map((s) => [s.id, s]));
     const merged = [];
 
-    // Сначала добавляем все кастомные услуги
     customServices.forEach((s) => {
-      if (!s.originalId) {
-        merged.push(s);
-      }
+      if (!s.originalId) merged.push(s);
     });
 
-    // Затем добавляем JSON-услуги, заменяя их кастомными копиями если есть
     jsonServices.forEach((s) => {
       if (customMap.has(s.id)) {
         merged.push(customMap.get(s.id));
@@ -122,6 +120,39 @@ export function useServices(jsonServices = []) {
     return merged;
   }, [customServices, jsonServices]);
 
+  //  Вспомогательная функция: синхронизация serviceIds у специалистов
+  const syncSpecialistServices = useCallback(
+    (serviceId, oldSpecialistIds = [], newSpecialistIds = []) => {
+      setCustomSpecialists((prev) =>
+        prev.map((specialist) => {
+          const currentServiceIds = specialist.serviceIds || [];
+          let updatedServiceIds = currentServiceIds;
+
+          // Если специалист был привязан, но теперь нет — удаляем услугу
+          if (
+            oldSpecialistIds.includes(specialist.id) &&
+            !newSpecialistIds.includes(specialist.id)
+          ) {
+            updatedServiceIds = updatedServiceIds.filter(
+              (id) => String(id) !== String(serviceId),
+            );
+          }
+
+          // Если специалист теперь привязан, но услуги нет в списке — добавляем
+          if (
+            newSpecialistIds.includes(specialist.id) &&
+            !updatedServiceIds.some((id) => String(id) === String(serviceId))
+          ) {
+            updatedServiceIds = [...updatedServiceIds, serviceId];
+          }
+
+          return { ...specialist, serviceIds: updatedServiceIds };
+        }),
+      );
+    },
+    [setCustomSpecialists],
+  );
+
   const addService = useCallback(
     (serviceData) => {
       const validation = validateServiceData(serviceData, services);
@@ -132,6 +163,7 @@ export function useServices(jsonServices = []) {
           errors: validation.errors,
         };
       }
+
       const newService = {
         id: generateServiceId(),
         name: serviceData.name.trim(),
@@ -148,23 +180,26 @@ export function useServices(jsonServices = []) {
         isCustom: true,
         createdAt: new Date().toISOString(),
       };
+
       setCustomServices((prev) => [newService, ...prev]);
+
+      //  Синхронизация: добавляем услугу в serviceIds назначенных специалистов
+      if (newService.specialistIds.length > 0) {
+        syncSpecialistServices(newService.id, [], newService.specialistIds);
+      }
+
       Toast.success(t("admin.services.addSuccess", { name: newService.name }));
       return { success: true, service: newService };
     },
-    [services, setCustomServices, t],
+    [services, setCustomServices, t, syncSpecialistServices],
   );
 
-  //  ЭТАП 20: Обновление услуги с поддержкой стандартных услуг
-  // ПОЧЕМУ такая сложная логика?
-  // - Стандартные услуги из JSON нельзя изменять напрямую
-  // - При редактировании стандартной создаётся кастомная копия с тем же id
-  // - Кастомная копия перекрывает стандартную при рендере
   const updateService = useCallback(
     (serviceId, updates) => {
       const existingService = services.find((s) => s.id === serviceId);
-      if (!existingService)
+      if (!existingService) {
         return { success: false, error: "validation.service.notFound" };
+      }
 
       const mergedData = { ...existingService, ...updates };
       const validation = validateServiceData(mergedData, services, serviceId);
@@ -177,15 +212,20 @@ export function useServices(jsonServices = []) {
       }
 
       const isStandardService =
-        !existingService.isCustom && !serviceId.startsWith("custom_");
+        !existingService.isCustom && !String(serviceId).startsWith("custom_");
+      const oldSpecialistIds = existingService.specialistIds || [];
+      const newSpecialistIds =
+        updates.specialistIds !== undefined
+          ? updates.specialistIds
+          : oldSpecialistIds;
 
       if (isStandardService) {
-        //  Создаём кастомную копию стандартной услуги
+        //  Создаём кастомную копию стандартной услуги с тем же id
         const customCopy = {
           ...existingService,
           ...updates,
-          id: serviceId, // Сохраняем тот же id для замены
-          originalId: serviceId, // Запоминаем оригинальный id
+          id: serviceId,
+          originalId: serviceId,
           name: updates.name?.trim() || existingService.name,
           nameEn:
             updates.nameEn !== undefined
@@ -205,28 +245,21 @@ export function useServices(jsonServices = []) {
             updates.price !== undefined
               ? Number(updates.price)
               : existingService.price,
-          rating:
-            updates.rating !== undefined
-              ? Number(updates.rating)
-              : existingService.rating,
-          specialistIds:
-            updates.specialistIds !== undefined
-              ? updates.specialistIds
-              : existingService.specialistIds || [],
+          specialistIds: newSpecialistIds,
           isCustom: true,
           updatedAt: new Date().toISOString(),
         };
 
         setCustomServices((prev) => {
-          // Удаляем старую кастомную копию если есть
-          const filtered = prev.filter((s) => s.id !== serviceId);
+          const filtered = prev.filter(
+            (s) => String(s.id) !== String(serviceId),
+          );
           return [customCopy, ...filtered];
         });
       } else {
-        // Обновляем существующую кастомную услугу
         setCustomServices((prev) =>
           prev.map((s) =>
-            s.id === serviceId
+            String(s.id) === String(serviceId)
               ? {
                   ...s,
                   ...updates,
@@ -248,14 +281,7 @@ export function useServices(jsonServices = []) {
                     updates.price !== undefined
                       ? Number(updates.price)
                       : s.price,
-                  rating:
-                    updates.rating !== undefined
-                      ? Number(updates.rating)
-                      : s.rating,
-                  specialistIds:
-                    updates.specialistIds !== undefined
-                      ? updates.specialistIds
-                      : s.specialistIds || [],
+                  specialistIds: newSpecialistIds,
                   updatedAt: new Date().toISOString(),
                 }
               : s,
@@ -263,40 +289,66 @@ export function useServices(jsonServices = []) {
         );
       }
 
+      //  Синхронизация specialistIds ↔ serviceIds
+      syncSpecialistServices(serviceId, oldSpecialistIds, newSpecialistIds);
+
       const updatedService = { ...existingService, ...updates };
       Toast.success(
         t("admin.services.updateSuccess", { name: updatedService.name }),
       );
       return { success: true, service: updatedService };
     },
-    [services, setCustomServices, t],
+    [services, setCustomServices, t, syncSpecialistServices],
   );
 
-  // 🔥 ЭТАП 20: Удаление только кастомных услуг
   const deleteService = useCallback(
     (serviceId) => {
       const existingService = services.find((s) => s.id === serviceId);
-      if (!existingService)
+      if (!existingService) {
         return { success: false, error: "validation.service.notFound" };
+      }
 
-      // Запрещаем удаление стандартных услуг
-      if (!existingService.isCustom && !serviceId.startsWith("custom_")) {
+      //  Стандартные услуги нельзя удалять
+      if (
+        !existingService.isCustom &&
+        !String(serviceId).startsWith("custom_")
+      ) {
         return {
           success: false,
           error: "validation.service.cannotDeleteStandard",
         };
       }
 
-      setCustomServices((prev) => prev.filter((s) => s.id !== serviceId));
+      setCustomServices((prev) =>
+        prev.filter((s) => String(s.id) !== String(serviceId)),
+      );
+
+      //  Удаляем услугу из serviceIds всех специалистов
+      setCustomSpecialists((prev) =>
+        prev.map((specialist) => ({
+          ...specialist,
+          serviceIds: (specialist.serviceIds || []).filter(
+            (id) => String(id) !== String(serviceId),
+          ),
+        })),
+      );
+
       Toast.success(
         t("admin.services.deleteSuccess", { name: existingService.name }),
       );
       return { success: true };
     },
-    [services, setCustomServices, t],
+    [services, setCustomServices, setCustomSpecialists, t],
   );
 
-  return { services, customServices, addService, updateService, deleteService };
+  return {
+    services,
+    customServices,
+    customSpecialists,
+    addService,
+    updateService,
+    deleteService,
+  };
 }
 
 export default useServices;

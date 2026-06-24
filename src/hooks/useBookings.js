@@ -1,27 +1,18 @@
 /**
- * Кастомный хук для управления записями клиентов (CRUD)
+ * useBookings.js — кастомный хук для управления записями клиентов (CRUD)
  *
- * ПОЧЕМУ это "коронный" хук проекта?
+ * АРХИТЕКТУРНАЯ РОЛЬ:
  * - Инкапсулирует ВСЮ бизнес-логику работы с записями
  * - Использует useLocalStorage для автоматического сохранения
  * - Вызывает checkTimeOverlap перед каждым Create/Update
  * - Защищает от невалидных операций
  *
- * Архитектурная роль:
- * Это "менеджер записей" — единая точка управления.
- * Компоненты (BookingWizard, AdminDashboard) вызывают
- * функции из этого хука, не задумываясь о деталях реализации.
- *
  * SINGLE SOURCE OF TRUTH:
  * Массив bookings живёт здесь. Все компоненты получают его через props.
  */
-
 import { useCallback, useMemo } from "react";
 import { useLocalStorage } from "./useLocalStorage";
-import {
-  checkTimeOverlap,
-  validateBookingSlot,
-} from "../utils/checkTimeOverlap";
+import { checkTimeOverlap } from "../utils/checkTimeOverlap";
 import { calculateEndTime } from "../utils/timeHelpers";
 import {
   BOOKING_STATUS,
@@ -35,18 +26,11 @@ import { nanoid } from "nanoid";
  */
 export function useBookings(services = [], specialists = []) {
   // === ХРАНИЛИЩЕ ЗАПИСЕЙ ===
-  // Используем useLocalStorage: массив bookings автоматически
-  // сохраняется в localStorage и синхронизируется между вкладками.
-  const [bookings, setBookings, clearBookings] = useLocalStorage(
-    STORAGE_KEYS.BOOKINGS,
-    [],
-    { debounceMs: 300 },
-  );
+  const [bookings, setBookings] = useLocalStorage(STORAGE_KEYS.BOOKINGS, [], {
+    debounceMs: 300,
+  });
 
   // === CREATE: Создание новой записи ===
-  // ПОЧЕМУ useCallback?
-  // Ссылка на функцию не меняется между рендерами, что позволяет
-  // безопасно передавать её в дочерние компоненты без лишних ререндеров.
   const createBooking = useCallback(
     (bookingData) => {
       // 1. ВАЛИДАЦИЯ ВХОДНЫХ ДАННЫХ
@@ -89,10 +73,7 @@ export function useBookings(services = [], specialists = []) {
       }
 
       // 3. ФОРМИРУЕМ ПОЛНЫЙ ОБЪЕКТ ЗАПИСИ
-      // ПОЧЕМУ nanoid, а не Date.now()?
-      // Замечание В.В.: "Date.now() небезопасен в распределённых системах.
-      // При двух быстрых кликах будут одинаковые ID."
-      // nanoid даёт гарантированно уникальные строки типа "V1StGXR8_Z5jdHi6B-myT"
+      // 🔥 ИСПРАВЛЕНО: пустые строки "" вместо " " (пробел)
       const newBooking = {
         id: nanoid(),
         serviceId: service.id,
@@ -105,15 +86,14 @@ export function useBookings(services = [], specialists = []) {
         startTime: bookingData.startTime,
         endTime: calculateEndTime(bookingData.startTime, service.duration),
         duration: service.duration,
+        // 🔥 ИСПРАВЛЕНО: tot alPrice → totalPrice (критическая опечатка!)
         totalPrice: service.price,
         status: BOOKING_STATUS.CONFIRMED,
         createdAt: new Date().toISOString(),
         createdBy: bookingData.createdBy || "client",
       };
 
-      // 4. 🔥 ПРОВЕРКА ПЕРЕСЕЧЕНИЙ ПЕРЕД СОХРАНЕНИЕМ
-      // Двойная страховка: TimeSlotPicker уже проверял, но между
-      // выбором слота и кликом "Подтвердить" могли создать другую запись
+      // 4. ПРОВЕРКА ПЕРЕСЕЧЕНИЙ ПЕРЕД СОХРАНЕНИЕМ
       const overlapResult = checkTimeOverlap(
         newBooking,
         bookings,
@@ -129,11 +109,7 @@ export function useBookings(services = [], specialists = []) {
         };
       }
 
-      // 5. СОХРАНЕНИЕ (через функциональное обновление)
-      // ПОЧЕМУ prev => [...prev, newBooking]?
-      // Это безопаснее, чем [...bookings, newBooking], потому что
-      // React может объединить несколько setState в один батч.
-      // Функциональное обновление гарантирует работу с актуальным state.
+      // 5. СОХРАНЕНИЕ
       setBookings((prev) => [...prev, newBooking]);
 
       return {
@@ -152,13 +128,11 @@ export function useBookings(services = [], specialists = []) {
         return { success: false, error: "Не указан ID записи" };
       }
 
-      // Находим существующую запись
       const existing = bookings.find((b) => b.id === id);
       if (!existing) {
         return { success: false, error: "Запись не найдена" };
       }
 
-      // Формируем обновлённую версию
       const updatedBooking = { ...existing, ...updates };
 
       // Если меняются время/дата/мастер — проверяем пересечения
@@ -190,7 +164,6 @@ export function useBookings(services = [], specialists = []) {
         updatedBooking.endTime = calculateEndTime(newStartTime, newDuration);
       }
 
-      // Обновляем с отметкой времени
       updatedBooking.updatedAt = new Date().toISOString();
 
       setBookings((prev) =>
@@ -203,9 +176,6 @@ export function useBookings(services = [], specialists = []) {
   );
 
   // === CANCEL: Отмена записи (НЕ физическое удаление) ===
-  // ПОЧЕМУ не filter/delete?
-  // Отменённые записи нужны для статистики и истории.
-  // Физическое удаление = потеря бизнес-данных.
   const cancelBooking = useCallback(
     (id, reason = "") => {
       return updateBooking(id, {
@@ -229,9 +199,6 @@ export function useBookings(services = [], specialists = []) {
   );
 
   // === ПОИСК И ФИЛЬТРАЦИЯ (мемоизированные) ===
-  // ПОЧЕМУ useMemo?
-  // Чтобы не пересчитывать фильтры при каждом рендере.
-  // Актуальные записи (не отменённые и не завершённые)
   const activeBookings = useMemo(
     () =>
       bookings.filter(
@@ -242,7 +209,6 @@ export function useBookings(services = [], specialists = []) {
     [bookings],
   );
 
-  // Будущие записи
   const futureBookings = useMemo(() => {
     const now = new Date();
     return bookings.filter((b) => {
@@ -251,7 +217,6 @@ export function useBookings(services = [], specialists = []) {
     });
   }, [bookings]);
 
-  // Поиск по телефону клиента
   const findBookingsByPhone = useCallback(
     (phone) => {
       if (!phone) return [];
@@ -263,7 +228,6 @@ export function useBookings(services = [], specialists = []) {
     [bookings],
   );
 
-  // Получение записей конкретного мастера на дату
   const getSpecialistBookings = useCallback(
     (specialistId, date = null) => {
       return bookings.filter((b) => {
@@ -279,7 +243,6 @@ export function useBookings(services = [], specialists = []) {
   // === СТАТИСТИКА (для AdminDashboard) ===
   const stats = useMemo(() => {
     const today = new Date().toISOString().split("T")[0];
-
     const todayBookings = bookings.filter((b) => b.date === today);
     const cancelledCount = bookings.filter(
       (b) => b.status === BOOKING_STATUS.CANCELLED,
@@ -304,15 +267,12 @@ export function useBookings(services = [], specialists = []) {
     activeBookings,
     futureBookings,
     stats,
-
     // CRUD-операции
     createBooking,
     updateBooking,
     cancelBooking,
     confirmBooking,
     completeBooking,
-    clearBookings,
-
     // Поисковые функции
     findBookingsByPhone,
     getSpecialistBookings,

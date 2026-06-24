@@ -1,13 +1,12 @@
 /**
  * App.jsx — ДИРИЖЁР приложения (Single Source of Truth)
- * 
- * 🔥 ЭТАП 5.1: Добавлен маршрут /profile для Личного кабинета
- * 🔥 ЭТАП 6.1: Интеграция ThemeProvider для переключения тем
- * 🔥 ЭТАП 6.3: Интеграция хуков useServices и useSpecialists для CRUD
- * 🔥 ЭТАП 7.1: Интеграция LanguageProvider для локализации
- * 🔥 ЭТАП 8.8: Передача CRUD-функций в AdminDashboard
+ *
+ * АРХИТЕКТУРНАЯ РОЛЬ:
+ * - Загружает JSON-данные услуг и специалистов
+ * - Создаёт единые хуки CRUD (useBookings, useServices, useSpecialists)
+ * - Передаёт данные и callbacks через props
+ * - Управляет роутингом и защитой маршрутов
  */
-
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 
@@ -25,8 +24,8 @@ import ProfilePage from './components/Profile/ProfilePage';
 // === ХУКИ ===
 import { useBookings } from './hooks/useBookings';
 import { useLocalStorage } from './hooks/useLocalStorage';
-import { useServices } from './hooks/useServices';       // 🔥 ЭТАП 6.3
-import { useSpecialists } from './hooks/useSpecialists'; // 🔥 ЭТАП 6.3
+import { useServices } from './hooks/useServices';
+import { useSpecialists } from './hooks/useSpecialists';
 
 // === КОНСТАНТЫ ===
 import { STORAGE_KEYS, USER_ROLES } from './utils/constants';
@@ -65,10 +64,7 @@ function AppContent() {
     loadData();
   }, []);
 
-  // === 🔥 ХУКИ ДЛЯ CRUD УСЛУГ И СПЕЦИАЛИСТОВ (ЭТАП 6.3 + 8.8) ===
-  // ПОЧЕМУ передаём jsonServices/jsonSpecialists?
-  // - Хуки сливают JSON-данные с кастомными из localStorage
-  // - Возвращают объединённый массив `services` / `specialists`
+  // === ХУКИ ДЛЯ CRUD УСЛУГ И СПЕЦИАЛИСТОВ ===
   const {
     services,
     addService,
@@ -84,9 +80,6 @@ function AppContent() {
   } = useSpecialists(jsonSpecialists);
 
   // === ГЛАВНЫЙ ХУК — CRUD ЗАПИСЕЙ ===
-  // ПОЧЕМУ передаём объединённые services/specialists?
-  // - useBookings использует их для валидации записей
-  // - Если админ добавил новую услугу — она сразу доступна для записи
   const {
     bookings,
     stats,
@@ -97,18 +90,20 @@ function AppContent() {
 
   const [userRole, setUserRole] = useLocalStorage(
     STORAGE_KEYS.USER_ROLE,
-    USER_ROLES.CLIENT
+    USER_ROLES.CLIENT,
   );
 
   // === СОСТОЯНИЕ ЗАГРУЗКИ ===
   if (isLoading) {
     return (
-      <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100vh'
-      }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100vh',
+        }}
+      >
         <p>Загрузка данных салона...</p>
       </div>
     );
@@ -138,7 +133,7 @@ function AppContent() {
           }
         />
 
-        {/* === 🔥 АДМИН-ПАНЕЛЬ (ЭТАП 8.8) === */}
+        {/* === АДМИН-ПАНЕЛЬ === */}
         <Route
           path="/admin"
           element={
@@ -150,11 +145,9 @@ function AppContent() {
                 stats={stats}
                 onUpdateBooking={updateBooking}
                 onCancelBooking={cancelBooking}
-                // 🔥 ЭТАП 8.8: CRUD для услуг
                 onAddService={addService}
                 onUpdateService={updateService}
                 onDeleteService={deleteService}
-                // 🔥 ЭТАП 8.8: CRUD для специалистов
                 onAddSpecialist={addSpecialist}
                 onUpdateSpecialist={updateSpecialist}
                 onDeleteSpecialist={deleteSpecialist}

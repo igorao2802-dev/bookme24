@@ -1,24 +1,12 @@
 /**
- * TimeSlotPicker.jsx — 🔥 КРИТИЧЕСКИЙ КОМПОНЕНТ
- * НАЗНАЧЕНИЕ:
- * Календарь для выбора даты (30 дней вперёд)
- * Генерация свободных окон с учётом:
- * - Рабочих часов мастера
- * - Длительности услуги
- * - Существующих записей (checkTimeOverlap)
- * - Буфера 15 минут между записями
- * 
- * 🔥 ЭТАП 2.2: Добавлена визуальная блокировка недоступных дат
- * 🔥 ЭТАП 2.5: Добавлена прокрутка блока дат колёсиком мыши
- * 🔥 ЭТАП 7.9: Полная локализация всех текстов
- * 🔥 ИСПРАВЛЕНО: Все опечатки устранены
- */
+ * TimeSlotPicker.jsx — выбор даты и времени
+  */
 import { useMemo, useRef, useEffect } from 'react';
 import { Calendar, Clock, AlertCircle } from 'lucide-react';
 import { useTimeSlots } from '../../hooks/useTimeSlots';
 import { formatDateForInput } from '../../utils/timeHelpers';
 import { BUSINESS_CONFIG } from '../../utils/constants';
-import { useLanguage } from '../../hooks/useLanguage'; // 🔥 ЭТАП 7.9
+import { useLanguage } from '../../hooks/useLanguage'; 
 import EmptyState from '../UI/EmptyState';
 import Spinner from '../UI/Spinner';
 import './TimeSlotPicker.css';
@@ -40,17 +28,19 @@ const isSpecialistWorking = (specialist, date) => {
     specialist.workingHours[dayOfWeek] !== undefined;
 };
 
+//  Функция принимает t() для локализации
 const getDateUnavailableReason = (date, specialist, t) => {
   if (isDatePast(date)) return t('timeSlotPicker.pastDate');
   if (!isSpecialistWorking(specialist, date)) {
     const dayOfWeek = new Date(date).getDay();
-    return t('timeSlotPicker.notWorking', { 
-      day: t(`timeSlotPicker.days.${dayOfWeek}`) 
+    return t(`timeSlotPicker.days.${dayOfWeek}`, {
+      day: t(`timeSlotPicker.days.${dayOfWeek}`),
     });
   }
   return null;
 };
 
+//  Локализованная функция склонения
 const getWindowsWord = (count, t) => {
   const lastTwo = count % 100;
   const lastOne = count % 10;
@@ -72,7 +62,7 @@ export default function TimeSlotPicker({
   onSelectDate,
   onSelectTime,
 }) {
-  // 🔥 ЭТАП 7.9: Получаем t() и language
+  //  Получаем t() и language
   const { t, language } = useLanguage();
 
   // === ГЕНЕРАЦИЯ СПИСКА ДАТ (30 дней) ===
@@ -132,18 +122,13 @@ export default function TimeSlotPicker({
 
   const availableCount = slots?.filter((s) => s.isAvailable).length || 0;
 
-  // 🔥 ЭТАП 7.9: Динамический выбор названия услуги
-  const displayServiceName = language === 'en' && service?.nameEn
-    ? service.nameEn
-    : service?.name;
-
   return (
     <div className="time-slot-picker">
       <div className="time-slot-picker__header">
-        {/* 🔥 ЭТАП 7.9: Локализованный заголовок */}
+        {/*  Локализованный заголовок */}
         <h2>{t('timeSlotPicker.title')}</h2>
-        <p className="time-slot-picker__description">
-          {specialist?.fullName} • {displayServiceName} • {service?.duration} {t('time.minutes')}
+        <p className="time-slot-picker__subtitle">
+          {specialist?.fullName} • {service?.name} • {service?.duration} {t('time.minutes')}
         </p>
       </div>
 
@@ -151,7 +136,7 @@ export default function TimeSlotPicker({
       <div className="time-slot-picker__dates">
         <h3 className="time-slot-picker__section-title">
           <Calendar size={18} />
-          {/* 🔥 ЭТАП 7.9: Локализованный подзаголовок */}
+          {/* Локализованный подзаголовок */}
           {t('timeSlotPicker.visitDate')}
         </h3>
 
@@ -164,7 +149,7 @@ export default function TimeSlotPicker({
             const dateStr = formatDateForInput(date);
             const isSelected = selectedDate === dateStr;
             
-            // 🔥 ЭТАП 7.9: Динамическая локализация дней и месяцев
+            //  Динамическая локализация дней и месяцев
             const dayName = date.toLocaleDateString(
               language === 'en' ? 'en-US' : 'ru-RU',
               { weekday: 'short' }
@@ -175,7 +160,7 @@ export default function TimeSlotPicker({
               { month: 'short' }
             );
 
-            // 🔥 ЭТАП 7.9: Передаём t() в функцию
+            //  Передаём t() в функцию
             const unavailableReason = getDateUnavailableReason(date, specialist, t);
             const isDisabled = unavailableReason !== null;
 
@@ -214,7 +199,7 @@ export default function TimeSlotPicker({
         <div className="time-slot-picker__times">
           <h3 className="time-slot-picker__section-title">
             <Clock size={18} />
-            {/* 🔥 ЭТАП 7.9: Локализованный заголовок со склонением */}
+            {/*  Локализованный заголовок со склонением */}
             {t('timeSlotPicker.freeTime')} ({getWindowsWord(availableCount, t)})
           </h3>
 
@@ -225,10 +210,10 @@ export default function TimeSlotPicker({
             </div>
           )}
 
-          {/* 🔥 ЭТАП 7.9: Локализованный текст загрузки */}
+          {/*  Локализованный текст загрузки */}
           {isLoading && <Spinner text={t('timeSlotPicker.loading')} />}
 
-          {/* 🔥 ЭТАП 7.9: Локализованные EmptyState */}
+          {/*  Локализованные EmptyState */}
           {!isLoading && !error && availableCount === 0 && (
             <EmptyState
               title={t('timeSlotPicker.noSlots')}
@@ -241,7 +226,7 @@ export default function TimeSlotPicker({
             <>
               {groupedSlots.morning.length > 0 && (
                 <div className="time-slot-picker__group">
-                  {/* 🔥 ЭТАП 7.9: Локализованные заголовки групп */}
+                  {/*  Локализованные заголовки групп */}
                   <h4 className="time-slot-picker__group-title">🌅 {t('timeSlotPicker.morning')}</h4>
                   <div className="time-slot-picker__slots">
                     {groupedSlots.morning.map((slot) => (
@@ -307,7 +292,7 @@ function SlotButton({ slot, isSelected, onSelect, t }) {
     !slot.isAvailable && 'time-slot-picker__slot--busy',
   ].filter(Boolean).join(' ');
 
-  // 🔥 ЭТАП 7.9: Локализованные tooltip
+  //  Локализованные tooltip
   const tooltip = !slot.isAvailable
     ? slot.reason || t('timeSlotPicker.busy')
     : `${slot.startTime} — ${t('timeSlotPicker.selectTime')}`;

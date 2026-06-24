@@ -33,14 +33,7 @@ export default function AdminBookingsTable({
   onEdit,
   onCancel,
 }) {
-  // === ПОЛУЧЕНИЕ НАЗВАНИЯ УСЛУГИ И МАСТЕРА ===
-  const getServiceName = (serviceId) =>
-    services.find((s) => s.id === serviceId)?.name || 'Услуга не найдена';
-
-  const getSpecialistName = (specialistId) =>
-    specialists.find((s) => s.id === specialistId)?.fullName || 'Мастер не найден';
-
-  // === МОЖНО ЛИ ОТМЕНИТЬ ЗАПИСЬ? ===
+   // === МОЖНО ЛИ ОТМЕНИТЬ ЗАПИСЬ? ===
   // ПОЧЕМУ отдельная функция? Логика используется в нескольких местах
   const canCancel = (booking) => {
     return (

@@ -7,7 +7,6 @@
 import { Calendar, Clock, User } from 'lucide-react';
 
 import {
-  BOOKING_STATUS,
   BOOKING_STATUS_LABELS,
 } from '../../utils/constants';
 import {
