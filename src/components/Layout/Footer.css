@@ -1,0 +1,276 @@
+/**
+ * Footer.css — стили подвала сайта
+ *
+ * АРХИТЕКТУРНАЯ РОЛЬ:
+ * Стилизация контактной информации, ссылок и копирайта.
+ * Поддержка mailto: и tel: ссылок для быстрого перехода.
+ *
+ * 🔥 ДОБАВЛЕНО: Стили для mailto: и tel: ссылок
+ * 🔥 ДОБАВЛЕНО: Поддержка тёмной темы
+ * 🔥 ДОБАВЛЕНО: Адаптивность для мобильных устройств
+ */
+
+/* ══════════════════════════════════════════════
+   ОСНОВНОЙ КОНТЕЙНЕР
+   ═══════════════════════════════════════════════ */
+
+.footer {
+  background: var(--color-surface-alt, #f2ebe0);
+  border-top: 1px solid var(--color-border, #e8dcc4);
+  padding: var(--spacing-xl, 48px) 0 var(--spacing-md, 16px);
+  margin-top: auto;
+}
+
+.footer__container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-lg, 24px);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--spacing-xl, 48px);
+}
+
+/* ═══════════════════════════════════════════════
+   БРЕНД
+   ══════════════════════════════════════════════ */
+
+.footer__brand {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm, 8px);
+}
+
+.footer__title {
+  font-size: var(--font-size-lg, 1.125rem);
+  font-weight: 700;
+  color: var(--color-text, #3d2f26);
+  margin: 0;
+}
+
+.footer__description {
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--color-text-muted, #6b5d4f);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ═══════════════════════════════════════════════
+   ПОДЗАГОЛОВКИ
+   ═══════════════════════════════════════════════ */
+
+.footer__subtitle {
+  font-size: var(--font-size-base, 1rem);
+  font-weight: 600;
+  color: var(--color-text, #3d2f26);
+  margin: 0 0 var(--spacing-md, 16px) 0;
+}
+
+/* ═══════════════════════════════════════════════
+   СПИСОК КОНТАКТОВ
+   ═══════════════════════════════════════════════ */
+
+.footer__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm, 12px);
+}
+
+.footer__item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm, 8px);
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--color-text, #3d2f26);
+}
+
+.footer__icon {
+  color: var(--color-primary-600, #9c7558);
+  flex-shrink: 0;
+}
+
+.footer__text {
+  color: var(--color-text, #3d2f26);
+  line-height: 1.4;
+}
+
+/* ═══════════════════════════════════════════════
+   ССЫЛКИ (mailto, tel, https)
+   ПОЧЕМУ отдельные стили?
+   - mailto: и tel: должны выглядеть как ссылки (подчёркивание при hover)
+   - Но не как обычные текстовые ссылки в списке контактов
+   ═══════════════════════════════════════════════ */
+
+.footer__link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs, 4px);
+  color: var(--color-primary-700, #7f5e44);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color var(--transition-fast, 150ms ease);
+  word-break: break-word;
+}
+
+.footer__link:hover {
+  color: var(--color-primary-500, #b8957a);
+  text-decoration: underline;
+}
+
+.footer__link:focus-visible {
+  outline: 2px solid var(--color-primary, #b8957a);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm, 4px);
+}
+
+.footer__link--accent {
+  color: var(--color-primary-600, #9c7558);
+  font-weight: 600;
+}
+
+/* ═══════════════════════════════════════════════
+   ОНЛАЙН-СЕКЦИЯ
+   ═══════════════════════════════════════════════ */
+
+.footer__online {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm, 8px);
+}
+
+.footer__online p {
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--color-text-muted, #6b5d4f);
+  margin: 0;
+}
+
+/* ═══════════════════════════════════════════════
+   КОПИРАЙТ
+   ═══════════════════════════════════════════════ */
+
+.footer__bottom {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--spacing-lg, 24px) var(--spacing-lg, 24px) 0;
+  margin-top: var(--spacing-xl, 48px);
+  border-top: 1px solid var(--color-border, #e8dcc4);
+}
+
+.footer__copyright {
+  font-size: var(--font-size-xs, 0.75rem);
+  color: var(--color-text-subtle, #8a7968);
+  text-align: center;
+  margin: 0;
+}
+
+/* ═══════════════════════════════════════════════
+   ТЁМНАЯ ТЕМА
+   ПОЧЕМУ через [data-theme="dark"]?
+   - React меняет атрибут на <html>, CSS реагирует автоматически
+   - Не нужно пересчитывать стили в JS
+   ══════════════════════════════════════════════ */
+
+[data-theme="dark"] .footer {
+  background: var(--color-surface-alt, #2d2419);
+  border-top-color: var(--color-border, #4a3a2a);
+}
+
+[data-theme="dark"] .footer__title,
+[data-theme="dark"] .footer__subtitle {
+  color: var(--color-text, #f2ebe0);
+}
+
+[data-theme="dark"] .footer__description,
+[data-theme="dark"] .footer__online p {
+  color: var(--color-text-muted, #b5a28d);
+}
+
+[data-theme="dark"] .footer__item,
+[data-theme="dark"] .footer__text {
+  color: var(--color-text, #f2ebe0);
+}
+
+[data-theme="dark"] .footer__icon {
+  color: var(--color-primary-400, #c9a88c);
+}
+
+[data-theme="dark"] .footer__link {
+  color: var(--color-primary-400, #c9a88c);
+}
+
+[data-theme="dark"] .footer__link:hover {
+  color: var(--color-primary-300, #d4b89c);
+}
+
+[data-theme="dark"] .footer__link--accent {
+  color: var(--color-primary-400, #c9a88c);
+}
+
+[data-theme="dark"] .footer__bottom {
+  border-top-color: var(--color-border, #4a3a2a);
+}
+
+[data-theme="dark"] .footer__copyright {
+  color: var(--color-text-subtle, #8a7968);
+}
+
+/* ═══════════════════════════════════════════════
+   АДАПТИВНОСТЬ
+   ПОЧЕМУ два breakpoint'а?
+   - 768px: планшеты — одна колонка, центрирование
+   - 480px: мобильные — уменьшение шрифтов
+   ═══════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .footer {
+    padding: var(--spacing-lg, 32px) 0 var(--spacing-md, 16px);
+  }
+
+  .footer__container {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-lg, 32px);
+    text-align: center;
+  }
+
+  .footer__item {
+    justify-content: center;
+  }
+
+  .footer__list {
+    align-items: center;
+  }
+
+  .footer__brand,
+  .footer__contacts,
+  .footer__online {
+    align-items: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer__title {
+    font-size: var(--font-size-base, 1rem);
+  }
+
+  .footer__subtitle {
+    font-size: var(--font-size-sm, 0.875rem);
+  }
+
+  .footer__link {
+    font-size: var(--font-size-sm, 0.875rem);
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   ДОСТУПНОСТЬ: prefers-reduced-motion
+   ПОЧЕМУ? Пользователи с вестибулярными нарушениями
+   могут испытывать дискомфорт от анимаций
+   ═══════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .footer__link {
+    transition: none;
+  }
+}

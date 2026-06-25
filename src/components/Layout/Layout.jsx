@@ -1,95 +1,94 @@
 /**
- * Layout.jsx — Компонент-обёртка
- * 🔥 ЭТАП 5.4: Полная локализация логотипа и подвала
+ * Footer.jsx — подвал сайта
+ * 
+ * АРХИТЕКТУРНАЯ РОЛЬ:
+ * Отображает контактную информацию, ссылки и копирайт.
+ * 🔥 ИСПРАВЛЕНО: Добавлены mailto: и tel: ссылки для быстрого перехода
  */
-import { Link, useLocation } from 'react-router-dom';
-import { USER_ROLES } from '../../utils/constants.js';
-import ThemeToggle from '../UI/ThemeToggle';
-import LanguageToggle from '../UI/LanguageToggle';
+import { MapPin, Clock, Phone, Mail, Globe } from 'lucide-react';
 import { useLanguage } from '../../hooks/useLanguage';
-import './Layout.css';
+import './Footer.css';
 
-export default function Layout({ children, userRole, onRoleChange }) {
-  const location = useLocation();
+export default function Footer() {
   const { t } = useLanguage();
 
-  const menuItems = [
-    { path: '/', label: t('nav.booking'), roles: [USER_ROLES.CLIENT, USER_ROLES.ADMIN] },
-    { path: '/catalog', label: t('nav.catalog'), roles: [USER_ROLES.CLIENT, USER_ROLES.ADMIN] },
-    { path: '/admin', label: t('nav.manager'), roles: [USER_ROLES.ADMIN] },
-    { path: '/profile', label: t('nav.profile'), roles: [USER_ROLES.CLIENT] },
-  ];
-
-  const visibleMenu = menuItems.filter(item => item.roles.includes(userRole));
+  // 🔥 Контактные данные — единая точка правды
+  const CONTACTS = {
+    email: 'info@bookme24.by',
+    phone: '+375291234567', // Без форматирования для tel:
+    phoneDisplay: '+375 (29) 123-45-67', // Для отображения
+    address: t('footer.address'),
+    website: 'bookme24.by',
+  };
 
   return (
-    <div className="layout">
-      <header className="layout__header">
-        <div className="layout__container">
-          <div className="layout__brand">
-            <Link to="/" className="layout__logo">
-              💇‍♀️ <span>{t('common.brandName')}</span> {/* 🔥 ЭТАП 5.4 */}
-            </Link>
-          </div>
-          
-          <nav className="layout__nav" aria-label={t('common.mainNavigation')}>
-            {visibleMenu.map(item => (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`layout__nav-link ${location.pathname === item.path ? 'layout__nav-link--active' : ''}`}
+    <footer className="footer">
+      <div className="footer__container">
+        {/* === ЛОГОТИП И ОПИСАНИЕ === */}
+        <div className="footer__brand">
+          <h3 className="footer__title">{t('footer.title')}</h3>
+          <p className="footer__description">
+            {t('common.brandName')}
+          </p>
+        </div>
+
+        {/* === КОНТАКТЫ === */}
+        <div className="footer__contacts">
+          <h4 className="footer__subtitle">{t('footer.contacts')}</h4>
+          <ul className="footer__list">
+            <li className="footer__item">
+              <Phone size={16} className="footer__icon" aria-hidden="true" />
+              {/* 🔥 tel: ссылка — открывает приложение для звонка на мобильных */}
+              <a 
+                href={`tel:${CONTACTS.phone}`} 
+                className="footer__link"
+                aria-label={t('footer.phone')}
               >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-
-          <div className="layout__controls">
-            <ThemeToggle />
-            <LanguageToggle />
-            <div className="layout__role-switcher">
-              <label className="layout__role-label">
-                {t('common.role')}:
-                <select
-                  value={userRole}
-                  onChange={(e) => onRoleChange(e.target.value)}
-                  className="layout__role-select"
-                >
-                  <option value={USER_ROLES.CLIENT}>{t('common.client')}</option>
-                  <option value={USER_ROLES.ADMIN}>{t('common.manager')}</option>
-                </select>
-              </label>
-            </div>
-          </div>
+                {CONTACTS.phoneDisplay}
+              </a>
+            </li>
+            <li className="footer__item">
+              <Mail size={16} className="footer__icon" aria-hidden="true" />
+              {/* 🔥 mailto: ссылка — открывает почтовый клиент */}
+              <a 
+                href={`mailto:${CONTACTS.email}`} 
+                className="footer__link"
+                aria-label={t('footer.email')}
+              >
+                {CONTACTS.email}
+              </a>
+            </li>
+            <li className="footer__item">
+              <MapPin size={16} className="footer__icon" aria-hidden="true" />
+              <span className="footer__text">{CONTACTS.address}</span>
+            </li>
+            <li className="footer__item">
+              <Clock size={16} className="footer__icon" aria-hidden="true" />
+              <span className="footer__text">{t('footer.hours')}</span>
+            </li>
+          </ul>
         </div>
-      </header>
 
-      <main className="layout__main">
-        <div className="layout__container">{children}</div>
-      </main>
-
-      {/* 🔥 ЭТАП 5.4: Полная локализация подвала */}
-      <footer className="layout__footer">
-        <div className="layout__container">
-          <div className="layout__footer-grid">
-            <div className="layout__footer-col">
-              <h4>{t('footer.title')}</h4>
-              <p>{t('footer.address')}</p>
-              <p>{t('footer.hours')}</p>
-            </div>
-            <div className="layout__footer-col">
-              <h4>{t('footer.contacts')}</h4>
-              <p>📞 {t('footer.phone')}</p>
-              <p>✉️ {t('footer.email')}</p>
-            </div>
-            <div className="layout__footer-col">
-              <h4>{t('footer.online')}</h4>
-              <p>{t('footer.onlineDesc')}</p>
-              <p>{t('footer.copyright')}</p>
-            </div>
-          </div>
+        {/* === ОНЛАЙН-ЗАПИСЬ === */}
+        <div className="footer__online">
+          <h4 className="footer__subtitle">{t('footer.online')}</h4>
+          <p className="footer__text">{t('footer.onlineDesc')}</p>
+          <a 
+            href={`https://${CONTACTS.website}`} 
+            className="footer__link footer__link--accent"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Globe size={16} aria-hidden="true" />
+            {CONTACTS.website}
+          </a>
         </div>
-      </footer>
-    </div>
+      </div>
+
+      {/* === КОПИРАЙТ === */}
+      <div className="footer__bottom">
+        <p className="footer__copyright">{t('footer.copyright')}</p>
+      </div>
+    </footer>
   );
 }
