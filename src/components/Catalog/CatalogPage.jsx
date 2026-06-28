@@ -100,44 +100,49 @@ export default function CatalogPage({ services, specialists }) {
     });
   };
 
-  // === 🔥 ФИЛЬТРАЦИЯ И СОРТИРОВКА УСЛУГ ===
-  const filteredAndSortedServices = useMemo(() => {
-    let result = services.filter((service) => {
-      const matchesSearch =
-        !debouncedQuery ||
-        service.name.toLowerCase().includes(debouncedQuery.toLowerCase()) ||
-        service.description.toLowerCase().includes(debouncedQuery.toLowerCase());
+ // === 🔥 ФИЛЬТРАЦИЯ И СОРТИРОВКА УСЛУГ ===
+const filteredAndSortedServices = useMemo(() => {
+  let result = services.filter((service) => {
+    const matchesSearch =
+      !debouncedQuery ||
+      service.name.toLowerCase().includes(debouncedQuery.toLowerCase()) ||
+      service.description.toLowerCase().includes(debouncedQuery.toLowerCase());
 
-      const matchesCategory =
-        filters.category === 'all' || service.category === filters.category;
+    const matchesCategory =
+      filters.category === 'all' || service.category === filters.category;
 
-      // 🔥 ЭТАП 3.1: Проверка диапазона цен "от" и "до"
-      const matchesPrice =
-        service.price >= filters.minPrice && service.price <= filters.maxPrice;
+    // 🔥 ИСПРАВЛЕНО: Проверка на undefined перед сравнением цены
+    const matchesPrice =
+      service.price !== undefined &&
+      service.price !== null &&
+      service.price >= filters.minPrice &&
+      service.price <= filters.maxPrice;
 
-      const matchesRating = service.rating >= filters.minRating;
+    // 🔥 ИСПРАВЛЕНО: Если rating отсутствует — считаем как 0 (показывается всегда)
+    const serviceRating = service.rating ?? 0;
+    const matchesRating = serviceRating >= filters.minRating;
 
-      return matchesSearch && matchesCategory && matchesPrice && matchesRating;
-    });
+    return matchesSearch && matchesCategory && matchesPrice && matchesRating;
+  });
 
-    result = [...result].sort((a, b) => {
-      switch (sortBy) {
-        case 'price-asc':
-          return a.price - b.price;
-        case 'price-desc':
-          return b.price - a.price;
-        case 'name':
-          return a.name.localeCompare(b.name, 'ru');
-        case 'rating':
-          return b.rating - a.rating;
-        case 'popular':
-        default:
-          return b.rating - a.rating;
-      }
-    });
+  result = [...result].sort((a, b) => {
+    switch (sortBy) {
+      case 'price-asc':
+        return a.price - b.price;
+      case 'price-desc':
+        return b.price - a.price;
+      case 'name':
+        return a.name.localeCompare(b.name, 'ru');
+      case 'rating':
+        return (b.rating ?? 0) - (a.rating ?? 0);
+      case 'popular':
+      default:
+        return (b.rating ?? 0) - (a.rating ?? 0);
+    }
+  });
 
-    return result;
-  }, [services, debouncedQuery, filters, sortBy]);
+  return result;
+}, [services, debouncedQuery, filters, sortBy]);
 
   // === АНАЛОГИЧНО ДЛЯ МАСТЕРОВ ===
   const filteredAndSortedSpecialists = useMemo(() => {
@@ -242,12 +247,13 @@ export default function CatalogPage({ services, specialists }) {
           />
 
           <div className="catalog-page__controls">
-            <FilterPanel
+           <FilterPanel
               filters={filters}
               onFilterChange={handleFilterChange}
               onReset={handleResetFilters}
               activeCount={activeFiltersCount}
               viewMode={viewMode}
+              services={services}  
             />
             <SortPanel value={sortBy} onChange={setSortBy} viewMode={viewMode} />
           </div>

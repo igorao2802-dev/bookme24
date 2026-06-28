@@ -220,3 +220,70 @@
     gap: var(--spacing-xs, 4px);
   }
 }
+
+/* ═══════════════════════════════════════════════
+   ТЁМНАЯ ТЕМА
+   ═══════════════════════════════════════════════ */
+[data-theme="dark"] .bonus-card {
+  background: linear-gradient(
+    135deg,
+    var(--color-primary-soft, #3d2f26) 0%,
+    var(--color-surface, #2a211b) 100%
+  );
+  border-color: var(--color-primary-600, #9c7558);
+}
+
+[data-theme="dark"] .bonus-card__title {
+  color: var(--color-text, #f5ede4);
+}
+
+[data-theme="dark"] .bonus-card__balance {
+  background: var(--color-surface, #2a211b);
+  border-color: var(--color-border, #44362b);
+}
+
+[data-theme="dark"] .bonus-card__balance-value {
+  color: var(--color-text, #f5ede4);
+}
+
+[data-theme="dark"] .bonus-card__balance-label,
+[data-theme="dark"] .bonus-card__balance-equivalent {
+  color: var(--color-text-muted, #c9b89f);
+}
+
+[data-theme="dark"] .bonus-card__progress-label {
+  color: var(--color-text, #f5ede4);
+}
+
+[data-theme="dark"] .bonus-card__progress-bar {
+  background: var(--color-border, #44362b);
+}
+
+[data-theme="dark"] .bonus-card__progress-hint {
+  color: var(--color-text-muted, #c9b89f);
+}
+
+[data-theme="dark"] .bonus-card__history {
+  border-top-color: var(--color-border, #44362b);
+}
+
+[data-theme="dark"] .bonus-card__history-title {
+  color: var(--color-text, #f5ede4);
+}
+
+[data-theme="dark"] .bonus-card__history-item {
+  background: var(--color-surface, #2a211b);
+  border-color: var(--color-border, #44362b);
+}
+
+[data-theme="dark"] .bonus-card__history-date {
+  color: var(--color-text-muted, #c9b89f);
+}
+
+[data-theme="dark"] .bonus-card__history-service {
+  color: var(--color-text, #f5ede4);
+}
+
+[data-theme="dark"] .bonus-card__empty {
+  color: var(--color-text-muted, #c9b89f);
+}

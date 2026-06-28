@@ -1,30 +1,21 @@
 /**
  * BookingEditModal.jsx — модальное окно редактирования записи
- *
- * ОСОБЕННОСТИ:
- * - Редактирование мастера, даты, времени, длительности, статуса
- * - Автоматический пересчёт endTime и totalPrice
- * - 🔥 ПРОВЕРКА ПЕРЕСЕЧЕНИЙ через checkTimeOverlap
- * - Валидация через validators.js
- * - Controlled components для всех полей
- *
- * АРХИТЕКТУРНАЯ РОЛЬ:
- * Владеет локальным состоянием формы (editData).
- * При сохранении вызывает onSave(id, updates) — callback родителя.
+ * 
+ * 🔥 ИСПРАВЛЕНО:
+ * - Полная локализация через t()
+ * - Корректная интеграция с AdminDashboard
+ * - Проверка пересечений через checkTimeOverlap
  */
-
 import { useState, useEffect, useMemo } from 'react';
-
 import Modal from '../UI/Modal';
 import Button from '../UI/Button';
 import Input from '../UI/Input';
 import Select from '../UI/Select';
 import Toast from '../UI/Toast';
-
-import { BOOKING_STATUS, BOOKING_STATUS_LABELS } from '../../utils/constants';
+import { BOOKING_STATUS } from '../../utils/constants';
 import { checkTimeOverlap } from '../../utils/checkTimeOverlap';
 import { calculateEndTime } from '../../utils/timeHelpers';
-
+import { useLanguage } from '../../hooks/useLanguage';
 import './BookingEditModal.css';
 
 export default function BookingEditModal({
@@ -32,17 +23,18 @@ export default function BookingEditModal({
   services,
   specialists,
   bookings,
+  isOpen,
   onClose,
   onSave,
 }) {
+  const { t } = useLanguage();
+
   // === ЛОКАЛЬНОЕ СОСТОЯНИЕ ФОРМЫ ===
   const [editData, setEditData] = useState(null);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // === ИНИЦИАЛИЗАЦИЯ ПРИ ОТКРЫТИИ ===
-  // ПОЧЕМУ useEffect с booking зависимостью?
-  // Сбрасываем форму каждый раз, когда открывается новая запись
   useEffect(() => {
     if (booking) {
       setEditData({
@@ -63,7 +55,6 @@ export default function BookingEditModal({
   );
 
   // === АВТОПЕРЕСЧЁТ ВРЕМЕНИ ОКОНЧАНИЯ ===
-  // ПОЧЕМУ useMemo? Пересчитываем только при изменении начала или длительности
   const computedEndTime = useMemo(() => {
     if (!editData?.startTime || !editData?.duration) return null;
     return calculateEndTime(editData.startTime, editData.duration);
@@ -72,21 +63,20 @@ export default function BookingEditModal({
   // === ОПЦИИ СТАТУСОВ ===
   const statusOptions = Object.values(BOOKING_STATUS).map((status) => ({
     value: status,
-    label: BOOKING_STATUS_LABELS[status],
+    label: t(`status.${status}`),
   }));
 
-  // === ОПЦИИ МАСТЕРОВ (только те, кто оказывает текущую услугу) ===
+  // === ОПЦИИ МАСТЕРОВ ===
   const specialistOptions = useMemo(() => {
     if (!currentService) return [];
     return specialists
-      .filter((s) => s.serviceIds.includes(currentService.id))
+      .filter((s) => s.serviceIds?.includes(currentService.id))
       .map((s) => ({ value: s.id, label: s.fullName }));
   }, [specialists, currentService]);
 
   // === ОБНОВЛЕНИЕ ПОЛЯ ===
   const handleChange = (field, value) => {
     setEditData((prev) => ({ ...prev, [field]: value }));
-    // Сбрасываем ошибку поля при изменении
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: null }));
     }
@@ -95,42 +85,37 @@ export default function BookingEditModal({
   // === ВАЛИДАЦИЯ ФОРМЫ ===
   const validateForm = () => {
     const newErrors = {};
-
     if (!editData.specialistId) {
-      newErrors.specialistId = 'Выберите мастера';
+      newErrors.specialistId = t('validation.specialist.required');
     }
     if (!editData.date) {
-      newErrors.date = 'Выберите дату';
+      newErrors.date = t('validation.date.notSelected');
     }
     if (!editData.startTime) {
-      newErrors.startTime = 'Выберите время';
+      newErrors.startTime = t('validation.time.notSelected');
     }
     if (!editData.duration || editData.duration < 15) {
-      newErrors.duration = 'Минимальная длительность — 15 минут';
+      newErrors.duration = t('validation.service.durationTooShort');
     }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   // === ПРОВЕРКА ПЕРЕСЕЧЕНИЙ ===
-  // 🔥 КРИТИЧЕСКАЯ ЛОГИКА — то самое замечание В.В. к spa-mini-practice
   const checkForConflicts = () => {
     const hypotheticalBooking = {
-      id: booking.id, // Исключаем саму редактируемую запись
+      id: booking.id,
       specialistId: editData.specialistId,
       date: editData.date,
       startTime: editData.startTime,
       duration: editData.duration,
     };
-
     const result = checkTimeOverlap(hypotheticalBooking, bookings, 15);
 
     if (result.hasOverlap) {
-      Toast.error(`Конфликт расписания: ${result.reason}`);
+      Toast.error(`${t('admin.bookings.conflict')}: ${result.reason}`);
       return false;
     }
-
     return true;
   };
 
@@ -138,51 +123,41 @@ export default function BookingEditModal({
   const handleSave = () => {
     if (!validateForm()) return;
     if (!checkForConflicts()) return;
-
     if (isSubmitting) return;
-    setIsSubmitting(true);
 
+    setIsSubmitting(true);
     try {
-      // Формируем updates с пересчётом endTime
       const updates = {
         ...editData,
         endTime: computedEndTime,
       };
-
       onSave(booking.id, updates);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // === ЗАКРЫТИЕ С ПОДТВЕРЖДЕНИЕМ ===
-  const handleClose = () => {
-    // ПОЧЕМУ не спрашиваем подтверждение?
-    // Изменения не применяются автоматически — только при клике "Сохранить"
-    onClose();
-  };
-
-  if (!booking || !editData) return null;
+  if (!booking || !editData || !isOpen) return null;
 
   return (
     <Modal
-      isOpen={!!booking}
-      onClose={handleClose}
-      title="Редактирование записи"
+      isOpen={isOpen}
+      onClose={onClose}
+      title={t('admin.bookings.editTitle')}
       size="md"
     >
       <div className="booking-edit-modal">
         {/* === ИНФОРМАЦИЯ О КЛИЕНТЕ (только чтение) === */}
         <div className="booking-edit-modal__info">
-          <h4>Клиент</h4>
+          <h4>{t('admin.bookings.clientInfo')}</h4>
           <p>
-            <strong>ФИО:</strong> {booking.clientName}
+            <strong>{t('admin.bookings.fullName')}:</strong> {booking.clientName}
           </p>
           <p>
-            <strong>Телефон:</strong> {booking.clientPhone}
+            <strong>{t('admin.bookings.phone')}:</strong> {booking.clientPhone}
           </p>
           <p>
-            <strong>Услуга:</strong> {currentService?.name}
+            <strong>{t('admin.bookings.service')}:</strong> {currentService?.name}
           </p>
         </div>
 
@@ -194,9 +169,8 @@ export default function BookingEditModal({
             handleSave();
           }}
         >
-          {/* Мастер */}
           <Select
-            label="Специалист"
+            label={t('admin.bookings.specialist')}
             name="specialistId"
             value={editData.specialistId}
             onChange={(e) => handleChange('specialistId', e.target.value)}
@@ -205,9 +179,8 @@ export default function BookingEditModal({
             required
           />
 
-          {/* Дата */}
           <Input
-            label="Дата"
+            label={t('admin.bookings.date')}
             type="date"
             name="date"
             value={editData.date}
@@ -216,9 +189,8 @@ export default function BookingEditModal({
             required
           />
 
-          {/* Время начала */}
           <Input
-            label="Время начала"
+            label={t('admin.bookings.startTime')}
             type="time"
             name="startTime"
             value={editData.startTime}
@@ -227,23 +199,21 @@ export default function BookingEditModal({
             required
           />
 
-          {/* Длительность */}
           <Input
-            label="Длительность (минуты)"
+            label={t('admin.bookings.duration')}
             type="number"
             name="duration"
             value={editData.duration}
             onChange={(e) => handleChange('duration', Number(e.target.value))}
             error={errors.duration}
-            helperText={`Окончание: ${computedEndTime || '—'}`}
+            helperText={`${t('admin.bookings.endTime')}: ${computedEndTime || '—'}`}
             min={15}
             step={15}
             required
           />
 
-          {/* Статус */}
           <Select
-            label="Статус"
+            label={t('admin.bookings.status')}
             name="status"
             value={editData.status}
             onChange={(e) => handleChange('status', e.target.value)}
@@ -255,17 +225,17 @@ export default function BookingEditModal({
           <div className="booking-edit-modal__actions">
             <Button
               variant="outline"
-              onClick={handleClose}
+              onClick={onClose}
               disabled={isSubmitting}
             >
-              Отмена
+              {t('common.cancel')}
             </Button>
             <Button
               type="submit"
               variant="primary"
               isLoading={isSubmitting}
             >
-              {isSubmitting ? 'Сохранение...' : 'Сохранить изменения'}
+              {isSubmitting ? t('common.saving') : t('common.saveChanges')}
             </Button>
           </div>
         </form>

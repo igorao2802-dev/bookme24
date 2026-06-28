@@ -40,3 +40,27 @@
   border-color: var(--color-primary, #d4a574);
   outline: none;
 }
+
+/* ═══════════════════════════════════════════════
+   АДАПТИВНОСТЬ (ЗАМЕЧАНИЕ №10)
+   ПОЧЕМУ? На мобильных устройствах select сужается,
+   и длинные тексты ("Alphabetically") обрезаются.
+   Уменьшаем шрифт и padding для компактности.
+   ═══════════════════════════════════════════════ */
+@media (max-width: 480px) {
+  .sort-panel {
+    flex-wrap: wrap;
+    gap: var(--spacing-xs, 4px);
+  }
+
+  .sort-panel__label {
+    font-size: var(--font-size-xs, 0.75rem);
+  }
+
+  .sort-panel__select {
+    font-size: var(--font-size-xs, 0.75rem);
+    padding: 4px 8px;
+    min-height: 32px;
+    max-width: 100%;
+  }
+}

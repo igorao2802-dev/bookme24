@@ -1,36 +1,53 @@
 /**
  * SpecialistSelector.jsx — Шаг 2: выбор специалиста
- *
- * ОСОБЕННОСТЬ:
- * Показывает ТОЛЬКО тех мастеров, которые оказывают выбранную услугу.
- * Это критично — клиент не должен видеть мастеров, которые не работают с этой услугой.
+ * 
+ * 🔥 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ:
+ * Фильтрация идёт по specialistIds услуги (обратная проверка),
+ * а не по serviceIds специалиста. Это гарантирует корректную работу
+ * даже если serviceIds у стандартных специалистов не обновлены.
+ * 
+ * ПОЧЕМУ это важно?
+ * - При создании услуги администратор назначает specialistIds
+ * - Но serviceIds у стандартных специалистов (из JSON) не обновляются
+ * - Поэтому фильтрация по spec.serviceIds даёт пустой результат
  */
-
 import { useMemo } from 'react';
 import { Award, Star, Check } from 'lucide-react';
-
 import EmptyState from '../UI/EmptyState';
-
+import { useLanguage } from '../../hooks/useLanguage';
 import './SpecialistSelector.css';
 
 export default function SpecialistSelector({
   specialists,
+  services = [],  // 🔥 НОВОЕ: для обратной проверки
   selectedServiceId,
   selectedSpecialistId,
   onSelect,
 }) {
-  // === ФИЛЬТРАЦИЯ МАСТЕРОВ ПО УСЛУГЕ ===
+  const { t } = useLanguage();
+
+  // 🔥 ИСПРАВЛЕНО: Фильтрация по specialistIds услуги
   const availableSpecialists = useMemo(() => {
     if (!selectedServiceId) return [];
+
+    // Находим выбранную услугу
+    const service = services.find((s) => s.id === selectedServiceId);
+
+    // Если услуга не найдена или у неё нет specialistIds — показываем всех
+    if (!service || !service.specialistIds || service.specialistIds.length === 0) {
+      return specialists;
+    }
+
+    // Фильтруем только тех специалистов, которые назначены на эту услугу
     return specialists.filter((spec) =>
-      spec.serviceIds.includes(selectedServiceId)
+      service.specialistIds.includes(spec.id)
     );
-  }, [specialists, selectedServiceId]);
+  }, [specialists, selectedServiceId, services]);
 
   if (availableSpecialists.length === 0) {
     return (
       <EmptyState
-        title="Нет доступных специалистов"
+        title={t('booking.validation.selectSpecialist') || 'Нет доступных специалистов'}
         description="К сожалению, на эту услугу сейчас нет свободных мастеров"
         variant="info"
       />
@@ -40,9 +57,9 @@ export default function SpecialistSelector({
   return (
     <div className="specialist-selector">
       <div className="specialist-selector__header">
-        <h2>Выберите специалиста</h2>
+        <h2>{t('booking.steps.specialist')}</h2>
         <p className="specialist-selector__description">
-          Доступно мастеров: {availableSpecialists.length}
+          {t('catalog.specialist.services')}: {availableSpecialists.length}
         </p>
       </div>
 
@@ -81,7 +98,7 @@ export default function SpecialistSelector({
               <div className="specialist-card__meta">
                 <span className="specialist-card__meta-item">
                   <Award size={14} />
-                  Стаж {specialist.experience} лет
+                  {t('catalog.specialist.experience', { years: specialist.experience })}
                 </span>
                 <span className="specialist-card__meta-item">
                   <Star size={14} />

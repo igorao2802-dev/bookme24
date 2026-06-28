@@ -10,11 +10,10 @@
  * Выбор хранится в draft (в BookingWizard), сюда приходит через props.
  * При клике вызывает onSelect(serviceId) — callback родителя.
  * 
- * 🔥 ЭТАП 2.3: Добавлена панель сортировки с toggle направления
- * 🔥 ЭТАП 7.4: Полная локализация всех пользовательских текстов
- * 🔥 ИСПРАВЛЕНИЕ: Сортировка по категории теперь учитывает направление (asc/desc)
+ * 🔥 ЗАМЕЧАНИЕ №6: Добавлен toggle-режим
+ * - Первый клик на услугу → onSelect(serviceId)
+ * - Повторный клик на ту же услугу → onSelect(null) — снять выбор
  */
-
 import { useState, useMemo } from 'react';
 import { Clock, Star, Check, ArrowUp, ArrowDown } from 'lucide-react';
 import { SERVICE_CATEGORIES } from '../../utils/constants';
@@ -26,10 +25,6 @@ import EmptyState from '../UI/EmptyState';
 import './ServiceSelector.css';
 
 // === КОНФИГУРАЦИЯ СОРТИРОВКИ ===
-// ПОЧЕМУ вынесено в константу?
-// - Единая точка правды о доступных вариантах сортировки
-// - Легко добавлять новые варианты
-// - Используется в двух местах: рендер кнопок и логика сортировки
 const SORT_OPTIONS = [
   { field: 'popular', labelKey: 'catalog.sort.popular', defaultDirection: 'desc' },
   { field: 'price', labelKey: 'catalog.sort.priceAsc', defaultDirection: 'asc' },
@@ -72,6 +67,19 @@ export default function ServiceSelector({
     });
   };
 
+  // 🔥 ЗАМЕЧАНИЕ №6: Toggle-обработчик клика по карточке услуги
+  // ПОЧЕМУ toggle? Пользователь должен иметь возможность "передумать"
+  // и снять выбор, не выбирая другую услугу.
+  const handleServiceClick = (serviceId) => {
+    if (selectedServiceId === serviceId) {
+      // Повторный клик на уже выбранную услугу → снять выбор
+      onSelect(null);
+    } else {
+      // Клик на новую услугу → выбрать её
+      onSelect(serviceId);
+    }
+  };
+
   // === ФИЛЬТРАЦИЯ УСЛУГ ===
   const filteredServices = useMemo(() => {
     return services.filter((service) => {
@@ -90,7 +98,6 @@ export default function ServiceSelector({
   // === СОРТИРОВКА УСЛУГ ===
   const sortedServices = useMemo(() => {
     const result = [...filteredServices];
-    
     result.sort((a, b) => {
       let comparison = 0;
 
@@ -127,7 +134,6 @@ export default function ServiceSelector({
   }, [filteredServices, sort]);
 
   // === ОПЦИИ ДЛЯ ФИЛЬТРА КАТЕГОРИЙ ===
-  // 🔥 Локализованные названия категорий
   const categoryOptions = [
     { value: 'all', label: t('catalog.categories.all') },
     ...Object.values(SERVICE_CATEGORIES).map((cat) => ({
@@ -149,10 +155,8 @@ export default function ServiceSelector({
   return (
     <div className="service-selector">
       <div className="service-selector__header">
-        {/* 🔥 Локализованный заголовок */}
         <h2>{t('booking.steps.service')}</h2>
         <p className="service-selector__description">
-          {/* 🔥 Локализованное описание с интерполяцией */}
           {t('booking.serviceCount', {
             services: services.length,
             categories: Object.keys(SERVICE_CATEGORIES).length,
@@ -189,7 +193,6 @@ export default function ServiceSelector({
 
       {/* === ПАНЕЛЬ СОРТИРОВКИ === */}
       <div className="service-selector__sort">
-        {/* 🔥 Локализованная метка */}
         <span className="service-selector__sort-label">
           {t('catalog.sort.title')}:
         </span>
@@ -233,15 +236,16 @@ export default function ServiceSelector({
                 className={`service-card ${
                   isSelected ? 'service-card--selected' : ''
                 }`}
-                onClick={() => onSelect(service.id)}
+                onClick={() => handleServiceClick(service.id)}
                 role="button"
                 tabIndex={0}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
-                    onSelect(service.id);
+                    handleServiceClick(service.id);
                   }
                 }}
+                aria-pressed={isSelected}
               >
                 {isSelected && (
                   <div className="service-card__check">
@@ -250,7 +254,6 @@ export default function ServiceSelector({
                 )}
 
                 <div className="service-card__category">
-                  {/* 🔥 Локализованная категория */}
                   {t(`catalog.categories.${service.category}`)}
                 </div>
 
@@ -263,7 +266,7 @@ export default function ServiceSelector({
                 <div className="service-card__meta">
                   <span className="service-card__meta-item">
                     <Clock size={14} />
-                    {formatDuration(service.duration)}
+                    {formatDuration(service.duration, t)}
                   </span>
                   <span className="service-card__meta-item">
                     <Star size={14} />

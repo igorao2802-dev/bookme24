@@ -2,32 +2,73 @@
  * BookingList.css — стили для списка записей
  * BEM-методология + адаптивность + поддержка тёмной темы
  * 
- * 🔥 ИСПРАВЛЕНО: 
- * - Увеличены вертикальные отступы между элементами
- * - Заменён эффект поднятия на изменение цвета левой границы
+ * 🔥 ЗАМЕЧАНИЕ №2: Увеличены вертикальные отступы между элементами
+ * - Отступ между заголовком и кнопкой: 24px
+ * - Отступ между секциями: 32px
+ * - Отступ между карточками: 16px
+ * - Внутренние отступы карточки: 24px
  */
 
 /* === ОСНОВНОЙ КОНТЕЙНЕР === */
 .booking-list {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-xl, 32px); /* 🔥 Увеличено с 24px до 32px */
+  gap: var(--spacing-xl, 32px); /* Увеличено с 24px до 32px */
 }
 
 /* === ЗАГОЛОВОК СПИСКА === */
+.booking-list__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-lg, 24px); /* 🔥 Увеличено с 16px до 24px */
+  flex-wrap: wrap;
+}
+
 .booking-list__title {
   font-size: var(--font-size-xl, 1.5rem);
   font-weight: 600;
   color: var(--color-text, #2d2419);
   margin: 0;
-  margin-bottom: var(--spacing-lg, 24px); /* 🔥 Увеличено с 16px до 24px */
+}
+
+.booking-list__new-btn {
+  flex-shrink: 0;
+}
+
+/* === БАННЕР УСПЕШНОГО СОЗДАНИЯ === */
+.booking-list__success-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md, 16px);
+  padding: var(--spacing-lg, 24px);
+  background: linear-gradient(
+    135deg,
+    var(--color-success-light, #e6f0e9) 0%,
+    var(--color-surface, #ffffff) 100%
+  );
+  border: 1px solid var(--color-success, #5f8c6d);
+  border-radius: var(--radius-lg, 12px);
+  color: var(--color-success-dark, #3e6b4c);
+}
+
+.booking-list__success-banner strong {
+  display: block;
+  font-size: var(--font-size-base, 1rem);
+  margin-bottom: var(--spacing-xs, 4px);
+}
+
+.booking-list__success-banner p {
+  font-size: var(--font-size-sm, 0.875rem);
+  margin: 0;
+  opacity: 0.9;
 }
 
 /* === СЕКЦИЯ (Предстоящие/История) === */
 .booking-list__section {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-md, 16px); /* 🔥 Увеличено с 12px до 16px */
+  gap: var(--spacing-md, 16px); /* Увеличено с 12px до 16px */
 }
 
 .booking-list__section-title {
@@ -35,182 +76,40 @@
   font-weight: 600;
   color: var(--color-text, #2d2419);
   margin: 0;
-  margin-bottom: var(--spacing-md, 16px); /* 🔥 Увеличено с 8px до 16px */
+  margin-bottom: var(--spacing-md, 16px); /* Увеличено с 8px до 16px */
 }
 
-/* === БЛОК ЗАПИСИ === */
-.booking-card {
-  background: var(--color-surface, #ffffff);
-  border: 1.5px solid var(--color-border, #e8dcc4);
-  border-left: 4px solid var(--color-primary-500, #b8957a); /* 🔥 Добавлена левая граница */
-  border-radius: var(--radius-md, 8px);
-  padding: var(--spacing-lg, 24px); /* 🔥 Увеличено с 16px до 24px */
-  transition:
-    border-left-color 200ms ease,
-    /* 🔥 Плавное изменение левой границы */ background-color 200ms ease,
-    box-shadow 200ms ease;
-  cursor: pointer;
-}
-
-/* 🔥 ИСПРАВЛЕНО: Вместо поднятия - изменение цвета левой границы */
-.booking-card:hover {
-  border-left-color: var(
-    --color-primary-700,
-    #7f5e44
-  ); /* 🔥 Изменение цвета левой границы */
-  background-color: var(
-    --color-primary-soft,
-    #fbf5ef
-  ); /* 🔥 Лёгкое изменение фона */
-  box-shadow: var(--shadow-sm); /* 🔥 Лёгкая тень вместо поднятия */
-}
-
-.booking-card:focus-visible {
-  outline: 2px solid var(--color-primary, #d4a574);
-  outline-offset: 2px;
-}
-
-/* === СТАТУС ЗАПИСИ === */
-.booking-card__status {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-xs, 4px);
-  padding: 4px 12px;
-  border-radius: var(--radius-full, 9999px);
-  font-size: var(--font-size-xs, 0.75rem);
-  font-weight: 600;
-  margin-bottom: var(--spacing-sm, 8px); /* 🔥 Увеличено с 4px до 8px */
-}
-
-.booking-card__status--confirmed {
-  background: var(--color-success-light, #e6f0e9);
-  color: var(--color-success-dark, #3e6b4c);
-}
-
-.booking-card__status--pending {
-  background: var(--color-warning-light, #fdf3e6);
-  color: var(--color-warning-dark, #9e6b24);
-}
-
-.booking-card__status--cancelled {
-  background: var(--color-error-light, #fceae8);
-  color: var(--color-error-dark, #9e4539);
-}
-
-/* === НАЗВАНИЕ УСЛУГИ === */
-.booking-card__service {
-  font-size: var(--font-size-lg, 1.125rem);
-  font-weight: 600;
-  color: var(--color-text, #2d2419);
-  margin: 0;
-  margin-bottom: var(--spacing-sm, 8px); /* 🔥 Увеличено с 4px до 8px */
-}
-
-/* === ИНФОРМАЦИЯ О МАСТЕРЕ === */
-.booking-card__specialist {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs, 4px);
-  font-size: var(--font-size-sm, 0.875rem);
-  color: var(--color-text-muted, #6b5d4f);
-  margin-bottom: var(--spacing-xs, 4px); /* 🔥 Увеличено с 2px до 4px */
-}
-
-.booking-card__specialist svg {
-  flex-shrink: 0;
-  color: var(--color-primary-500, #b8957a);
-}
-
-/* === ДАТА И ВРЕМЯ === */
-.booking-card__datetime {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs, 4px);
-  font-size: var(--font-size-sm, 0.875rem);
-  color: var(--color-text-muted, #6b5d4f);
-  margin-bottom: var(--spacing-md, 16px); /* 🔥 Увеличено с 12px до 16px */
-}
-
-.booking-card__datetime-item {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs, 4px);
-}
-
-.booking-card__datetime-item svg {
-  flex-shrink: 0;
-  color: var(--color-primary-500, #b8957a);
-}
-
-/* === ЦЕНА === */
-.booking-card__price {
-  font-size: var(--font-size-xl, 1.5rem);
-  font-weight: 700;
-  color: var(--color-primary-700, #7f5e44);
-  margin: 0;
-  margin-top: var(--spacing-md, 16px); /* 🔥 Увеличено с 12px до 16px */
-}
-
-/* === КНОПКИ ДЕЙСТВИЙ === */
-.booking-card__actions {
-  display: flex;
-  gap: var(--spacing-sm, 8px);
-  margin-top: var(--spacing-lg, 24px); /* 🔥 Увеличено с 16px до 24px */
-  padding-top: var(--spacing-md, 16px); /* 🔥 Увеличено с 12px до 16px */
-  border-top: 1px solid var(--color-border, #e8dcc4);
+/* === СЕТКА КАРТОЧЕК === */
+.booking-list__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: var(--spacing-md, 16px); /*  Увеличено с 12px до 16px */
 }
 
 /* === ПУСТОЕ СОСТОЯНИЕ === */
 .booking-list__empty {
   text-align: center;
-  padding: var(--spacing-2xl, 48px); /* 🔥 Увеличено с 32px до 48px */
+  padding: var(--spacing-2xl, 48px);
   background: var(--color-surface-alt, #f2ebe0);
   border-radius: var(--radius-lg, 12px);
 }
 
-/* === ПЕРИОД (Скоро/Прошло) === */
-.booking-card__period {
-  font-size: var(--font-size-xs, 0.75rem);
-  color: var(--color-text-subtle, #8a7968);
-  font-style: italic;
-  margin-left: auto;
-}
-
-/* ═══════════════════════════════════════════════
+/* ══════════════════════════════════════════════
    ПОДДЕРЖКА ТЁМНОЙ ТЕМЫ
    ═══════════════════════════════════════════════ */
-
 [data-theme="dark"] .booking-list__title,
 [data-theme="dark"] .booking-list__section-title {
   color: var(--color-text, #f2ebe0);
 }
 
-[data-theme="dark"] .booking-card {
-  background: var(--color-surface, #2d2419);
-  border-color: var(--color-border, #4a3a2a);
-  border-left-color: var(--color-primary-500, #b8957a);
-}
-
-[data-theme="dark"] .booking-card:hover {
-  border-left-color: var(--color-primary-400, #c9a88c);
-  background: var(--color-primary-soft, #3d2f26);
-}
-
-[data-theme="dark"] .booking-card__service {
-  color: var(--color-text, #f2ebe0);
-}
-
-[data-theme="dark"] .booking-card__specialist,
-[data-theme="dark"] .booking-card__datetime {
-  color: var(--color-text-muted, #b5a28d);
-}
-
-[data-theme="dark"] .booking-card__price {
-  color: var(--color-primary-400, #c9a88c);
-}
-
-[data-theme="dark"] .booking-card__actions {
-  border-top-color: var(--color-border, #4a3a2a);
+[data-theme="dark"] .booking-list__success-banner {
+  background: linear-gradient(
+    135deg,
+    var(--color-success-light, #2d3d2e) 0%,
+    var(--color-surface, #2d2419) 100%
+  );
+  border-color: var(--color-success, #5f8c6d);
+  color: var(--color-success-light, #a8d5b5);
 }
 
 [data-theme="dark"] .booking-list__empty {
@@ -220,33 +119,47 @@
 /* ═══════════════════════════════════════════════
    АДАПТИВНОСТЬ
    ═══════════════════════════════════════════════ */
-
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .booking-list {
-    gap: var(--spacing-lg, 24px); /* 🔥 Увеличено с 16px до 24px */
+    gap: var(--spacing-lg, 24px);
   }
 
-  .booking-list__title {
-    margin-bottom: var(--spacing-md, 16px); /* 🔥 Увеличено с 12px до 16px */
-  }
-
-  .booking-card {
-    padding: var(--spacing-md, 16px); /* 🔥 Увеличено с 12px до 16px */
-  }
-
-  .booking-card__actions {
+  .booking-list__header {
     flex-direction: column;
-    gap: var(--spacing-xs, 8px);
+    align-items: stretch;
+    gap: var(--spacing-md, 16px);
   }
 
-  .booking-card__actions button {
+  .booking-list__new-btn {
     width: 100%;
+    justify-content: center;
+  }
+
+  .booking-list__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .booking-list__title {
+    font-size: var(--font-size-lg, 1.25rem);
+  }
+
+  .booking-list__section-title {
+    font-size: var(--font-size-base, 1rem);
+  }
+
+  .booking-list__success-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-sm, 8px);
+    padding: var(--spacing-md, 16px);
   }
 }
 
 /* === ДОСТУПНОСТЬ: prefers-reduced-motion === */
 @media (prefers-reduced-motion: reduce) {
-  .booking-card {
+  .booking-list__success-banner {
     transition: none;
   }
 }

@@ -1,8 +1,18 @@
 /**
  * useServices.js — хук для управления каталогом услуг
- * - При создании/обновлении услуги автоматически обновляется serviceIds у специалистов
- * - Разрешено редактирование стандартных услуг (создаётся кастомная копия)
+ *
+ * АРХИТЕКТУРНАЯ РОЛЬ:
+ * - Загружает JSON-услуги и мержит с кастомными из localStorage
+ * - CRUD операции: addService, updateService, deleteService
+ * - Двусторонняя синхронизация specialistIds ↔ serviceIds
+ * - При редактировании стандартной услуги создаётся кастомная копия
  * - Удаление стандартных услуг запрещено
+ *
+ * 🔥 ИСПРАВЛЕНО:
+ * - Устранены все опечатки (oldSpecialistIds, newSpecialistIds и др.)
+ * - Убраны trailing spaces во всех строках
+ * - Исправлены все && вместо & &
+ * - Исправлены все стрелочные функции (prev) =>
  */
 import { useMemo, useCallback } from "react";
 import { useLocalStorage } from "./useLocalStorage";
@@ -73,7 +83,6 @@ function validateServiceData(data, existingServices = [], currentId = null) {
     }
   }
 
-  // specialistIds опционален — может быть пустым массивом
   if (data.specialistIds !== undefined && !Array.isArray(data.specialistIds)) {
     errors.specialistIds = "validation.service.specialistsRequired";
   }
@@ -81,6 +90,7 @@ function validateServiceData(data, existingServices = [], currentId = null) {
   if (data.nameEn && data.nameEn.trim().length > 100) {
     errors.nameEn = "validation.service.nameTooLong";
   }
+
   if (data.descriptionEn && data.descriptionEn.trim().length > 500) {
     errors.descriptionEn = "validation.service.descriptionTooLong";
   }
@@ -90,25 +100,28 @@ function validateServiceData(data, existingServices = [], currentId = null) {
 
 export function useServices(jsonServices = []) {
   const { t } = useLanguage();
+
   const [customServices, setCustomServices] = useLocalStorage(
     STORAGE_KEYS.CUSTOM_SERVICES,
     [],
   );
-  //  Храним кастомных специалистов для синхронизации serviceIds
+
   const [customSpecialists, setCustomSpecialists] = useLocalStorage(
     STORAGE_KEYS.CUSTOM_SPECIALISTS,
     [],
   );
 
-  //  Слияние: кастомные услуги перекрывают стандартные с тем же id
+  // === СЛИЯНИЕ УСЛУГ: кастомные перекрывают стандартные ===
   const services = useMemo(() => {
     const customMap = new Map(customServices.map((s) => [s.id, s]));
     const merged = [];
 
+    // Сначала добавляем кастомные услуги без originalId
     customServices.forEach((s) => {
       if (!s.originalId) merged.push(s);
     });
 
+    // Затем JSON-услуги (перезаписанные кастомными, если есть)
     jsonServices.forEach((s) => {
       if (customMap.has(s.id)) {
         merged.push(customMap.get(s.id));
@@ -120,7 +133,11 @@ export function useServices(jsonServices = []) {
     return merged;
   }, [customServices, jsonServices]);
 
-  //  Вспомогательная функция: синхронизация serviceIds у специалистов
+  const specialists = useMemo(() => {
+    return customSpecialists;
+  }, [customSpecialists]);
+
+  // === Двусторонняя синхронизация ===
   const syncSpecialistServices = useCallback(
     (serviceId, oldSpecialistIds = [], newSpecialistIds = []) => {
       setCustomSpecialists((prev) =>
@@ -128,7 +145,6 @@ export function useServices(jsonServices = []) {
           const currentServiceIds = specialist.serviceIds || [];
           let updatedServiceIds = currentServiceIds;
 
-          // Если специалист был привязан, но теперь нет — удаляем услугу
           if (
             oldSpecialistIds.includes(specialist.id) &&
             !newSpecialistIds.includes(specialist.id)
@@ -138,7 +154,6 @@ export function useServices(jsonServices = []) {
             );
           }
 
-          // Если специалист теперь привязан, но услуги нет в списке — добавляем
           if (
             newSpecialistIds.includes(specialist.id) &&
             !updatedServiceIds.some((id) => String(id) === String(serviceId))
@@ -183,7 +198,6 @@ export function useServices(jsonServices = []) {
 
       setCustomServices((prev) => [newService, ...prev]);
 
-      //  Синхронизация: добавляем услугу в serviceIds назначенных специалистов
       if (newService.specialistIds.length > 0) {
         syncSpecialistServices(newService.id, [], newService.specialistIds);
       }
@@ -220,7 +234,6 @@ export function useServices(jsonServices = []) {
           : oldSpecialistIds;
 
       if (isStandardService) {
-        //  Создаём кастомную копию стандартной услуги с тем же id
         const customCopy = {
           ...existingService,
           ...updates,
@@ -289,7 +302,6 @@ export function useServices(jsonServices = []) {
         );
       }
 
-      //  Синхронизация specialistIds ↔ serviceIds
       syncSpecialistServices(serviceId, oldSpecialistIds, newSpecialistIds);
 
       const updatedService = { ...existingService, ...updates };
@@ -308,7 +320,6 @@ export function useServices(jsonServices = []) {
         return { success: false, error: "validation.service.notFound" };
       }
 
-      //  Стандартные услуги нельзя удалять
       if (
         !existingService.isCustom &&
         !String(serviceId).startsWith("custom_")
@@ -323,7 +334,6 @@ export function useServices(jsonServices = []) {
         prev.filter((s) => String(s.id) !== String(serviceId)),
       );
 
-      //  Удаляем услугу из serviceIds всех специалистов
       setCustomSpecialists((prev) =>
         prev.map((specialist) => ({
           ...specialist,

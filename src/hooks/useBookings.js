@@ -1,282 +1,196 @@
 /**
- * useBookings.js — кастомный хук для управления записями клиентов (CRUD)
+ * useBookings.js — хук для управления записями
  *
- * АРХИТЕКТУРНАЯ РОЛЬ:
- * - Инкапсулирует ВСЮ бизнес-логику работы с записями
- * - Использует useLocalStorage для автоматического сохранения
- * - Вызывает checkTimeOverlap перед каждым Create/Update
- * - Защищает от невалидных операций
+ * ФУНКЦИОНАЛ:
+ * - Чтение записей из localStorage
+ * - CRUD операции (create, read, update, delete)
+ * - Статистика по записям
+ * - Проверка пересечений
  *
- * SINGLE SOURCE OF TRUTH:
- * Массив bookings живёт здесь. Все компоненты получают его через props.
+ * ЗАВИСИМОСТИ:
+ * - useLocalStorage для persistence
+ * - checkTimeOverlap для валидации
+ * - generateId для генерации ID
+ *
+ * ВОЗВРАЩАЕТ:
+ * - bookings: массив записей
+ * - createBooking: функция создания
+ * - updateBooking: функция обновления
+ * - cancelBooking: функция отмены
+ * - deleteBooking: функция удаления
+ * - stats: объект статистики
+ * - clearAllBookings: функция очистки всех записей
  */
+
 import { useCallback, useMemo } from "react";
-import { useLocalStorage } from "./useLocalStorage";
-import { checkTimeOverlap } from "../utils/checkTimeOverlap";
-import { calculateEndTime } from "../utils/timeHelpers";
-import {
-  BOOKING_STATUS,
-  STORAGE_KEYS,
-  BUSINESS_CONFIG,
-} from "../utils/constants";
-import { nanoid } from "nanoid";
+import { useLocalStorage } from "./useLocalStorage.js";
+import { checkTimeOverlap } from "../utils/checkTimeOverlap.js";
+import { generateId } from "../utils/generateId.js";
+import { STORAGE_KEYS, BOOKING_STATUS } from "../utils/constants.js";
 
-/**
- * @returns {Object} - все операции над записями + данные
- */
-export function useBookings(services = [], specialists = []) {
-  // === ХРАНИЛИЩЕ ЗАПИСЕЙ ===
-  const [bookings, setBookings] = useLocalStorage(STORAGE_KEYS.BOOKINGS, [], {
-    debounceMs: 300,
-  });
-
-  // === CREATE: Создание новой записи ===
-  const createBooking = useCallback(
-    (bookingData) => {
-      // 1. ВАЛИДАЦИЯ ВХОДНЫХ ДАННЫХ
-      if (!bookingData.serviceId || !bookingData.specialistId) {
-        return {
-          success: false,
-          error: "Не выбрана услуга или специалист",
-          booking: null,
-        };
-      }
-
-      if (!bookingData.date || !bookingData.startTime) {
-        return {
-          success: false,
-          error: "Не выбраны дата и время",
-          booking: null,
-        };
-      }
-
-      // 2. ПОЛУЧАЕМ ДАННЫЕ УСЛУГИ И МАСТЕРА
-      const service = services.find((s) => s.id === bookingData.serviceId);
-      const specialist = specialists.find(
-        (s) => s.id === bookingData.specialistId,
-      );
-
-      if (!service) {
-        return {
-          success: false,
-          error: "Услуга не найдена в каталоге",
-          booking: null,
-        };
-      }
-
-      if (!specialist) {
-        return {
-          success: false,
-          error: "Специалист не найден",
-          booking: null,
-        };
-      }
-
-      // 3. ФОРМИРУЕМ ПОЛНЫЙ ОБЪЕКТ ЗАПИСИ
-      // 🔥 ИСПРАВЛЕНО: пустые строки "" вместо " " (пробел)
-      const newBooking = {
-        id: nanoid(),
-        serviceId: service.id,
-        specialistId: specialist.id,
-        clientName: bookingData.clientName || "",
-        clientPhone: bookingData.clientPhone || "",
-        clientEmail: bookingData.clientEmail || "",
-        comment: bookingData.comment || "",
-        date: bookingData.date,
-        startTime: bookingData.startTime,
-        endTime: calculateEndTime(bookingData.startTime, service.duration),
-        duration: service.duration,
-        // 🔥 ИСПРАВЛЕНО: tot alPrice → totalPrice (критическая опечатка!)
-        totalPrice: service.price,
-        status: BOOKING_STATUS.CONFIRMED,
-        createdAt: new Date().toISOString(),
-        createdBy: bookingData.createdBy || "client",
-      };
-
-      // 4. ПРОВЕРКА ПЕРЕСЕЧЕНИЙ ПЕРЕД СОХРАНЕНИЕМ
-      const overlapResult = checkTimeOverlap(
-        newBooking,
-        bookings,
-        BUSINESS_CONFIG.BUFFER_MINUTES,
-      );
-
-      if (overlapResult.hasOverlap) {
-        return {
-          success: false,
-          error: `Выбранное время занято. ${overlapResult.reason}`,
-          booking: null,
-          conflictingBooking: overlapResult.conflictingBooking,
-        };
-      }
-
-      // 5. СОХРАНЕНИЕ
-      setBookings((prev) => [...prev, newBooking]);
-
-      return {
-        success: true,
-        error: null,
-        booking: newBooking,
-      };
-    },
-    [bookings, services, specialists, setBookings],
+export function useBookings() {
+  const [bookings, setBookings, clearBookings] = useLocalStorage(
+    STORAGE_KEYS.BOOKINGS,
+    [],
   );
 
-  // === UPDATE: Обновление существующей записи ===
-  const updateBooking = useCallback(
-    (id, updates) => {
-      if (!id) {
-        return { success: false, error: "Не указан ID записи" };
+  /**
+   * Создание новой записи
+   * @param {Object} bookingData - данные записи
+   * @returns {Object} результат операции
+   */
+  const createBooking = useCallback(
+    (bookingData) => {
+      const newBooking = {
+        id: generateId(),
+        status: BOOKING_STATUS.PENDING,
+        createdAt: new Date().toISOString(),
+        ...bookingData,
+      };
+
+      // Проверка на пересечения
+      const overlap = checkTimeOverlap(newBooking, bookings);
+      if (overlap.hasOverlap) {
+        return {
+          success: false,
+          error: overlap.message || "Время пересекается с существующей записью",
+        };
       }
 
-      const existing = bookings.find((b) => b.id === id);
-      if (!existing) {
-        return { success: false, error: "Запись не найдена" };
-      }
-
-      const updatedBooking = { ...existing, ...updates };
-
-      // Если меняются время/дата/мастер — проверяем пересечения
-      const needsOverlapCheck =
-        updates.date !== undefined ||
-        updates.startTime !== undefined ||
-        updates.specialistId !== undefined ||
-        updates.duration !== undefined;
-
-      if (needsOverlapCheck) {
-        const overlapResult = checkTimeOverlap(
-          updatedBooking,
-          bookings,
-          BUSINESS_CONFIG.BUFFER_MINUTES,
-        );
-
-        if (overlapResult.hasOverlap) {
-          return {
-            success: false,
-            error: `Конфликт расписания: ${overlapResult.reason}`,
-          };
-        }
-      }
-
-      // Пересчитываем endTime, если изменилось начало или длительность
-      if (updates.startTime || updates.duration) {
-        const newDuration = updates.duration || existing.duration;
-        const newStartTime = updates.startTime || existing.startTime;
-        updatedBooking.endTime = calculateEndTime(newStartTime, newDuration);
-      }
-
-      updatedBooking.updatedAt = new Date().toISOString();
-
-      setBookings((prev) =>
-        prev.map((b) => (b.id === id ? updatedBooking : b)),
-      );
-
-      return { success: true, error: null, booking: updatedBooking };
+      setBookings((prev) => [...prev, newBooking]);
+      return { success: true, booking: newBooking };
     },
     [bookings, setBookings],
   );
 
-  // === CANCEL: Отмена записи (НЕ физическое удаление) ===
+  /**
+   * Обновление существующей записи
+   * @param {string} bookingId - ID записи
+   * @param {Object} updates - обновляемые поля
+   * @returns {Object} результат операции
+   */
+  const updateBooking = useCallback(
+    (bookingId, updates) => {
+      const bookingIndex = bookings.findIndex((b) => b.id === bookingId);
+      if (bookingIndex === -1) {
+        return { success: false, error: "Запись не найдена" };
+      }
+
+      const updatedBooking = {
+        ...bookings[bookingIndex],
+        ...updates,
+        updatedAt: new Date().toISOString(),
+      };
+
+      // Проверка на пересечения (исключая саму запись)
+      const bookingsWithoutCurrent = bookings.filter((b) => b.id !== bookingId);
+      const overlap = checkTimeOverlap(updatedBooking, bookingsWithoutCurrent);
+      if (overlap.hasOverlap) {
+        return {
+          success: false,
+          error: overlap.message || "Время пересекается с существующей записью",
+        };
+      }
+
+      const newBookings = [...bookings];
+      newBookings[bookingIndex] = updatedBooking;
+      setBookings(newBookings);
+      return { success: true, booking: updatedBooking };
+    },
+    [bookings, setBookings],
+  );
+
+  /**
+   * Отмена записи
+   * @param {string} bookingId - ID записи
+   * @returns {Object} результат операции
+   */
   const cancelBooking = useCallback(
-    (id, reason = "") => {
-      return updateBooking(id, {
-        status: BOOKING_STATUS.CANCELLED,
-        cancellationReason: reason,
-      });
-    },
-    [updateBooking],
-  );
+    (bookingId) => {
+      const booking = bookings.find((b) => b.id === bookingId);
+      if (!booking) {
+        return { success: false, error: "Запись не найдена" };
+      }
 
-  // === CONFIRM: Подтверждение записи ===
-  const confirmBooking = useCallback(
-    (id) => updateBooking(id, { status: BOOKING_STATUS.CONFIRMED }),
-    [updateBooking],
-  );
+      if (booking.status === BOOKING_STATUS.CANCELLED) {
+        return { success: false, error: "Запись уже отменена" };
+      }
 
-  // === COMPLETE: Завершение записи ===
-  const completeBooking = useCallback(
-    (id) => updateBooking(id, { status: BOOKING_STATUS.COMPLETED }),
-    [updateBooking],
-  );
-
-  // === ПОИСК И ФИЛЬТРАЦИЯ (мемоизированные) ===
-  const activeBookings = useMemo(
-    () =>
-      bookings.filter(
-        (b) =>
-          b.status !== BOOKING_STATUS.CANCELLED &&
-          b.status !== BOOKING_STATUS.COMPLETED,
-      ),
-    [bookings],
-  );
-
-  const futureBookings = useMemo(() => {
-    const now = new Date();
-    return bookings.filter((b) => {
-      const bookingDate = new Date(`${b.date}T${b.startTime}`);
-      return bookingDate >= now && b.status !== BOOKING_STATUS.CANCELLED;
-    });
-  }, [bookings]);
-
-  const findBookingsByPhone = useCallback(
-    (phone) => {
-      if (!phone) return [];
-      const cleaned = phone.replace(/\D/g, "");
-      return bookings.filter((b) =>
-        b.clientPhone.replace(/\D/g, "").includes(cleaned),
+      const updatedBookings = bookings.map((b) =>
+        b.id === bookingId
+          ? {
+              ...b,
+              status: BOOKING_STATUS.CANCELLED,
+              updatedAt: new Date().toISOString(),
+            }
+          : b,
       );
+
+      setBookings(updatedBookings);
+      return { success: true };
     },
-    [bookings],
+    [bookings, setBookings],
   );
 
-  const getSpecialistBookings = useCallback(
-    (specialistId, date = null) => {
-      return bookings.filter((b) => {
-        if (b.specialistId !== specialistId) return false;
-        if (b.status === BOOKING_STATUS.CANCELLED) return false;
-        if (date && b.date !== date) return false;
-        return true;
-      });
+  /**
+   * Удаление записи
+   * @param {string} bookingId - ID записи
+   * @returns {Object} результат операции
+   */
+  const deleteBooking = useCallback(
+    (bookingId) => {
+      const bookingExists = bookings.some((b) => b.id === bookingId);
+      if (!bookingExists) {
+        return { success: false, error: "Запись не найдена" };
+      }
+
+      setBookings((prev) => prev.filter((b) => b.id !== bookingId));
+      return { success: true };
     },
-    [bookings],
+    [setBookings],
   );
 
-  // === СТАТИСТИКА (для AdminDashboard) ===
+  /**
+   * Статистика по записям
+   */
   const stats = useMemo(() => {
-    const today = new Date().toISOString().split("T")[0];
-    const todayBookings = bookings.filter((b) => b.date === today);
-    const cancelledCount = bookings.filter(
+    const total = bookings.length;
+    const pending = bookings.filter(
+      (b) => b.status === BOOKING_STATUS.PENDING,
+    ).length;
+    const confirmed = bookings.filter(
+      (b) => b.status === BOOKING_STATUS.CONFIRMED,
+    ).length;
+    const cancelled = bookings.filter(
       (b) => b.status === BOOKING_STATUS.CANCELLED,
     ).length;
-    const totalRevenue = bookings
-      .filter((b) => b.status !== BOOKING_STATUS.CANCELLED)
-      .reduce((sum, b) => sum + (b.totalPrice || 0), 0);
+    const completed = bookings.filter(
+      (b) => b.status === BOOKING_STATUS.COMPLETED,
+    ).length;
 
     return {
-      total: bookings.length,
-      active: activeBookings.length,
-      today: todayBookings.length,
-      cancelled: cancelledCount,
-      revenue: totalRevenue,
+      total,
+      pending,
+      confirmed,
+      cancelled,
+      completed,
     };
-  }, [bookings, activeBookings]);
+  }, [bookings]);
 
-  // === ВОЗВРАЩАЕМ ПУБЛИЧНОЕ API ХУКА ===
+  /**
+   * Очистка всех записей
+   */
+  const clearAllBookings = useCallback(() => {
+    clearBookings();
+  }, [clearBookings]);
+
   return {
-    // Данные
     bookings,
-    activeBookings,
-    futureBookings,
-    stats,
-    // CRUD-операции
     createBooking,
     updateBooking,
     cancelBooking,
-    confirmBooking,
-    completeBooking,
-    // Поисковые функции
-    findBookingsByPhone,
-    getSpecialistBookings,
+    deleteBooking,
+    stats,
+    clearAllBookings,
   };
 }
-
-export default useBookings;

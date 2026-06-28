@@ -7,6 +7,8 @@
   },
   "common": {
     "save": "Save",
+    "saveChanges": "Save Changes",
+    "saving": "Saving...",
     "cancel": "Cancel",
     "delete": "Delete",
     "edit": "Edit",
@@ -31,13 +33,14 @@
     "none": "None",
     "role": "Role",
     "client": "Client",
-    "manager": "Manager",
+    "admin": "Admin",
     "mainNavigation": "Main navigation",
     "locale": "en-US",
     "serviceNotFound": "Service not found",
     "specialistNotSpecified": "Specialist not specified",
     "unknown": "Unknown",
-    "brandName": "Health & Beauty"
+    "brandName": "Health & Beauty",
+    "currency": "BYN"
   },
   "status": {
     "pending": "Pending",
@@ -52,6 +55,8 @@
     "serviceSelected": "Service selected: {name}",
     "serviceNotFound": "Selected service not found",
     "specialistSelected": "Specialist selected: {name}",
+    "dateTimeSelected": "Date and time selected",
+    "contactsSaved": "Contact information saved",
     "serviceCount": "We have {services} services in {categories} categories",
     "steps": {
       "service": "Service",
@@ -66,7 +71,8 @@
       "confirm": "Confirm Booking",
       "selectTime": "Select Time",
       "selectDate": "Select Date",
-      "newBooking": "New Booking"
+      "newBooking": "New Booking",
+      "clearForm": "Clear Form"
     },
     "validation": {
       "selectService": "Please select a service",
@@ -93,10 +99,11 @@
     "contacts": {
       "title": "Contact Information",
       "description": "Fill out the form — we will contact you to confirm the booking",
-      "name": "Last Name First Name Patronymic",
+      "name": "Full Name",
       "namePlaceholder": "Anna Smith",
       "phone": "Phone",
       "phoneHelper": "BY operator codes: 25, 29, 33, 44",
+      "phoneClear": "Clear phone field",
       "email": "Email (optional)",
       "comment": "Comment (optional)",
       "commentPlaceholder": "Wishes, special requirements, allergies...",
@@ -116,7 +123,7 @@
     },
     "clearForm": "Clear Form",
     "clearFormConfirm": "Are you sure you want to clear the form? All entered data will be lost.",
-    "formCleared": "Form cleared"
+    "formCleared": "Booking form has been cleared. You can start over."
   },
   "catalog": {
     "title": "📋 Services & Specialists Catalog",
@@ -168,7 +175,8 @@
       "priceFrom": "From",
       "priceTo": "To",
       "rating": "Rating",
-      "ratingAny": "Any"
+      "ratingAny": "Any",
+      "priceHelper": "Integers only, BYN"
     },
     "sort": {
       "title": "Sort by",
@@ -178,7 +186,8 @@
       "rating": "By rating",
       "name": "Alphabetically",
       "category": "By category",
-      "experience": "By experience"
+      "experience": "By experience",
+      "nameShort": "A–Z"
     }
   },
   "admin": {
@@ -207,6 +216,8 @@
       "allSpecialists": "All specialists",
       "dateFrom": "From (start date)",
       "dateTo": "To (end date)",
+      "datePlaceholder": "dd.mm.yyyy",
+      "dateFormatHint": "Format: dd.mm.yyyy",
       "reset": "Reset",
       "notLaterThan": "Not later than",
       "notEarlierThan": "Not earlier than",
@@ -221,6 +232,28 @@
       "service": "By service",
       "specialist": "By specialist",
       "client": "By client"
+    },
+    "bookings": {
+      "edit": "Edit",
+      "cancel": "Cancel",
+      "editTitle": "Edit Booking",
+      "clientInfo": "Client Information",
+      "client": "Client",
+      "fullName": "Full Name",
+      "phone": "Phone",
+      "service": "Service",
+      "specialist": "Specialist",
+      "date": "Date",
+      "startTime": "Start Time",
+      "duration": "Duration (minutes)",
+      "endTime": "End Time",
+      "status": "Status",
+      "confirmCancel": "Are you sure you want to cancel this booking?",
+      "conflict": "Schedule conflict",
+      "selectSpecialist": "Please select a specialist",
+      "selectDate": "Please select a date",
+      "selectTime": "Please select a time",
+      "durationMin": "Minimum duration is 15 minutes"
     },
     "services": {
       "title": "Service Management",
@@ -265,6 +298,7 @@
         "descriptionHelper": "Maximum {max} characters",
         "duration": "Duration (min)",
         "price": "Price (BYN)",
+        "priceHelper": "Maximum price: {max} BYN. Integers only.",
         "rating": "Rating (optional)",
         "ratingHelper": "From 0 to 5. Default is 4.5",
         "englishVersion": "English Version (optional)",
@@ -289,6 +323,7 @@
       "standard": "Standard",
       "cannotModifyStandard": "Cannot edit standard specialist",
       "cannotDeleteStandard": "Cannot delete standard specialist",
+      "noServicesAssigned": "No assigned services",
       "empty": "No specialists yet. Add your first specialist so clients can choose a master.",
       "emptyDescription": "Add your first specialist so clients can choose a master",
       "searchPlaceholder": "Search by name or position...",
@@ -341,8 +376,8 @@
       "stats": "📊 Statistics",
       "bookings": "📅 My Bookings",
       "favorites": "❤️ Favorites",
-      "settings": "⚙️ Settings",
-      "bonus": "🎁 Bonus Account"
+      "settings": "️ Settings",
+      "bonus": " Bonus Account"
     },
     "profile": {
       "defaultName": "Client",
@@ -442,8 +477,10 @@
       "invalidChars": "Full name can only contain letters, spaces and hyphens"
     },
     "email": {
+      "required": "Email is required",
       "invalid": "Invalid email format",
-      "tooLong": "Email cannot exceed 100 characters"
+      "tooLong": "Email cannot exceed 254 characters",
+      "invalidChars": "Email contains invalid characters"
     },
     "comment": {
       "tooLong": "Comment cannot exceed 500 characters",
@@ -454,6 +491,9 @@
       "invalidFormat": "Invalid date format",
       "inPast": "Cannot book for a past date",
       "tooFarAhead": "Booking is possible no more than 30 days in advance"
+    },
+    "time": {
+      "notSelected": "Please select a time"
     },
     "service": {
       "nameRequired": "Service name is required",
@@ -469,6 +509,7 @@
       "durationTooLong": "Maximum duration is 480 minutes (8 hours)",
       "priceRequired": "Please specify service price",
       "priceInvalid": "Price must be a number",
+      "priceNotInteger": "Price must be an integer",
       "priceTooLow": "Price must be greater than 0",
       "priceTooHigh": "Price cannot exceed 10000 BYN",
       "specialistsRequired": "Select at least one specialist",
@@ -477,6 +518,7 @@
       "cannotDeleteStandard": "Cannot delete standard service from catalog"
     },
     "specialist": {
+      "required": "Please select a specialist",
       "nameRequired": "Full name is required",
       "nameTooLong": "Full name cannot exceed 100 characters",
       "nameMinTwoWords": "Please specify first and last name (minimum 2 words)",
@@ -495,6 +537,14 @@
       "cannotModifyStandard": "Cannot edit standard specialist",
       "cannotDeleteStandard": "Cannot delete standard specialist"
     },
+    "rateLimit": {
+      "title": "Your actions look like a robot",
+      "description": "Please wait {seconds} seconds and try again.",
+      "captcha": "Please confirm you are not a robot",
+      "tooFast": "Too many clicks. Please wait {seconds} seconds.",
+      "suspicious": "Suspicious activity. Please wait {seconds} seconds.",
+      "blocked": "You are blocked. Please wait {seconds} more seconds."
+    },
     "minLength": "Minimum length: {min} characters",
     "maxLength": "Maximum length: {max} characters"
   },
@@ -504,7 +554,9 @@
     "yesterday": "Yesterday",
     "free": "Free",
     "busy": "Busy",
-    "minutes": "min"
+    "minutes": "min",
+    "hourShort": "h",
+    "minuteShort": "min"
   },
   "timeSlotPicker": {
     "title": "Choose date and time",

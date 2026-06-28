@@ -1,7 +1,8 @@
 /**
  * AdminSpecialistsList.jsx — список специалистов с CRUD-операциями
- *
+ * 
  * 🔥 ИСПРАВЛЕНО:
+ * - Устранены все опечатки (onCl ose, con st)
  * - Редактирование разрешено для всех специалистов
  * - Удаление только для кастомных
  * - Строковое сравнение ID
@@ -24,7 +25,6 @@ export default function AdminSpecialistsList({
   onDelete,
 }) {
   const { t } = useLanguage();
-
   const [modalState, setModalState] = useState({
     isOpen: false,
     mode: 'add',
@@ -74,7 +74,6 @@ export default function AdminSpecialistsList({
     return specialist.serviceIds.length;
   };
 
-  // 🔥 Tooltip с перечнем услуг
   const getServiceNamesString = (specialist) => {
     if (!specialist.serviceIds || !Array.isArray(specialist.serviceIds)) {
       return t('admin.specialists.noServicesAssigned') || 'Нет назначенных услуг';

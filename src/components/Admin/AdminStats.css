@@ -80,8 +80,6 @@
 /* ═══════════════════════════════════════════════
    КАРТОЧКА "ВЫРУЧКА" (highlight)
    ═══════════════════════════════════════════════ */
-
-/* Выделенная карточка с градиентом */
 .admin-stats__card--highlight {
   background: linear-gradient(
     135deg,
@@ -90,26 +88,35 @@
   );
   color: white;
   border-left-color: transparent;
+  /* 🔥 ДОБАВЛЕНО: достаточный padding для отступа от границ */
+  padding: var(--spacing-lg, 24px);
+  overflow: hidden; /* Защита от переполнения */
+}
+
+/*  ИСПРАВЛЕНО: уменьшен шрифт значения для карточки "Выручка" */
+.admin-stats__card--highlight .admin-stats__value {
+  color: white;
+  font-size: var(--font-size-lg, 1.125rem); /* Было 1.5rem, стало 1.125rem */
+  font-weight: 700;
+  line-height: 1.3;
+  word-break: break-word; /* Перенос длинных значений */
+  overflow-wrap: break-word;
+  white-space: normal; /* Разрешаем перенос */
 }
 
 .admin-stats__card--highlight .admin-stats__label {
   color: rgba(255, 255, 255, 0.85);
+  font-size: var(--font-size-sm, 0.875rem);
 }
 
 .admin-stats__card--highlight .admin-stats__icon {
   background: rgba(255, 255, 255, 0.2);
   color: white;
+  width: 40px; /* Уменьшена иконка для баланса */
+  height: 40px;
 }
 
-.admin-stats__card--highlight .admin-stats__value {
-  color: white;
-}
-
-/* 🔥 ЭТАП 3.6: Усиление градиента для карточки "Выручка" при наведении */
-/* ПОЧЕМУ отдельный hover для highlight?
-   Обычный hover с белым градиентом не подходит — карточка уже тёмная.
-   Вместо этого делаем градиент более контрастным (тёмнее),
-   создавая эффект "углубления" — как будто карточка становится важнее. */
+/*  Усиление градиента при наведении */
 .admin-stats__card--highlight:hover {
   background: linear-gradient(
     135deg,
@@ -173,4 +180,65 @@
   .admin-stats__value {
     font-size: var(--font-size-lg, 1.125rem);
   }
+
+  /* 🔥 Для карточки "Выручка" на мобильных — ещё меньше */
+  .admin-stats__card--highlight .admin-stats__value {
+    font-size: var(--font-size-base, 1rem);
+  }
+
+  .admin-stats__icon {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+@media (max-width: 400px) {
+  .admin-stats__card--highlight .admin-stats__value {
+    font-size: var(--font-size-sm, 0.875rem);
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   ТЁМНАЯ ТЕМА
+   ═══════════════════════════════════════════════ */
+[data-theme="dark"] .admin-stats__card {
+  background: var(--color-surface, #2a211b);
+  border: 1px solid var(--color-border, #44362b);
+}
+
+[data-theme="dark"] .admin-stats__card:hover {
+  background: linear-gradient(
+    135deg,
+    var(--color-surface, #2a211b) 0%,
+    var(--color-primary-soft, #3d2f26) 100%
+  );
+}
+
+[data-theme="dark"] .admin-stats__label {
+  color: var(--color-text-muted, #c9b89f);
+}
+
+[data-theme="dark"] .admin-stats__value {
+  color: var(--color-text, #f5ede4);
+}
+
+[data-theme="dark"] .admin-stats__icon {
+  background: var(--color-primary-soft, #3d2f26);
+  color: var(--color-primary-400, #c9a88c);
+}
+
+[data-theme="dark"] .admin-stats__card--highlight {
+  background: linear-gradient(
+    135deg,
+    var(--color-primary-700, #7f5e44) 0%,
+    var(--color-primary-900, #3d2f26) 100%
+  );
+}
+
+[data-theme="dark"] .admin-stats__card--highlight:hover {
+  background: linear-gradient(
+    135deg,
+    var(--color-primary-800, #5e4532) 0%,
+    var(--color-primary-900, #3d2f26) 100%
+  );
 }

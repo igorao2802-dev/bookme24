@@ -106,3 +106,61 @@
   color: var(--color-text-muted, #6b5d4f);
   margin-left: auto;
 }
+
+/* === КНОПКА ОЧИСТКИ ПОЛЯ ТЕЛЕФОНА === */
+.booking-form__field-wrapper {
+  position: relative;
+}
+
+.booking-form__clear-btn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #e8dcc4);
+  border-radius: var(--radius-full, 9999px);
+  color: var(--color-text-muted, #6b5d4f);
+  cursor: pointer;
+  transition: all var(--transition-fast, 150ms ease);
+  padding: 0;
+  z-index: 2;
+}
+
+.booking-form__clear-btn:hover {
+  background: var(--color-error-light, #fceae8);
+  border-color: var(--color-error, #c65d52);
+  color: var(--color-error, #c65d52);
+}
+
+.booking-form__clear-btn:focus-visible {
+  outline: 2px solid var(--color-primary, #b8957a);
+  outline-offset: 2px;
+}
+
+/* Тёмная тема */
+[data-theme="dark"] .booking-form__clear-btn {
+  background: var(--color-surface, #2d2419);
+  border-color: var(--color-border, #4a3a2a);
+  color: var(--color-text-muted, #b5a28d);
+}
+
+[data-theme="dark"] .booking-form__clear-btn:hover {
+  background: var(--color-error-light, #3d2419);
+  border-color: var(--color-error, #c65d52);
+  color: var(--color-error-light, #fca5a5);
+}
+
+/* Адаптивность */
+@media (max-width: 480px) {
+  .booking-form__clear-btn {
+    width: 24px;
+    height: 24px;
+    right: 8px;
+  }
+}

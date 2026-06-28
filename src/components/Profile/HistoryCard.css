@@ -142,3 +142,44 @@
     width: 100%;
   }
 }
+
+/* ═══════════════════════════════════════════════
+   ТЁМНАЯ ТЕМА
+   ═══════════════════════════════════════════════ */
+[data-theme="dark"] .history-card {
+  background: var(--color-surface, #2a211b);
+  border-color: var(--color-border, #44362b);
+}
+
+[data-theme="dark"] .history-card:hover {
+  border-color: var(--color-primary-400, #c9a88c);
+}
+
+[data-theme="dark"] .history-card--cancelled {
+  background: var(--color-error-light, #3d2419);
+}
+
+[data-theme="dark"] .history-card__title {
+  color: var(--color-text, #f5ede4);
+}
+
+[data-theme="dark"] .history-card__info {
+  border-bottom-color: var(--color-border, #44362b);
+}
+
+[data-theme="dark"] .history-card__info-item {
+  color: var(--color-text-muted, #c9b89f);
+}
+
+[data-theme="dark"] .history-card__info-item svg {
+  color: var(--color-primary-400, #c9a88c);
+}
+
+[data-theme="dark"] .history-card__price {
+  color: var(--color-primary-400, #c9a88c);
+}
+
+[data-theme="dark"] .history-card__comment {
+  background: var(--color-bg, #1c1613);
+  color: var(--color-text-muted, #c9b89f);
+}

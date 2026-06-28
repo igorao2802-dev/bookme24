@@ -1,18 +1,64 @@
 /**
  * FilterPanel.jsx — панель фильтров каталога
- * 🔥 ЭТАП 5.4: Полная локализация всех лейблов и опций
+ * 
+ * 🔥 ИСПРАВЛЕНО:
+ * - Добавлен prop `services` для вычисления maxPrice
+ * - step={1} — только целые числа
+ * - Запрет ввода дробных и ведущих нулей
+ * - maxPrice ограничен максимальной ценой услуги в каталоге
  */
+import { useMemo } from 'react';
 import { Filter, RotateCcw } from 'lucide-react';
-import { SERVICE_CATEGORIES } from '../../utils/constants';
+import { SERVICE_CATEGORIES, PRICE_LIMITS } from '../../utils/constants';
 import Badge from '../UI/Badge';
 import Input from '../UI/Input';
-import { useLanguage } from '../../hooks/useLanguage'; // 🔥 Добавлен хук
+import { useLanguage } from '../../hooks/useLanguage';
 import './FilterPanel.css';
 
-export default function FilterPanel({ filters, onFilterChange, onReset, activeCount = 0, viewMode = 'services' }) {
-  const { t } = useLanguage(); // 🔥 Инициализация
+// 🔥 НОВОЕ: Обработчик для числовых полей — запрет дробных
+const handleNumericInput = (e) => {
+  if (e.key === '.' || e.key === ',' || e.key === 'e' || e.key === 'E' || e.key === '-' || e.key === '+') {
+    e.preventDefault();
+  }
+};
 
-  // 🔥 ЭТАП 5.4: Генерация опций категорий через t()
+// 🔥 НОВОЕ: Обработчик изменения — удаление ведущих нулей
+const handlePriceFilterChange = (setValue, maxLimit) => (e) => {
+  let value = e.target.value;
+  
+  // Убираем всё, кроме цифр
+  value = value.replace(/\D/g, '');
+  
+  // Удаляем ведущие нули
+  if (value.length > 1 && value.startsWith('0')) {
+    value = value.replace(/^0+/, '') || '0';
+  }
+  
+  // Ограничиваем максимум
+  if (Number(value) > maxLimit) {
+    value = String(maxLimit);
+  }
+  
+  setValue(value);
+};
+
+export default function FilterPanel({ 
+  filters, 
+  onFilterChange, 
+  onReset, 
+  activeCount = 0, 
+  viewMode = 'services',
+  services = [], // 🔥 НОВОЕ: для вычисления maxPrice
+}) {
+  const { t } = useLanguage();
+
+  // 🔥 НОВОЕ: Вычисляем максимальную цену в каталоге
+  const maxPriceInCatalog = useMemo(() => {
+    if (!services.length) return PRICE_LIMITS.MAX;
+    const maxPrice = Math.max(...services.map((s) => s.price || 0));
+    return Math.min(maxPrice, PRICE_LIMITS.MAX);
+  }, [services]);
+
   const categoryOptions = [
     { value: 'all', label: t('catalog.categories.all') },
     { value: SERVICE_CATEGORIES.HAIR, label: t('catalog.categories.hair') },
@@ -63,6 +109,7 @@ export default function FilterPanel({ filters, onFilterChange, onReset, activeCo
         </div>
       )}
 
+      {/* 🔥 ИСПРАВЛЕНО: Фильтры по цене с валидацией */}
       {viewMode === 'services' && (
         <div className="filter-panel__group">
           <label className="filter-panel__label">{t('catalog.filters.price')}</label>
@@ -71,19 +118,29 @@ export default function FilterPanel({ filters, onFilterChange, onReset, activeCo
               type="number"
               label={t('catalog.filters.priceFrom')}
               value={filters.minPrice}
-              onChange={(e) => onFilterChange('minPrice', Number(e.target.value))}
-              min={0}
-              max={filters.maxPrice}
+              onChange={handlePriceFilterChange(
+                (value) => onFilterChange('minPrice', Number(value)),
+                filters.maxPrice || maxPriceInCatalog
+              )}
+              onKeyPress={handleNumericInput}
+              min={PRICE_LIMITS.MIN}
+              max={filters.maxPrice || maxPriceInCatalog}
+              step={PRICE_LIMITS.STEP}
               placeholder="0"
             />
             <Input
               type="number"
               label={t('catalog.filters.priceTo')}
               value={filters.maxPrice}
-              onChange={(e) => onFilterChange('maxPrice', Number(e.target.value))}
-              min={filters.minPrice}
-              max={10000}
-              placeholder="500"
+              onChange={handlePriceFilterChange(
+                (value) => onFilterChange('maxPrice', Number(value)),
+                maxPriceInCatalog
+              )}
+              onKeyPress={handleNumericInput}
+              min={filters.minPrice || PRICE_LIMITS.MIN}
+              max={maxPriceInCatalog}
+              step={PRICE_LIMITS.STEP}
+              placeholder={String(maxPriceInCatalog)}
             />
           </div>
         </div>

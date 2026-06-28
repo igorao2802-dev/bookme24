@@ -1,14 +1,13 @@
 /**
  * App.jsx — ДИРИЖЁР приложения (Single Source of Truth)
- *
- * АРХИТЕКТУРНАЯ РОЛЬ:
- * - Загружает JSON-данные услуг и специалистов
- * - Создаёт единые хуки CRUD (useBookings, useServices, useSpecialists)
- * - Передаёт данные и callbacks через props
- * - Управляет роутингом и защитой маршрутов
+ * 
+ * 🔥 ИСПРАВЛЕНО:
+ * - Устранена опечатка updateB ooking → updateBooking
+ * - Убраны trailing spaces в путях маршрутов
+ * - Добавлена мемоизация specialistsWithServices для каталога
  */
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 
 // === ПРОВАЙДЕРЫ КОНТЕКСТА ===
 import { ThemeProvider } from './contexts/ThemeContext';
@@ -79,6 +78,30 @@ function AppContent() {
     deleteSpecialist,
   } = useSpecialists(jsonSpecialists);
 
+  // 🔥 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Динамическое вычисление serviceIds
+  const specialistsWithServices = useMemo(() => {
+    return specialists.map((specialist) => {
+      const servicesForSpecialist = services.filter(
+        (service) =>
+          service.specialistIds &&
+          service.specialistIds.includes(specialist.id)
+      );
+
+      const serviceIdsFromServices = servicesForSpecialist.map((s) => s.id);
+      const existingServiceIds = specialist.serviceIds || [];
+      const combinedServiceIds = [
+        ...existingServiceIds,
+        ...serviceIdsFromServices,
+      ];
+      const uniqueServiceIds = [...new Set(combinedServiceIds)];
+
+      return {
+        ...specialist,
+        serviceIds: uniqueServiceIds,
+      };
+    });
+  }, [specialists, services]);
+
   // === ГЛАВНЫЙ ХУК — CRUD ЗАПИСЕЙ ===
   const {
     bookings,
@@ -141,7 +164,7 @@ function AppContent() {
               <AdminDashboard
                 bookings={bookings}
                 services={services}
-                specialists={specialists}
+                specialists={specialistsWithServices}
                 stats={stats}
                 onUpdateBooking={updateBooking}
                 onCancelBooking={cancelBooking}

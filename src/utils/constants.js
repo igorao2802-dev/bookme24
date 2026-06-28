@@ -1,19 +1,18 @@
 /**
  * constants.js — глобальные константы приложения bookme24.by
  *
- * 🔥 ЭТАП 5.5: Исправлен статус IN_PROGRESS на camelCase для совместимости с i18n
+ *  ИСПРАВЛЕНО: Убраны trailing spaces во всех ключах localStorage
  */
 
 // === СТАТУСЫ ЗАПИСЕЙ ===
 export const BOOKING_STATUS = {
   PENDING: "pending",
   CONFIRMED: "confirmed",
-  IN_PROGRESS: "inProgress", // ✅ ИСПРАВЛЕНО: было "in-progress"
+  IN_PROGRESS: "inProgress",
   COMPLETED: "completed",
   CANCELLED: "cancelled",
 };
 
-// Локализованные названия статусов для UI (fallback, если t() не сработает)
 export const BOOKING_STATUS_LABELS = {
   [BOOKING_STATUS.PENDING]: "Ожидает",
   [BOOKING_STATUS.CONFIRMED]: "Подтверждена",
@@ -22,7 +21,6 @@ export const BOOKING_STATUS_LABELS = {
   [BOOKING_STATUS.CANCELLED]: "Отменена",
 };
 
-// Цвета статусов для CSS-классов
 export const BOOKING_STATUS_COLORS = {
   [BOOKING_STATUS.PENDING]: "status-pending",
   [BOOKING_STATUS.CONFIRMED]: "status-confirmed",
@@ -49,6 +47,7 @@ export const SERVICE_CATEGORY_LABELS = {
 };
 
 // === КЛЮЧИ LOCALSTORAGE ===
+// 🔥 ИСПРАВЛЕНО: Убраны trailing spaces
 export const STORAGE_KEYS = {
   BOOKINGS: "bookme24_bookings",
   SERVICES: "bookme24_services",
@@ -74,6 +73,29 @@ export const BUSINESS_CONFIG = {
   SALON_CLOSE_HOUR: 21,
 };
 
+// 🔥 ЗАМЕЧАНИЕ №12: Лимиты для защиты от многократных кликов
+export const RATE_LIMITS = {
+  SHORT_WINDOW_MS: 5000, // Короткое окно: 5 секунд
+  SHORT_MAX: 3, // Макс. кликов в коротком окне
+  LONG_WINDOW_MS: 30000, // Длинное окно: 30 секунд
+  LONG_MAX: 10, // Макс. кликов в длинном окне
+  BLOCK_DURATION_MS: 30000, // Длительность блокировки: 30 секунд
+};
+
+// === ВАЛЮТА ===
+export const CURRENCY = {
+  CODE: "BYN",
+  SYMBOL: "Br",
+  LOCALE: "ru-BY",
+};
+
+// === ОГРАНИЧЕНИЯ ЦЕН ===
+export const PRICE_LIMITS = {
+  MIN: 0,
+  MAX: 10000,
+  STEP: 1,
+};
+
 // === ШАГИ МНОГОСТУПЕНЧАТОЙ ФОРМЫ ===
 export const BOOKING_STEPS = {
   SERVICE: 1,
@@ -97,10 +119,10 @@ export const USER_ROLES = {
   ADMIN: "admin",
 };
 
-// === ВАЛИДАЦИЯ: лимиты полей ===
+// === ВАЛИДАЦИЯ: ЛИМИТЫ ПОЛЕЙ ===
 export const FIELD_LIMITS = {
   NAME_MAX_LENGTH: 100,
-  EMAIL_MAX_LENGTH: 100,
+  EMAIL_MAX_LENGTH: 254,
   COMMENT_MAX_LENGTH: 500,
   PHONE_LENGTH: 13,
 };

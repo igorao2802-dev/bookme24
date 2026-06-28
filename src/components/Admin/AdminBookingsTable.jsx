@@ -1,29 +1,27 @@
 /**
  * AdminBookingsTable.jsx — таблица/список всех записей с CRUD-операциями
- *
+ * 
  * АРХИТЕКТУРНАЯ РОЛЬ:
  * Отображает список записей и вызывает callbacks при действиях:
- * - Редактирование → onEdit(booking)
- * - Отмена → onCancel(id)
- *
- * ПОЧЕМУ не используем <table>?
- * На мобильных устройствах таблицы плохо выглядят. Используем карточки-строки,
- * которые адаптируются под любой размер экрана.
+ * Редактирование → onEdit(booking)
+ * Отмена → onCancel(id)
+ * 
+ *  ИСПРАВЛЕНО ЗАМЕЧАНИЕ №4:
+ * - Все тексты локализованы через t()
+ * - Статусы, кнопки, лейблы — через ключи локализации
+ * - Добавлены aria-label для доступности
  */
-
 import { Edit2, XCircle, Calendar, Clock, User, Phone, Mail } from 'lucide-react';
-
 import Button from '../UI/Button';
 import Badge from '../UI/Badge';
-
-import { BOOKING_STATUS, BOOKING_STATUS_LABELS } from '../../utils/constants';
+import { BOOKING_STATUS } from '../../utils/constants';
 import {
   formatPrice,
   formatDuration,
   formatDateShort,
   formatPhone,
 } from '../../utils/formatters';
-
+import { useLanguage } from '../../hooks/useLanguage';
 import './AdminBookingsTable.css';
 
 export default function AdminBookingsTable({
@@ -33,8 +31,9 @@ export default function AdminBookingsTable({
   onEdit,
   onCancel,
 }) {
-   // === МОЖНО ЛИ ОТМЕНИТЬ ЗАПИСЬ? ===
-  // ПОЧЕМУ отдельная функция? Логика используется в нескольких местах
+  const { t } = useLanguage();
+
+  // === МОЖНО ЛИ ОТМЕНИТЬ ЗАПИСЬ? ===
   const canCancel = (booking) => {
     return (
       booking.status !== BOOKING_STATUS.CANCELLED &&
@@ -62,27 +61,27 @@ export default function AdminBookingsTable({
             <div className="admin-booking-row__main">
               <div className="admin-booking-row__service">
                 <h3 className="admin-booking-row__title">
-                  {service?.name || 'Услуга не найдена'}
+                  {service?.name || t('common.serviceNotFound')}
                 </h3>
                 <Badge variant={booking.status} size="sm">
-                  {BOOKING_STATUS_LABELS[booking.status]}
+                  {t(`status.${booking.status}`)}
                 </Badge>
               </div>
 
               <div className="admin-booking-row__details">
                 <div className="admin-booking-row__detail">
-                  <User size={14} />
+                  <User size={14} aria-hidden="true" />
                   <span>
-                    <strong>Клиент:</strong> {booking.clientName}
+                    <strong>{t('admin.bookings.client')}:</strong> {booking.clientName}
                   </span>
                 </div>
                 <div className="admin-booking-row__detail">
-                  <Phone size={14} />
+                  <Phone size={14} aria-hidden="true" />
                   <span>{formatPhone(booking.clientPhone)}</span>
                 </div>
                 {booking.clientEmail && (
                   <div className="admin-booking-row__detail">
-                    <Mail size={14} />
+                    <Mail size={14} aria-hidden="true" />
                     <span>{booking.clientEmail}</span>
                   </div>
                 )}
@@ -90,21 +89,21 @@ export default function AdminBookingsTable({
 
               <div className="admin-booking-row__meta">
                 <div className="admin-booking-row__meta-item">
-                  <Calendar size={14} />
+                  <Calendar size={14} aria-hidden="true" />
                   <span>{formatDateShort(booking.date)}</span>
                 </div>
                 <div className="admin-booking-row__meta-item">
-                  <Clock size={14} />
+                  <Clock size={14} aria-hidden="true" />
                   <span>
                     {booking.startTime} — {booking.endTime}
                   </span>
                 </div>
                 <div className="admin-booking-row__meta-item">
-                  <User size={14} />
-                  <span>{specialist?.fullName || 'Мастер'}</span>
+                  <User size={14} aria-hidden="true" />
+                  <span>{specialist?.fullName || t('common.specialistNotSpecified')}</span>
                 </div>
                 <div className="admin-booking-row__meta-item">
-                  <span>⏱ {formatDuration(booking.duration)}</span>
+                  <span>⏱ {formatDuration(booking.duration, t)}</span>
                 </div>
                 <div className="admin-booking-row__meta-item admin-booking-row__meta-item--price">
                   {formatPrice(booking.totalPrice)}
@@ -127,8 +126,9 @@ export default function AdminBookingsTable({
                   size="sm"
                   leftIcon={<Edit2 size={14} />}
                   onClick={() => onEdit(booking)}
+                  aria-label={t('admin.bookings.edit')}
                 >
-                  Редактировать
+                  {t('admin.bookings.edit')}
                 </Button>
               )}
 
@@ -138,8 +138,9 @@ export default function AdminBookingsTable({
                   size="sm"
                   leftIcon={<XCircle size={14} />}
                   onClick={() => onCancel(booking.id)}
+                  aria-label={t('admin.bookings.cancel')}
                 >
-                  Отменить
+                  {t('admin.bookings.cancel')}
                 </Button>
               )}
             </div>

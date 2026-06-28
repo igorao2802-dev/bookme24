@@ -36,3 +36,11 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ═══════════════════════════════════════════════
+   ТЁМНАЯ ТЕМА
+   ═══════════════════════════════════════════════ */
+[data-theme="dark"] .favorites-list__title {
+  color: var(--color-text, #f5ede4);
+  border-bottom-color: var(--color-primary-400, #c9a88c);
+}

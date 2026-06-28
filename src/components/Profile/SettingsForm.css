@@ -148,3 +148,45 @@
     width: 100%;
   }
 }
+
+/* ═══════════════════════════════════════════════
+   ТЁМНАЯ ТЕМА
+   ═══════════════════════════════════════════════ */
+[data-theme="dark"] .settings-form__section {
+  background: var(--color-bg, #1c1613);
+  border-color: var(--color-border, #44362b);
+}
+
+[data-theme="dark"] .settings-form__section-title {
+  color: var(--color-text, #f5ede4);
+}
+
+[data-theme="dark"] .settings-form__radio-option {
+  background: var(--color-surface, #2a211b);
+  border-color: var(--color-border, #44362b);
+}
+
+[data-theme="dark"] .settings-form__radio-option:hover {
+  border-color: var(--color-primary-400, #c9a88c);
+  background: var(--color-primary-soft, #3d2f26);
+}
+
+[data-theme="dark"] .settings-form__radio-option--active {
+  border-color: var(--color-primary-400, #c9a88c);
+  background: var(--color-primary-soft, #3d2f26);
+}
+
+[data-theme="dark"]
+  .settings-form__radio-option--active
+  .settings-form__radio-icon {
+  color: var(--color-primary-400, #c9a88c);
+}
+
+[data-theme="dark"] .settings-form__radio-icon {
+  background: var(--color-bg, #1c1613);
+  color: var(--color-text-muted, #c9b89f);
+}
+
+[data-theme="dark"] .settings-form__radio-label {
+  color: var(--color-text, #f5ede4);
+}

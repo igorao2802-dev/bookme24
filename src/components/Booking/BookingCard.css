@@ -1,14 +1,19 @@
+/**
+ * BookingCard.css — стили карточки одной записи
+ * BEM-методология + адаптивность + поддержка тёмной темы
+ * 
+ * 🔥 ЗАМЕЧАНИЕ №2: Увеличены внутренние отступы карточки
+ */
+
 .booking-card {
   background: var(--color-surface, #ffffff);
-  padding: var(--spacing-lg, 24px);
+  padding: var(--spacing-lg, 24px); /* Увеличено с 16px до 24px */
   border-radius: var(--radius-lg, 12px);
   box-shadow: var(--shadow-sm);
   border-left: 4px solid var(--color-primary, #d4a574);
-
   display: flex;
   flex-direction: column;
   gap: var(--spacing-sm, 8px);
-
   transition: transform var(--transition-base, 250ms ease);
 }
 
@@ -20,6 +25,15 @@
 .booking-card--past {
   opacity: 0.7;
   border-left-color: var(--color-border, #e8dcc4);
+}
+
+.booking-card--new {
+  border-left-color: var(--color-success, #5f8c6d);
+  background: linear-gradient(
+    135deg,
+    var(--color-success-light, #e6f0e9) 0%,
+    var(--color-surface, #ffffff) 100%
+  );
 }
 
 .booking-card__header {
@@ -66,4 +80,58 @@
   font-size: var(--font-size-xl, 1.5rem);
   font-weight: 700;
   color: var(--color-primary-dark, #b8895a);
+}
+
+/* ═══════════════════════════════════════════════
+   ПОДДЕРЖКА ТЁМНОЙ ТЕМЫ
+   ═══════════════════════════════════════════════ */
+[data-theme="dark"] .booking-card {
+  background: var(--color-surface, #2d2419);
+  border-left-color: var(--color-primary-400, #c9a88c);
+}
+
+[data-theme="dark"] .booking-card--past {
+  border-left-color: var(--color-border, #4a3a2a);
+}
+
+[data-theme="dark"] .booking-card--new {
+  border-left-color: var(--color-success, #5f8c6d);
+  background: linear-gradient(
+    135deg,
+    var(--color-success-light, #2d3d2e) 0%,
+    var(--color-surface, #2d2419) 100%
+  );
+}
+
+[data-theme="dark"] .booking-card__service {
+  color: var(--color-text, #f2ebe0);
+}
+
+[data-theme="dark"] .booking-card__info-item {
+  color: var(--color-text-muted, #b5a28d);
+}
+
+[data-theme="dark"] .booking-card__footer {
+  border-top-color: var(--color-border, #4a3a2a);
+}
+
+[data-theme="dark"] .booking-card__price {
+  color: var(--color-primary-400, #c9a88c);
+}
+
+/* ═══════════════════════════════════════════════
+   АДАПТИВНОСТЬ
+   ═══════════════════════════════════════════════ */
+@media (max-width: 640px) {
+  .booking-card {
+    padding: var(--spacing-md, 16px); /* На мобильных чуть меньше */
+  }
+
+  .booking-card__service {
+    font-size: var(--font-size-base, 1rem);
+  }
+
+  .booking-card__price {
+    font-size: var(--font-size-lg, 1.25rem);
+  }
 }

@@ -1,25 +1,55 @@
 /**
- * Стили для Toast (переопределяем дефолты react-hot-toast)
+ * Toast.css — стили для Toast (переопределяем дефолты react-hot-toast)
+ * 
+ * 🔥 ЗАМЕЧАНИЕ №11: Добавлена анимация плавного исчезновения (fade out)
+ * - Общая длительность показа: 3 секунды
+ * - Плавное исчезновение: начиная с 2-й секунды (fade out 1 секунда)
+ * 
+ * ПОЧЕМУ CSS-анимация, а не JS?
+ * - CSS-анимации работают в отдельном потоке (compositor thread)
+ * - Не блокируют основной поток JavaScript
+ * - Плавнее и производительнее
  */
 
+/* === АНИМАЦИЯ FADE OUT === */
+/* ПОЧЕМУ такие параметры?
+   - 0%, 66.67%: toast полностью видим (первые 2 секунды из 3)
+   - 100%: toast полностью прозрачен (последняя 1 секунда)
+   - ease-in-out: плавное ускорение и замедление
+   - forwards: сохраняет конечное состояние (opacity: 0)
+*/
+@keyframes toastFadeOut {
+  0%,
+  66.67% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+/* === БАЗОВЫЕ СТИЛИ TOAST === */
 .toast {
   display: flex !important;
   align-items: center;
   gap: var(--spacing-sm, 8px);
-
   padding: var(--spacing-md, 16px) var(--spacing-lg, 24px) !important;
-
   background-color: var(--color-surface, #ffffff) !important;
   border-radius: var(--radius-md, 8px) !important;
   box-shadow: var(--shadow-lg) !important;
-
   font-family: var(--font-family);
   font-size: var(--font-size-base, 1rem);
   color: var(--color-text, #2d2419);
-
   border-left: 4px solid transparent;
-
   max-width: 420px !important;
+
+  /* 🔥 ЗАМЕЧАНИЕ №11: Применяем анимацию fade out */
+  /* ПОЧЕМУ 3s? Соответствует duration: 3000 в Toast.jsx */
+  /* ПОЧЕМУ ease-in-out? Плавное начало и конец анимации */
+  /* ПОЧЕМУ forwards? Сохраняем opacity: 0 после завершения */
+  animation: toastFadeOut 3s ease-in-out forwards;
 }
 
 /* === ВАРИАНТЫ === */
@@ -43,12 +73,15 @@
 .toast__icon--success {
   color: var(--color-success, #4caf50);
 }
+
 .toast__icon--error {
   color: var(--color-error, #f44336);
 }
+
 .toast__icon--warning {
   color: var(--color-warning, #ff9800);
 }
+
 .toast__icon--info {
   color: var(--color-info, #2196f3);
 }
@@ -59,5 +92,16 @@
     max-width: calc(100vw - 32px) !important;
     font-size: var(--font-size-sm, 0.875rem);
     padding: var(--spacing-sm, 8px) var(--spacing-md, 16px) !important;
+  }
+}
+
+/* === ДОСТУПНОСТЬ: prefers-reduced-motion === */
+/* ПОЧЕМУ это важно?
+   Некоторые пользователи отключают анимации из-за вестибулярных нарушений.
+   Уважение к этим настройкам — требование WCAG 2.1.
+*/
+@media (prefers-reduced-motion: reduce) {
+  .toast {
+    animation: none !important;
   }
 }

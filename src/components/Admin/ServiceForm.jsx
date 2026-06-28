@@ -1,16 +1,21 @@
 /**
  * ServiceForm.jsx — форма добавления/редактирования услуги
  * 
- * 🔥 ИСПРАВЛЕНО: Все опечатки устранены
- * 🔥 ЭТАП 12: Удалено поле "Рейтинг"
- * 🔥 ЭТАП 9: specialistIds опционален
+ * 🔥 ИСПРАВЛЕНО:
+ * - Устранены все опечатки (classNam e, & &, onBlur={() = >)
+ * - step={1} вместо step={0.01} — только целые числа
+ * - Запрет ввода дробных (. , e E)
+ * - Удаление ведущих нулей при вводе
+ * - Используется validatePrice() из validators.js
+ * - Добавлен PRICE_LIMITS из constants.js
  */
 import { useState, useEffect } from 'react';
 import { Save, X } from 'lucide-react';
 import Input from '../UI/Input';
 import Select from '../UI/Select';
 import Button from '../UI/Button';
-import { SERVICE_CATEGORIES, FIELD_LIMITS } from '../../utils/constants';
+import { SERVICE_CATEGORIES, FIELD_LIMITS, PRICE_LIMITS } from '../../utils/constants';
+import { validatePrice } from '../../utils/validators';
 import { useLanguage } from '../../hooks/useLanguage';
 import './ServiceForm.css';
 
@@ -40,7 +45,6 @@ function validateServiceField(name, value, existingServices = [], currentId = nu
         return 'validation.service.categoryRequired';
       }
       return null;
-
     case 'description': {
       if (!value || typeof value !== 'string' || value.trim().length === 0) {
         return 'validation.service.descriptionRequired';
@@ -50,7 +54,6 @@ function validateServiceField(name, value, existingServices = [], currentId = nu
       }
       return null;
     }
-
     case 'duration': {
       if (value === undefined || value === null || value === '') {
         return 'validation.service.durationRequired';
@@ -67,38 +70,20 @@ function validateServiceField(name, value, existingServices = [], currentId = nu
       }
       return null;
     }
-
     case 'price': {
-      if (value === undefined || value === null || value === '') {
-        return 'validation.service.priceRequired';
-      }
-      const num = Number(value);
-      if (isNaN(num)) {
-        return 'validation.service.priceInvalid';
-      }
-      if (num <= 0) {
-        return 'validation.service.priceTooLow';
-      }
-      if (num > 10000) {
-        return 'validation.service.priceTooHigh';
-      }
-      return null;
+      const result = validatePrice(value, { required: true, max: PRICE_LIMITS.MAX });
+      return result.errorKey;
     }
-
-    // 🔥 ЭТАП 9: specialistIds опционален
     case 'specialistIds':
       return null;
-
     case 'nameEn':
       return value && value.trim().length > 100
         ? 'validation.service.nameTooLong'
         : null;
-
     case 'descriptionEn':
       return value && value.trim().length > FIELD_LIMITS.COMMENT_MAX_LENGTH
         ? 'validation.service.descriptionTooLong'
         : null;
-
     default:
       return null;
   }
@@ -113,6 +98,26 @@ function validateAllFields(formData, existingServices, currentId) {
   return errors;
 }
 
+// Обработчик для числовых полей — запрет дробных и ведущих нулей
+const handleNumericInput = (e) => {
+  if (e.key === '.' || e.key === ',' || e.key === 'e' || e.key === 'E' || e.key === '-' || e.key === '+') {
+    e.preventDefault();
+  }
+};
+
+// Обработчик изменения — удаление ведущих нулей
+const handlePriceChange = (setValue) => (e) => {
+  let value = e.target.value;
+  value = value.replace(/\D/g, '');
+  if (value.length > 1 && value.startsWith('0')) {
+    value = value.replace(/^0+/, '') || '0';
+  }
+  if (Number(value) > PRICE_LIMITS.MAX) {
+    value = String(PRICE_LIMITS.MAX);
+  }
+  setValue(value);
+};
+
 export default function ServiceForm({
   mode = 'add',
   service = null,
@@ -123,7 +128,6 @@ export default function ServiceForm({
 }) {
   const { t } = useLanguage();
 
-  //  ЭТАП 12: rating УДАЛЁН
   const [formData, setFormData] = useState({
     name: '',
     category: '',
@@ -134,6 +138,7 @@ export default function ServiceForm({
     nameEn: '',
     descriptionEn: '',
   });
+
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
 
@@ -291,6 +296,8 @@ export default function ServiceForm({
           placeholder="60"
           min={15}
           max={480}
+          step={1}
+          onKeyPress={handleNumericInput}
           required
         />
 
@@ -299,27 +306,21 @@ export default function ServiceForm({
           name="price"
           type="number"
           value={formData.price}
-          onChange={(e) => handleChange('price', e.target.value)}
+          onChange={handlePriceChange((value) => handleChange('price', value))}
           onBlur={() => handleBlur('price')}
+          onKeyPress={handleNumericInput}
           error={touched.price && errors.price ? t(errors.price) : null}
-          placeholder="45.00"
-          min={0}
-          step={0.01}
+          placeholder="45"
+          min={PRICE_LIMITS.MIN}
+          max={PRICE_LIMITS.MAX}
+          step={PRICE_LIMITS.STEP}
+          helperText={t('admin.services.form.priceHelper', { max: PRICE_LIMITS.MAX })}
           required
         />
       </div>
 
-      {/* 🔥 ВЫБОР СПЕЦИАЛИСТОВ */}
       <div className="service-form__divider">
-        <h4
-          style={{
-            fontSize: 'var(--font-size-base, 1rem)',
-            color: 'var(--color-text-muted, #6b5d4f)',
-            marginBottom: 'var(--spacing-sm, 8px)',
-          }}
-        >
-          {t('admin.services.form.specialists')}
-        </h4>
+        <h4>{t('admin.services.form.specialists')}</h4>
         <p className="service-form__hint">
           {t('admin.services.form.specialistsHint')}
         </p>
@@ -371,17 +372,8 @@ export default function ServiceForm({
         </span>
       </div>
 
-      {/* 🔥 СЕКЦИЯ АНГЛИЙСКОЙ ВЕРСИИ */}
       <div className="service-form__divider">
-        <h4
-          style={{
-            fontSize: 'var(--font-size-base, 1rem)',
-            color: 'var(--color-text-muted, #6b5d4f)',
-            marginBottom: 'var(--spacing-sm, 8px)',
-          }}
-        >
-          {t('admin.services.form.englishVersion')}
-        </h4>
+        <h4>{t('admin.services.form.englishVersion')}</h4>
       </div>
 
       <Input

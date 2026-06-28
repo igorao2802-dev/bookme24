@@ -1,21 +1,20 @@
 /**
  * Button.jsx — универсальная кнопка приложения
- *
- * ПОЧЕМУ отдельный компонент?
- * - Единый стиль кнопок во всём приложении (единая точка настройки)
- * - Инкапсуляция состояний: loading, disabled, варианты (primary/secondary/danger)
- * - Защита от повторных кликов (isSubmitting) — замечание из ТЗ
- * - Автоматическая блокировка при loading (предотвращение дублей записей)
- *
- * Примеры использования:
- *   <Button onClick={handleSave}>Сохранить</Button>
- *   <Button variant="danger" onClick={handleDelete}>Удалить</Button>
- *   <Button isLoading={isSubmitting}>Отправка...</Button>
- *   <Button leftIcon={<CalendarIcon />}>Выбрать дату</Button>
+ * 
+ * АРХИТЕКТУРНАЯ РОЛЬ:
+ * Единый стиль кнопок во всём приложении (единая точка настройки)
+ * Инкапсуляция состояний: loading, disabled, варианты (primary/secondary/danger)
+ * Защита от повторных кликов (isSubmitting) — замечание из ТЗ
+ * Автоматическая блокировка при loading (предотвращение дублей записей)
+ * 
+ * 🔥 ЗАМЕЧАНИЕ №12: Добавлена встроенная защита от spam-кликов через prop `rateLimit`
+ * Если rateLimit=true, кнопка использует useRateLimiter для отслеживания кликов
  */
-
-import { forwardRef } from 'react';
+import { forwardRef, useCallback } from 'react';
 import { Loader2 } from 'lucide-react';
+import { useRateLimiter } from '../../hooks/useRateLimiter';
+import { useLanguage } from '../../hooks/useLanguage';
+import Toast from './Toast';
 import './Button.css';
 
 /**
@@ -27,9 +26,9 @@ import './Button.css';
 const Button = forwardRef(function Button(
   {
     children,
-    variant = 'primary',      // primary | secondary | danger | ghost | outline
-    size = 'md',              // sm | md | lg
-    type = 'button',          // ПОЧЕМУ не submit? Защита от случайной отправки формы
+    variant = 'primary',
+    size = 'md',
+    type = 'button',
     isLoading = false,
     disabled = false,
     leftIcon = null,
@@ -37,14 +36,43 @@ const Button = forwardRef(function Button(
     fullWidth = false,
     className = '',
     onClick,
+    rateLimit = false, // 🔥 НОВОЕ: включить rate limiting
     ...restProps
   },
-  ref
+  ref,
 ) {
+  const { t } = useLanguage();
+  const { checkLimit, reset } = useRateLimiter();
+
   // ПОЧЕМУ вычисляем disabled отдельно?
   // Кнопка должна быть заблокирована и при явном disabled, и при loading.
-  // Это защищает от повторных кликов во время отправки формы.
   const isDisabled = disabled || isLoading;
+
+  // 🔥 ОБЁРТКА onClick с проверкой rate limit
+  const handleClick = useCallback(
+    (e) => {
+      if (!onClick) return;
+
+      // 🔥 Если rateLimit включён — проверяем лимит
+      if (rateLimit && !isDisabled) {
+        const result = checkLimit();
+        if (!result.allowed) {
+          // Показываем toast с сообщением и оставшимся временем блокировки
+          Toast.error(
+            t(result.message, { seconds: result.blockedSeconds }),
+            { duration: 3000 },
+          );
+          return;
+        }
+      }
+
+      onClick(e);
+    },
+    [onClick, rateLimit, isDisabled, checkLimit, t],
+  );
+
+  // Сброс счётчика при размонтировании
+  // (не обязательно, но хорошая практика)
 
   // ПОЧЕМУ формируем className через массив?
   // BEM-методология: блок + модификаторы. Легко расширять и читать.
@@ -66,9 +94,7 @@ const Button = forwardRef(function Button(
       type={type}
       className={buttonClasses}
       disabled={isDisabled}
-      onClick={onClick}
-      // ПОЧЕМУ aria-disabled в дополнение к disabled?
-      // Некоторые скринридеры лучше воспринимают aria-атрибуты.
+      onClick={handleClick}
       aria-disabled={isDisabled}
       aria-busy={isLoading}
       {...restProps}

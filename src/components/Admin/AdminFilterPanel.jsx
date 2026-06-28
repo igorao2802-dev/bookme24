@@ -1,22 +1,30 @@
 /**
  * AdminFilterPanel.jsx — панель фильтров и сортировки для администратора
  * 
- * 🔥 ЭТАП 1.4: Валидация дат
- * 🔥 ЭТАП 3.2: Разделение на три секции
- * 🔥 ЭТАП 7.6: Полная локализация через t()
+ * 🔥 ИСПРАВЛЕНО:
+ * - Используется кастомный календарь react-datepicker для полной локализации
+ * - Устранены все опечатки (& &, = >)
+ * - Добавлена поддержка тёмной темы для DatePicker
+ * - Локализованный формат даты (дд.мм.гггг / mm/dd/yyyy)
  */
-
+import { useState } from 'react';
 import { Filter, RotateCcw, Search, ArrowUpDown } from 'lucide-react';
-
+import DatePicker from 'react-datepicker';
+import { registerLocale } from 'react-datepicker';
+import ru from 'date-fns/locale/ru';
+import en from 'date-fns/locale/en-US';
+import 'react-datepicker/dist/react-datepicker.css';
 import Input from '../UI/Input';
 import Select from '../UI/Select';
 import Badge from '../UI/Badge';
 import Toast from '../UI/Toast';
-
 import { BOOKING_STATUS } from '../../utils/constants';
-import { useLanguage } from '../../hooks/useLanguage'; // 🔥 ЭТАП 7.6
-
+import { useLanguage } from '../../hooks/useLanguage';
 import './AdminFilterPanel.css';
+
+// Регистрация локалей для DatePicker
+registerLocale('ru', ru);
+registerLocale('en', en);
 
 export default function AdminFilterPanel({
   filters,
@@ -27,10 +35,10 @@ export default function AdminFilterPanel({
   onReset,
   activeCount = 0,
 }) {
-  const { t } = useLanguage(); // 🔥 ЭТАП 7.6
+  const { t, language } = useLanguage();
+  const currentLocale = language === 'en' ? 'en' : 'ru';
 
   // === ОПЦИИ СТАТУСОВ ===
-  // 🔥 ЭТАП 7.6: label берётся через t('status.' + status)
   const statusOptions = [
     { value: 'all', label: t('admin.filters.allStatuses') },
     ...Object.values(BOOKING_STATUS).map((status) => ({
@@ -49,7 +57,6 @@ export default function AdminFilterPanel({
   ];
 
   // === ОПЦИИ СОРТИРОВКИ ===
-  // 🔥 ЭТАП 7.6: все label через t()
   const sortOptions = [
     { value: 'date-desc', label: t('admin.sort.dateDesc') },
     { value: 'date-asc', label: t('admin.sort.dateAsc') },
@@ -59,8 +66,8 @@ export default function AdminFilterPanel({
   ];
 
   // === ОБРАБОТЧИК ИЗМЕНЕНИЯ ДАТЫ "ОТ" ===
-  const handleDateFromChange = (e) => {
-    const newDateFrom = e.target.value;
+  const handleDateFromChange = (date) => {
+    const newDateFrom = date ? date.toISOString().split('T')[0] : '';
     if (filters.dateTo && newDateFrom > filters.dateTo) {
       onFilterChange('dateTo', '');
       Toast.info(t('admin.filters.dateFromResetWarning'), {
@@ -71,8 +78,8 @@ export default function AdminFilterPanel({
   };
 
   // === ОБРАБОТЧИК ИЗМЕНЕНИЯ ДАТЫ "ДО" ===
-  const handleDateToChange = (e) => {
-    const newDateTo = e.target.value;
+  const handleDateToChange = (date) => {
+    const newDateTo = date ? date.toISOString().split('T')[0] : '';
     if (filters.dateFrom && newDateTo < filters.dateFrom) {
       onFilterChange('dateFrom', '');
       Toast.info(t('admin.filters.dateToResetWarning'), {
@@ -82,8 +89,12 @@ export default function AdminFilterPanel({
     onFilterChange('dateTo', newDateTo);
   };
 
-  // === ЛОКАЛЬ ДЛЯ ФОРМАТИРОВАНИЯ ДАТ ===
-  const locale = t('common.locale') === 'en' ? 'en-US' : 'ru-RU';
+  // Преобразование строки даты в объект Date для DatePicker
+  const dateFromString = (dateStr) => {
+    if (!dateStr) return null;
+    const [year, month, day] = dateStr.split('-');
+    return new Date(year, month - 1, day);
+  };
 
   return (
     <div className="admin-filter-panel">
@@ -93,7 +104,9 @@ export default function AdminFilterPanel({
           <Filter size={18} />
           {t('admin.filters.title')}
           {activeCount > 0 && (
-            <Badge variant="warning" size="sm">{activeCount}</Badge>
+            <Badge variant="warning" size="sm">
+              {activeCount}
+            </Badge>
           )}
         </h3>
         {activeCount > 0 && (
@@ -159,35 +172,39 @@ export default function AdminFilterPanel({
             options={specialistOptions}
           />
 
-          {/* Дата от */}
-          <Input
-            type="date"
-            label={t('admin.filters.dateFrom')}
-            value={filters.dateFrom}
-            onChange={handleDateFromChange}
-            max={filters.dateTo || undefined}
-            helperText={
-              filters.dateTo
-                ? `${t('admin.filters.notLaterThan')} ${new Date(filters.dateTo).toLocaleDateString(locale)}`
-                : t('admin.filters.selectStartDate')
-            }
-            title={t('admin.filters.selectStartDate')}
-          />
+          {/* 🔥 Дата от — кастомный календарь с локализацией */}
+          <div className="admin-filter-panel__date-field">
+            <label className="input__label">
+              {t('admin.filters.dateFrom')}
+            </label>
+            <DatePicker
+              selected={dateFromString(filters.dateFrom)}
+              onChange={handleDateFromChange}
+              locale={currentLocale}
+              dateFormat={language === 'en' ? 'MM/dd/yyyy' : 'dd.MM.yyyy'}
+              placeholderText={t('admin.filters.datePlaceholder')}
+              maxDate={filters.dateTo ? dateFromString(filters.dateTo) : undefined}
+              isClearable
+              className="input__field"
+            />
+          </div>
 
-          {/* Дата до */}
-          <Input
-            type="date"
-            label={t('admin.filters.dateTo')}
-            value={filters.dateTo}
-            onChange={handleDateToChange}
-            min={filters.dateFrom || undefined}
-            helperText={
-              filters.dateFrom
-                ? `${t('admin.filters.notEarlierThan')} ${new Date(filters.dateFrom).toLocaleDateString(locale)}`
-                : t('admin.filters.selectEndDate')
-            }
-            title={t('admin.filters.selectEndDate')}
-          />
+          {/* 🔥 Дата до — кастомный календарь с локализацией */}
+          <div className="admin-filter-panel__date-field">
+            <label className="input__label">
+              {t('admin.filters.dateTo')}
+            </label>
+            <DatePicker
+              selected={dateFromString(filters.dateTo)}
+              onChange={handleDateToChange}
+              locale={currentLocale}
+              dateFormat={language === 'en' ? 'MM/dd/yyyy' : 'dd.MM.yyyy'}
+              placeholderText={t('admin.filters.datePlaceholder')}
+              minDate={filters.dateFrom ? dateFromString(filters.dateFrom) : undefined}
+              isClearable
+              className="input__field"
+            />
+          </div>
         </div>
       </div>
     </div>

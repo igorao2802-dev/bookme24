@@ -212,3 +212,54 @@
     font-size: var(--font-size-lg, 1.125rem);
   }
 }
+
+/* ═══════════════════════════════════════════════
+   ТЁМНАЯ ТЕМА
+   ═══════════════════════════════════════════════ */
+[data-theme="dark"] .profile-page__header h1 {
+  color: var(--color-text, #f5ede4);
+}
+
+[data-theme="dark"] .profile-page__subtitle {
+  color: var(--color-text-muted, #c9b89f);
+}
+
+[data-theme="dark"] .profile-page__section {
+  background: var(--color-surface, #2a211b);
+  border: 1px solid var(--color-border, #44362b);
+}
+
+[data-theme="dark"] .profile-page__section-title {
+  color: var(--color-text, #f5ede4);
+}
+
+[data-theme="dark"] .profile-page__placeholder {
+  background: var(--color-bg, #1c1613);
+  border-color: var(--color-border, #44362b);
+  color: var(--color-text-muted, #c9b89f);
+}
+
+[data-theme="dark"] .profile-page__placeholder li {
+  color: var(--color-text-muted, #c9b89f);
+}
+
+[data-theme="dark"] .profile-card {
+  background: linear-gradient(
+    135deg,
+    var(--color-primary-soft, #3d2f26) 0%,
+    var(--color-surface, #2a211b) 100%
+  );
+  border-color: var(--color-primary-600, #9c7558);
+}
+
+[data-theme="dark"] .profile-card__name {
+  color: var(--color-text, #f5ede4);
+}
+
+[data-theme="dark"] .profile-card__contact-item {
+  color: var(--color-text-muted, #c9b89f);
+}
+
+[data-theme="dark"] .profile-card__contact-icon {
+  color: var(--color-primary-400, #c9a88c);
+}

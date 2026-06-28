@@ -1,6 +1,7 @@
 /**
  * Layout.jsx — Компонент-обёртка
  * 🔥 ЭТАП 5.4: Полная локализация логотипа и подвала
+ * 🔥 ИСПРАВЛЕНО: Используется nav.manager вместо nav.admin
  */
 import { Link, useLocation } from 'react-router-dom';
 import { USER_ROLES } from '../../utils/constants.js';
@@ -16,7 +17,7 @@ export default function Layout({ children, userRole, onRoleChange }) {
   const menuItems = [
     { path: '/', label: t('nav.booking'), roles: [USER_ROLES.CLIENT, USER_ROLES.ADMIN] },
     { path: '/catalog', label: t('nav.catalog'), roles: [USER_ROLES.CLIENT, USER_ROLES.ADMIN] },
-    { path: '/admin', label: t('nav.manager'), roles: [USER_ROLES.ADMIN] },
+    { path: '/admin', label: t('nav.manager'), roles: [USER_ROLES.ADMIN] }, //  nav.manager
     { path: '/profile', label: t('nav.profile'), roles: [USER_ROLES.CLIENT] },
   ];
 
@@ -28,16 +29,18 @@ export default function Layout({ children, userRole, onRoleChange }) {
         <div className="layout__container">
           <div className="layout__brand">
             <Link to="/" className="layout__logo">
-              💇‍♀️ <span>{t('common.brandName')}</span> {/* 🔥 ЭТАП 5.4 */}
+              💇♀️ <span>{t('common.brandName')}</span>
             </Link>
           </div>
-          
+
           <nav className="layout__nav" aria-label={t('common.mainNavigation')}>
             {visibleMenu.map(item => (
               <Link
                 key={item.path}
                 to={item.path}
-                className={`layout__nav-link ${location.pathname === item.path ? 'layout__nav-link--active' : ''}`}
+                className={`layout__nav-link ${
+                  location.pathname === item.path ? 'layout__nav-link--active' : ''
+                }`}
               >
                 {item.label}
               </Link>
@@ -56,7 +59,7 @@ export default function Layout({ children, userRole, onRoleChange }) {
                   className="layout__role-select"
                 >
                   <option value={USER_ROLES.CLIENT}>{t('common.client')}</option>
-                  <option value={USER_ROLES.ADMIN}>{t('common.manager')}</option>
+                  <option value={USER_ROLES.ADMIN}>{t('common.admin')}</option>
                 </select>
               </label>
             </div>
@@ -68,7 +71,6 @@ export default function Layout({ children, userRole, onRoleChange }) {
         <div className="layout__container">{children}</div>
       </main>
 
-      {/* 🔥 ЭТАП 5.4: Полная локализация подвала */}
       <footer className="layout__footer">
         <div className="layout__container">
           <div className="layout__footer-grid">

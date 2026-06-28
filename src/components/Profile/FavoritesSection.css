@@ -36,3 +36,14 @@
     font-size: var(--font-size-lg, 1.125rem);
   }
 }
+
+/* ═══════════════════════════════════════════════
+   ТЁМНАЯ ТЕМА
+   ═══════════════════════════════════════════════ */
+[data-theme="dark"] .favorites-section__title {
+  color: var(--color-text, #f5ede4);
+}
+
+[data-theme="dark"] .favorites-section__count {
+  color: var(--color-text-muted, #c9b89f);
+}

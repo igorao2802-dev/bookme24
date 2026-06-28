@@ -101,3 +101,30 @@
     display: inline; /* Активный таб показывает текст */
   }
 }
+
+/* ═══════════════════════════════════════════════
+   ТЁМНАЯ ТЕМА
+   ═══════════════════════════════════════════════ */
+[data-theme="dark"] .booking-history__tabs {
+  background: var(--color-bg, #1c1613);
+}
+
+[data-theme="dark"] .booking-history__tab {
+  color: var(--color-text-muted, #c9b89f);
+}
+
+[data-theme="dark"] .booking-history__tab:hover {
+  background: var(--color-surface, #2a211b);
+  color: var(--color-text, #f5ede4);
+}
+
+[data-theme="dark"] .booking-history__tab--active {
+  background: var(--color-surface, #2a211b);
+  border-color: var(--color-primary-400, #c9a88c);
+  color: var(--color-primary-400, #c9a88c);
+}
+
+[data-theme="dark"] .booking-history__tab--active:hover {
+  background: var(--color-primary-soft, #3d2f26);
+  color: var(--color-primary-400, #c9a88c);
+}

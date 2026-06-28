@@ -1,33 +1,56 @@
 /**
- * Кастомный хук для безопасной работы с localStorage
+ * useLocalStorage.js — кастомный хук для безопасной работы с localStorage
  *
- * ПОЧЕМУ отдельный хук, а не прямой вызов storageHelper?
- * 1. Инкапсулирует useState + useEffect в одной точке
- * 2. Автоматически синхронизирует state ↔ localStorage
- * 3. Debounce на запись защищает от лишних операций
- * 4. Единая точка расширения (например, миграция версий)
- *
- * Архитектурная роль:
+ * АРХИТЕКТУРНАЯ РОЛЬ:
  * Это "клей" между React-состоянием и постоянным хранилищем.
  * Компоненты не должны знать о существовании localStorage —
  * они просто работают с переменной и сеттером.
+ *
+ * ПОЧЕМУ отдельный хук, а не прямой вызов storageHelper?
+ * - Инкапсулирует useState + useEffect в одной точке
+ * - Автоматически синхронизирует state ↔ localStorage
+ * - Debounce на запись защищает от лишних операций
+ * - Единая точка расширения (например, миграция версий)
+ * - Синхронизация между вкладками через storage event
  */
-
 import { useState, useEffect, useRef, useCallback } from "react";
 import { safeGetItem, safeSetItem } from "../utils/storageHelper";
 
 /**
+ * Хук для работы с localStorage как с React state
+ *
  * @param {string} key - ключ в localStorage
- * @param {*} initialValue - значение по умолчанию
+ * @param {*} initialValue - значение по умолчанию (если ключа нет)
  * @param {Object} options - настройки
- * @param {number} options.debounceMs - задержка записи (по умолчанию 300мс)
- * @returns {[value, setValue, removeValue]} - как useState, но с сохранением
+ * @param {number} options.debounceMs - задержка записи в мс (по умолчанию 300)
+ *
+ * @returns {[value, setValue, removeValue]} - кортеж как у useState,
+ *   но с дополнительным методом removeValue для физического удаления ключа
+ *
+ * @example
+ * const [bookings, setBookings, clearBookings] = useLocalStorage(
+ *   STORAGE_KEYS.BOOKINGS,
+ *   [],
+ *   { debounceMs: 300 }
+ * );
+ *
+ * // Обычное обновление
+ * setBookings([...bookings, newBooking]);
+ *
+ * // Функциональное обновление (безопасно при быстрых изменениях)
+ * setBookings(prev => [...prev, newBooking]);
+ *
+ * // Полное удаление ключа из localStorage
+ * clearBookings();
  */
 export function useLocalStorage(key, initialValue, options = {}) {
+  // === НАСТРОЙКИ ===
+  // ПОЧЕМУ деструктуризация с дефолтом?
+  // Позволяет не передавать options, если debounce не нужен
   const { debounceMs = 300 } = options;
 
   // === ИНИЦИАЛИЗАЦИЯ STATE ===
-  // ПОЧЕМУ функция-инициализатор?
+  // ПОЧЕМУ функция-инициализатор (() => ...)?
   // Она выполняется ТОЛЬКО при первом рендере, а не при каждом.
   // Это критично для производительности: не читаем localStorage
   // на каждый ререндер компонента.
@@ -45,10 +68,11 @@ export function useLocalStorage(key, initialValue, options = {}) {
   // === SETTER С DEBOUNCE ===
   // ПОЧЕМУ useCallback?
   // Чтобы ссылка на функцию не менялась при каждом рендере.
-  // Это важно при передаче setValue в дочерние компоненты.
+  // Это важно при передаче setValue в дочерние компоненты
+  // через props — иначе они будут ререндериться без причины.
   const setValue = useCallback(
     (value) => {
-      // 1. Обновляем React-state немедленно (UI реагирует сразу)
+      // 1. Обновляем React-state НЕМЕДЛЕННО
       // ПОЧЕМУ функциональное обновление prev => ...?
       // Это защищает от гонок состояния при быстрых обновлениях.
       // React гарантирует, что prev — это актуальное значение.
@@ -113,23 +137,30 @@ export function useLocalStorage(key, initialValue, options = {}) {
   // Это критично для избранного и черновиков формы.
   useEffect(() => {
     const handleStorageChange = (event) => {
-      if (event.key === key && event.newValue !== null) {
-        try {
-          setStoredValue(JSON.parse(event.newValue));
-        } catch {
+      // Реагируем только на изменения нашего ключа
+      if (event.key === key) {
+        if (event.newValue !== null) {
+          try {
+            setStoredValue(JSON.parse(event.newValue));
+          } catch {
+            // Если JSON битый — сбрасываем к начальному значению
+            setStoredValue(initialValue);
+          }
+        } else {
+          // Ключ удалён в другой вкладке
           setStoredValue(initialValue);
         }
-      }
-      // Если ключ удалён в другой вкладке
-      if (event.key === key && event.newValue === null) {
-        setStoredValue(initialValue);
       }
     };
 
     window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
   }, [key, initialValue]);
 
+  // === ВОЗВРАЩАЕМ ПУБЛИЧНОЕ API ХУКА ===
   return [storedValue, setValue, removeValue];
 }
 

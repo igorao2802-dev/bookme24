@@ -15,7 +15,6 @@ import "./index.css";
 // Работает в связке с .htaccess — при F5 сервер отдаёт index.html,
 // а React Router сам определяет, какой компонент показать.
 const root = ReactDOM.createRoot(document.getElementById("root"));
-
 root.render(
   <React.StrictMode>
     {/* 🔥 ИСПРАВЛЕНО: Добавлены future флаги для подавления предупреждений v7 */}
@@ -26,20 +25,25 @@ root.render(
       }}
     >
       <App />
-      {/*
+      {/* 
         ПОЧЕМУ Toaster здесь?
         Глобальный контейнер для toast-уведомлений, доступен во всём приложении.
         position="top-right" — стандартное положение для desktop.
+        
+        🔥 ЗАМЕЧАНИЕ №11: Унифицирована длительность = 3000мс
       */}
       <Toaster
         position="top-right"
         toastOptions={{
-          duration: 3000,
+          duration: 3000, // 🔥 ЗАМЕЧАНИЕ №11: 3 секунды (было 3000)
           style: {
             background: "var(--color-surface)",
             color: "var(--color-text)",
             borderRadius: "var(--radius-md)",
             boxShadow: "var(--shadow-lg)",
+            // 🔥 ЗАМЕЧАНИЕ №11: Отключаем встроенную анимацию react-hot-toast
+            // чтобы не конфликтовала с нашей CSS-анимацией fade out
+            animation: "none",
           },
           success: {
             iconTheme: {

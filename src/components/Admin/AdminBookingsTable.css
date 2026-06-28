@@ -151,3 +151,48 @@
     margin-left: 0;
   }
 }
+
+/* ═══════════════════════════════════════════════
+   ТЁМНАЯ ТЕМА
+   ═══════════════════════════════════════════════ */
+[data-theme="dark"] .admin-booking-row {
+  background: var(--color-bg, #1c1613);
+  border-color: var(--color-border, #44362b);
+}
+
+[data-theme="dark"] .admin-booking-row:hover {
+  border-color: var(--color-primary-400, #c9a88c);
+}
+
+[data-theme="dark"] .admin-booking-row--cancelled {
+  background: var(--color-error-light, #3d2419);
+}
+
+[data-theme="dark"] .admin-booking-row__title {
+  color: var(--color-text, #f5ede4);
+}
+
+[data-theme="dark"] .admin-booking-row__detail {
+  color: var(--color-text, #f5ede4);
+}
+
+[data-theme="dark"] .admin-booking-row__detail strong {
+  color: var(--color-text-muted, #c9b89f);
+}
+
+[data-theme="dark"] .admin-booking-row__meta {
+  border-top-color: var(--color-border, #44362b);
+}
+
+[data-theme="dark"] .admin-booking-row__meta-item {
+  color: var(--color-text-muted, #c9b89f);
+}
+
+[data-theme="dark"] .admin-booking-row__meta-item--price {
+  color: var(--color-primary-400, #c9a88c);
+}
+
+[data-theme="dark"] .admin-booking-row__comment {
+  background: var(--color-surface, #2a211b);
+  color: var(--color-text-muted, #c9b89f);
+}

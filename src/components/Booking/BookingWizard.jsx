@@ -1,21 +1,14 @@
 /**
  * BookingWizard.jsx — главный компонент многошаговой записи (Stepper)
  * 
- * АРХИТЕКТУРНАЯ РОЛЬ:
- * Это "дирижёр" всей формы записи. Он:
- * - Хранит черновик (draft) записи в одном объекте (Single Source of Truth)
- * - Управляет текущим шагом (currentStep)
- * - Автосохраняет draft в localStorage
- * - Координирует переходы между шагами с валидацией
- * 
- * 🔥 ЭТАП 2.1: Кнопки навигации зафиксированы внизу экрана (sticky)
- * 🔥 ЭТАП 3.2: Оптимизация навигации и UX (кнопка очистки, кликабельные шаги)
- * 🔥 ЭТАП 3.4: Маршрутизация от карточки специалиста (фильтрация услуг + пропуск шага 2)
- * 🔥 ЭТАП 7.4: Полная локализация всех пользовательских текстов
- * 🔥 ЭТАП 18: Исправлено исчезновение услуг при возврате на шаг 1
- * 🔥 ЭТАП 19: Добавлен индикатор загрузки при подтверждении (isProcessing)
+ * 🔥 ИСПРАВЛЕНО ЮЗАБИЛИТИ:
+ * - Rate limiting только на критических кнопках (Далее, Назад, Очистить)
+ * - Обычные действия (выбор услуги, категории, сортировка) без лимита
+ * - Сброс счётчика при успешном действии
+ * - Только одно toast-уведомление при блокировке
+ * - Визуальное выделение выбранной услуги
  */
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Check, ArrowLeft, ArrowRight, Trash2 } from 'lucide-react';
 
@@ -34,10 +27,10 @@ import Toast from '../UI/Toast';
 // === УТИЛИТЫ И ХУКИ ===
 import { useLocalStorage } from '../../hooks/useLocalStorage';
 import { useLanguage } from '../../hooks/useLanguage';
+import { useRateLimiter } from '../../hooks/useRateLimiter';
 import { BOOKING_STEPS, STORAGE_KEYS } from '../../utils/constants';
 import { validateBookingForm } from '../../utils/validators';
 import { playBookingConfirmation } from '../../utils/audioHelper';
-
 import './BookingWizard.css';
 
 // === НАЧАЛЬНЫЙ ЧЕРНОВИК ===
@@ -71,56 +64,149 @@ export default function BookingWizard({
   const location = useLocation();
   const { t } = useLanguage();
 
+  // 🔥 ИСПРАВЛЕНО: Отдельный rate limiter только для навигации
+  const { checkLimit: checkNavigationLimit, reset: resetNavigationLimit } = useRateLimiter();
+
   const [currentStep, setCurrentStep] = useState(BOOKING_STEPS.SERVICE);
-  
   const [draft, setDraft, clearDraft] = useLocalStorage(
     STORAGE_KEYS.BOOKING_DRAFT,
     INITIAL_DRAFT,
-    { debounceMs: 500 }
+    { debounceMs: 500 },
   );
-
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  // 🔥 ЭТАП 19: Состояние для индикатора загрузки
   const [isProcessing, setIsProcessing] = useState(false);
   const [showMyBookings, setShowMyBookings] = useState(false);
   const [lastCreatedBooking, setLastCreatedBooking] = useState(null);
-  
   const [lastClientPhone, setLastClientPhone] = useLocalStorage(
     'bookme24_last_client_phone',
     '',
-    { debounceMs: 0 }
+    { debounceMs: 0 },
   );
 
-  // === 🔥 ОБНОВЛЕНИЕ ЧЕРНОВИКА (useCallback для стабильной ссылки) ===
-  const updateDraft = useCallback((updates) => {
-    setDraft((prev) => ({ ...prev, ...updates }));
-  }, [setDraft]);
+  // Ref для отслеживания "первой загрузки" vs "изменений пользователем"
+  const isInitialMount = useRef(true);
+  const prevDraftRef = useRef(draft);
+
+  // 🔥 Ref для предотвращения дублирования toast при блокировке
+  const isBlockedToastShown = useRef(false);
+
+  // === ОБНОВЛЕНИЕ ЧЕРНОВИКА ===
+  const updateDraft = useCallback(
+    (updates) => {
+      setDraft((prev) => ({ ...prev, ...updates }));
+    },
+    [setDraft],
+  );
+
+  // ===  ИСПРАВЛЕНО: Обработчик выбора услуги БЕЗ rate limiting ===
+  const handleServiceSelect = useCallback(
+    (serviceId) => {
+      // Сбрасываем счётчик навигации при выборе услуги
+      resetNavigationLimit();
+      
+      if (serviceId === draft.serviceId) {
+        // Повторный клик — снимаем выбор
+        updateDraft({
+          serviceId: null,
+          specialistId: null,
+          date: null,
+          startTime: null,
+        });
+      } else {
+        updateDraft({ serviceId });
+      }
+    },
+    [draft.serviceId, updateDraft, resetNavigationLimit],
+  );
+
+  // === КОНТЕКСТНЫЕ УВЕДОМЛЕНИЯ ПРИ ВЫБОРЕ ===
+  useEffect(() => {
+    if (isInitialMount.current) return;
+    if (draft.serviceId && !prevDraftRef.current.serviceId) {
+      const serviceName = services.find((s) => s.id === draft.serviceId)?.name;
+      if (serviceName) {
+        Toast.success(t('booking.serviceSelected', { name: serviceName }), {
+          duration: 2000,
+        });
+      }
+    }
+  }, [draft.serviceId, services, t]);
+
+  useEffect(() => {
+    if (isInitialMount.current) return;
+    if (draft.specialistId && !prevDraftRef.current.specialistId) {
+      const specialistName = specialists.find(
+        (s) => s.id === draft.specialistId,
+      )?.fullName;
+      if (specialistName) {
+        Toast.success(
+          t('booking.specialistSelected', { name: specialistName }),
+          { duration: 2000 },
+        );
+      }
+    }
+  }, [draft.specialistId, specialists, t]);
+
+  useEffect(() => {
+    if (isInitialMount.current) return;
+    if (
+      draft.date &&
+      draft.startTime &&
+      (!prevDraftRef.current.date || !prevDraftRef.current.startTime)
+    ) {
+      Toast.success(t('booking.dateTimeSelected'), { duration: 2000 });
+    }
+  }, [draft.date, draft.startTime, t]);
+
+  useEffect(() => {
+    if (isInitialMount.current) return;
+    if (
+      currentStep === BOOKING_STEPS.CONFIRM &&
+      prevDraftRef.current.clientName !== draft.clientName
+    ) {
+      Toast.success(t('booking.contactsSaved'), { duration: 2000 });
+    }
+  }, [currentStep, draft.clientName, t]);
+
+  useEffect(() => {
+    prevDraftRef.current = draft;
+  });
 
   // === ОБРАБОТКА ПЕРЕХОДА ИЗ КАТАЛОГА ===
   useEffect(() => {
-    const { preselectedServiceId, preselectedSpecialistId, startStep } = location.state || {};
+    const { preselectedServiceId, preselectedSpecialistId, startStep } =
+      location.state || {};
 
     if (preselectedSpecialistId) {
-      const specialistExists = specialists.some(s => s.id === preselectedSpecialistId);
+      const specialistExists = specialists.some(
+        (s) => s.id === preselectedSpecialistId,
+      );
       if (specialistExists) {
         updateDraft({ specialistId: preselectedSpecialistId });
         setCurrentStep(startStep || BOOKING_STEPS.SERVICE);
-        
-        const specialistName = specialists.find(s => s.id === preselectedSpecialistId)?.fullName;
-        Toast.success(t('booking.specialistSelected', { name: specialistName }), { duration: 2000 });
+        const specialistName = specialists.find(
+          (s) => s.id === preselectedSpecialistId,
+        )?.fullName;
+        Toast.success(
+          t('booking.specialistSelected', { name: specialistName }),
+          { duration: 2000 },
+        );
       }
     }
 
     if (preselectedServiceId) {
-      const serviceExists = services.some(s => s.id === preselectedServiceId);
+      const serviceExists = services.some((s) => s.id === preselectedServiceId);
       if (serviceExists) {
         updateDraft({ serviceId: preselectedServiceId });
         const targetStep = startStep || BOOKING_STEPS.SPECIALIST;
         setCurrentStep(targetStep);
-
-        const serviceName = services.find(s => s.id === preselectedServiceId)?.name;
-        Toast.success(t('booking.serviceSelected', { name: serviceName }), { duration: 2000 });
+        const serviceName = services.find(
+          (s) => s.id === preselectedServiceId,
+        )?.name;
+        Toast.success(t('booking.serviceSelected', { name: serviceName }), {
+          duration: 2000,
+        });
       } else {
         Toast.error(t('booking.serviceNotFound'), { duration: 3000 });
       }
@@ -131,12 +217,14 @@ export default function BookingWizard({
     }
   }, [location.state, t, updateDraft, specialists, services, navigate]);
 
-  // === 🔥 ОБЪЕДИНЁННАЯ ЛОГИКА АВТО-ПЕРЕХОДА (ЭТАП 3.2 + 3.4) ===
+  // === АВТО-ПЕРЕХОД ===
   useEffect(() => {
     if (!draft.serviceId) return;
-    const selectedService = services.find(s => s.id === draft.serviceId);
-
-    if (draft.specialistId || (selectedService && selectedService.specialistIds?.length === 1)) {
+    const selectedService = services.find((s) => s.id === draft.serviceId);
+    if (
+      draft.specialistId ||
+      (selectedService && selectedService.specialistIds?.length === 1)
+    ) {
       if (!draft.specialistId && selectedService) {
         updateDraft({ specialistId: selectedService.specialistIds[0] });
       }
@@ -145,33 +233,41 @@ export default function BookingWizard({
   }, [draft.serviceId, draft.specialistId, services, updateDraft]);
 
   const selectedService = services.find((s) => s.id === draft.serviceId);
-  const selectedSpecialist = specialists.find((s) => s.id === draft.specialistId);
+  const selectedSpecialist = specialists.find(
+    (s) => s.id === draft.specialistId,
+  );
 
-  useEffect(() => {
-    const hasDraft = draft.serviceId || draft.specialistId || draft.clientName || draft.clientPhone;
-    if (hasDraft) {
-      Toast.info(t('booking.draft.restored'), { duration: 3000 });
-    }
-  }, [draft.serviceId, draft.specialistId, draft.clientName, draft.clientPhone, t]);
-
-  const clearStepData = useCallback((step) => {
-    switch (step) {
-      case BOOKING_STEPS.DATETIME:
-        updateDraft({ date: null, startTime: null });
-        break;
-      case BOOKING_STEPS.SPECIALIST:
-        updateDraft({ specialistId: null, date: null, startTime: null });
-        break;
-      case BOOKING_STEPS.SERVICE:
-        updateDraft({ serviceId: null, specialistId: null, date: null, startTime: null });
-        break;
-      case BOOKING_STEPS.CONTACTS:
-        updateDraft({ clientName: '', clientPhone: '', clientEmail: '', comment: '' });
-        break;
-      default:
-        break;
-    }
-  }, [updateDraft]);
+  const clearStepData = useCallback(
+    (step) => {
+      switch (step) {
+        case BOOKING_STEPS.DATETIME:
+          updateDraft({ date: null, startTime: null });
+          break;
+        case BOOKING_STEPS.SPECIALIST:
+          updateDraft({ specialistId: null, date: null, startTime: null });
+          break;
+        case BOOKING_STEPS.SERVICE:
+          updateDraft({
+            serviceId: null,
+            specialistId: null,
+            date: null,
+            startTime: null,
+          });
+          break;
+        case BOOKING_STEPS.CONTACTS:
+          updateDraft({
+            clientName: '',
+            clientPhone: '',
+            clientEmail: '',
+            comment: '',
+          });
+          break;
+        default:
+          break;
+      }
+    },
+    [updateDraft],
+  );
 
   const validateCurrentStep = useCallback(() => {
     switch (currentStep) {
@@ -214,52 +310,108 @@ export default function BookingWizard({
       default:
         return true;
     }
-  }, [currentStep, draft.serviceId, draft.specialistId, draft.date, draft.startTime, 
-      draft.clientName, draft.clientPhone, draft.clientEmail, draft.comment, t]);
+  }, [
+    currentStep,
+    draft.serviceId,
+    draft.specialistId,
+    draft.date,
+    draft.startTime,
+    draft.clientName,
+    draft.clientPhone,
+    draft.clientEmail,
+    draft.comment,
+    t,
+  ]);
 
+  // 🔥 ИСПРАВЛЕНО: handleNext с rate limiting и сбросом при успехе
   const handleNext = useCallback(() => {
+    const limitResult = checkNavigationLimit();
+    if (!limitResult.allowed) {
+      // Показываем toast только один раз
+      if (!isBlockedToastShown.current) {
+        Toast.error(
+          t(limitResult.message, { seconds: limitResult.blockedSeconds }),
+          { duration: 3000 },
+        );
+        isBlockedToastShown.current = true;
+        // Сбрасываем флаг через 3 секунды
+        setTimeout(() => {
+          isBlockedToastShown.current = false;
+        }, 3000);
+      }
+      return;
+    }
+
     if (!validateCurrentStep()) return;
+
     if (currentStep === BOOKING_STEPS.CONTACTS) {
       setShowConfirmation(true);
       return;
     }
-    setCurrentStep((prev) => Math.min(prev + 1, BOOKING_STEPS.CONFIRM));
-  }, [validateCurrentStep, currentStep]);
 
-  // 🔥 ЭТАП 18: ИСПРАВЛЕНИЕ возврата — очистка specialistId при возврате на шаг 1
-  // ПОЧЕМУ это важно?
-  // - Если пользователь выбрал специалиста на шаге 2, а потом вернулся на шаг 1,
-  //   specialistId остаётся в draft и фильтрует услуги
-  // - Нужно сбросить specialistId, чтобы показать ВСЕ услуги
+    setCurrentStep((prev) => Math.min(prev + 1, BOOKING_STEPS.CONFIRM));
+  }, [validateCurrentStep, currentStep, checkNavigationLimit, t]);
+
   const handleBack = useCallback(() => {
-    // 🔥 Если возвращаемся с шага 2 (Специалист) или шага 3 (Дата/Время)
-    // на шаг 1 (Услуга) — очищаем specialistId
-    if (currentStep === BOOKING_STEPS.SPECIALIST || currentStep === BOOKING_STEPS.DATETIME) {
+    const limitResult = checkNavigationLimit();
+    if (!limitResult.allowed) {
+      if (!isBlockedToastShown.current) {
+        Toast.error(
+          t(limitResult.message, { seconds: limitResult.blockedSeconds }),
+          { duration: 3000 },
+        );
+        isBlockedToastShown.current = true;
+        setTimeout(() => {
+          isBlockedToastShown.current = false;
+        }, 3000);
+      }
+      return;
+    }
+
+    if (
+      currentStep === BOOKING_STEPS.SPECIALIST ||
+      currentStep === BOOKING_STEPS.DATETIME
+    ) {
       updateDraft({ specialistId: null });
     }
     clearStepData(currentStep);
     setCurrentStep((prev) => Math.max(prev - 1, BOOKING_STEPS.SERVICE));
-  }, [clearStepData, currentStep, updateDraft]);
+  }, [clearStepData, currentStep, updateDraft, checkNavigationLimit, t]);
 
   const handleClearForm = useCallback(() => {
-    const confirmed = window.confirm(t('booking.clearFormConfirm') || 'Вы уверены, что хотите очистить форму? Все введенные данные будут потеряны.');
+    const limitResult = checkNavigationLimit();
+    if (!limitResult.allowed) {
+      if (!isBlockedToastShown.current) {
+        Toast.error(
+          t(limitResult.message, { seconds: limitResult.blockedSeconds }),
+          { duration: 3000 },
+        );
+        isBlockedToastShown.current = true;
+        setTimeout(() => {
+          isBlockedToastShown.current = false;
+        }, 3000);
+      }
+      return;
+    }
+
+    const confirmed = window.confirm(
+      t('booking.clearFormConfirm') ||
+        'Вы уверены, что хотите очистить форму? Все введённые данные будут потеряны.',
+    );
     if (confirmed) {
       clearDraft();
       setCurrentStep(BOOKING_STEPS.SERVICE);
-      Toast.info(t('booking.formCleared') || 'Форма очищена');
+      Toast.info(t('booking.formCleared'), { duration: 3000 });
     }
-  }, [clearDraft, t]);
+  }, [clearDraft, t, checkNavigationLimit]);
 
-  // 🔥 ЭТАП 19: Добавлена пауза 0.7 сек с индикатором загрузки
   const handleConfirm = useCallback(async () => {
     if (isSubmitting) return;
     setIsSubmitting(true);
-    // 🔥 ЭТАП 19: Показываем индикатор обработки
     setIsProcessing(true);
 
     try {
-      // 🔥 ЭТАП 19: Пауза 0.7 сек для отображения скелетона
-      await new Promise(resolve => setTimeout(resolve, 700));
+      await new Promise((resolve) => setTimeout(resolve, 700));
 
       const result = onCreateBooking({
         serviceId: draft.serviceId,
@@ -275,16 +427,20 @@ export default function BookingWizard({
 
       if (result.success) {
         playBookingConfirmation();
-        Toast.success(t('booking.confirmation.success', { 
-          service: selectedService?.name, 
-          time: draft.startTime 
-        }));
+        Toast.success(
+          t('booking.confirmation.success', {
+            service: selectedService?.name,
+            time: draft.startTime,
+          }),
+        );
         setLastCreatedBooking(result.booking);
         setLastClientPhone(draft.clientPhone.trim());
         clearDraft();
         setShowConfirmation(false);
         setShowMyBookings(true);
         setCurrentStep(BOOKING_STEPS.SERVICE);
+        // Сбрасываем счётчик после успешного действия
+        resetNavigationLimit();
       } else {
         Toast.error(result.error || t('booking.confirmation.failed'));
       }
@@ -295,9 +451,23 @@ export default function BookingWizard({
       setIsSubmitting(false);
       setIsProcessing(false);
     }
-  }, [isSubmitting, onCreateBooking, draft.serviceId, draft.specialistId, draft.date, 
-      draft.startTime, draft.clientName, draft.clientPhone, draft.clientEmail, 
-      draft.comment, selectedService, t, setLastClientPhone, clearDraft]);
+  }, [
+    isSubmitting,
+    onCreateBooking,
+    draft.serviceId,
+    draft.specialistId,
+    draft.date,
+    draft.startTime,
+    draft.clientName,
+    draft.clientPhone,
+    draft.clientEmail,
+    draft.comment,
+    selectedService,
+    t,
+    setLastClientPhone,
+    clearDraft,
+    resetNavigationLimit,
+  ]);
 
   const handleNewBooking = useCallback(() => {
     clearDraft();
@@ -306,14 +476,15 @@ export default function BookingWizard({
     setShowMyBookings(false);
   }, [clearDraft, setLastCreatedBooking]);
 
-  const progressPercent = ((currentStep - 1) / (BOOKING_STEPS.CONFIRM - 1)) * 100;
+  const progressPercent =
+    ((currentStep - 1) / (BOOKING_STEPS.CONFIRM - 1)) * 100;
 
   const phoneForFilter = draft.clientPhone || lastClientPhone;
   const myBookings = bookings.filter(
     (b) =>
       b.clientPhone &&
       phoneForFilter &&
-      b.clientPhone.replace(/\D/g, '') === phoneForFilter.replace(/\D/g, '')
+      b.clientPhone.replace(/\D/g, '') === phoneForFilter.replace(/\D/g, ''),
   );
 
   if (showMyBookings) {
@@ -355,7 +526,7 @@ export default function BookingWizard({
           {Object.values(BOOKING_STEPS).map((stepNum) => {
             const isActive = currentStep === stepNum;
             const isCompleted = currentStep > stepNum;
-            const isClickable = isCompleted; 
+            const isClickable = isCompleted;
             const stepLabel = t(STEP_TRANSLATION_KEYS[stepNum]);
 
             return (
@@ -389,18 +560,19 @@ export default function BookingWizard({
           <ServiceSelector
             services={services}
             selectedServiceId={draft.serviceId}
-            onSelect={(serviceId) => updateDraft({ serviceId })}
+            onSelect={handleServiceSelect}
           />
         )}
 
         {currentStep === BOOKING_STEPS.SPECIALIST && (
-          <SpecialistSelector
-            specialists={specialists}
-            selectedServiceId={draft.serviceId}
-            selectedSpecialistId={draft.specialistId}
-            onSelect={(specialistId) => updateDraft({ specialistId })}
-          />
-        )}
+        <SpecialistSelector
+          specialists={specialists}
+          services={services}  // 🔥 ДОБАВЛЕНО: для обратной проверки
+          selectedServiceId={draft.serviceId}
+          selectedSpecialistId={draft.specialistId}
+          onSelect={(specialistId) => updateDraft({ specialistId })}
+        />
+      )}
 
         {currentStep === BOOKING_STEPS.DATETIME && (
           <TimeSlotPicker
@@ -409,8 +581,14 @@ export default function BookingWizard({
             bookings={bookings}
             selectedDate={draft.date}
             selectedTime={draft.startTime}
-            onSelectDate={(date) => updateDraft({ date, startTime: null })}
-            onSelectTime={(startTime) => updateDraft({ startTime })}
+            onSelectDate={(date) => {
+              resetNavigationLimit();
+              updateDraft({ date, startTime: null });
+            }}
+            onSelectTime={(startTime) => {
+              resetNavigationLimit();
+              updateDraft({ startTime });
+            }}
           />
         )}
 
@@ -444,7 +622,11 @@ export default function BookingWizard({
         <Button
           variant="primary"
           onClick={handleNext}
-          rightIcon={currentStep === BOOKING_STEPS.CONTACTS ? null : <ArrowRight size={16} />}
+          rightIcon={
+            currentStep === BOOKING_STEPS.CONTACTS ? null : (
+              <ArrowRight size={16} />
+            )
+          }
           size="lg"
         >
           {getNextButtonText()}

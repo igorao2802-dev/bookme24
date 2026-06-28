@@ -68,7 +68,7 @@ export default function ServiceCard({
       <div className="service-card__meta">
         <span className="service-card__meta-item">
           <Clock size={14} />
-          {formatDuration(service.duration)}
+          {formatDuration(service.duration, t)}
         </span>
         <span className="service-card__meta-item">
           <Star size={14} className="service-card__star" />

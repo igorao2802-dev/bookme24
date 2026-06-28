@@ -1,110 +1,168 @@
 /**
- * validators.js — модуль валидации входных данных
+ * validateName.js — улучшенная валидация имени клиента
  *
- * ПОЧЕМУ отдельный файл?
- * - Переиспользование во всех формах (Запись, Редактирование, Админка)
- * - Единая точка правки regex-ов и правил
- * - Легко покрывать unit-тестами
+ * 🔥 ЗАМЕЧАНИЕ №15: Улучшена валидация Email
+ * - Проверка длины 254 символа (RFC 5321)
+ * - Строгий regex для формата email
+ * - Отдельная проверка недопустимых символов
+ * - Пустое значение = валидно (поле необязательно)
  *
- * 🔥 ИСПРАВЛЕНИЕ 1.1: Все валидаторы возвращают errorKey (ключ перевода),
- * а не захардкоженные строки. Компоненты переводят через t(errorKey).
+ * 🔥 ЗАМЕЧАНИЕ №13: Убрана валидация "минимум 2 слова"
+ * - Теперь допустимо любое непустое значение
+ * - Проверка на минимальную длину не требуется
  */
 
-import { BY_PHONE_CODES, FIELD_LIMITS } from "./constants.js";
-
+import { BY_PHONE_CODES, FIELD_LIMITS, PRICE_LIMITS } from "./constants.js";
 /**
- * Валидация телефона Республики Беларусь
- * Формат: +375 (XX) XXX-XX-XX, где XX ∈ {25, 29, 33, 44}
+ * Валидация цены услуги
+ * - Только целые числа
+ * - Без ведущих нулей
+ * - Максимум 10000 BYN
+ *
+ * @param {number|string} price - цена
+ * @param {Object} options - дополнительные опции
+ * @param {boolean} options.required - обязательно ли поле (по умолчанию true)
+ * @param {number} options.max - максимальная цена (по умолчанию PRICE_LIMITS.MAX)
+ * @returns {{isValid: boolean, errorKey: string|null}}
  */
-export function validatePhone(phone) {
-  if (!phone || typeof phone !== "string") {
-    return { isValid: false, errorKey: "validation.phone.required" };
+export function validatePrice(price, options = {}) {
+  const { required = true, max = PRICE_LIMITS.MAX } = options;
+
+  // Пустое значение
+  if (price === undefined || price === null || price === "") {
+    return required
+      ? { isValid: false, errorKey: "validation.service.priceRequired" }
+      : { isValid: true, errorKey: null };
   }
 
-  // Нормализуем: убираем пробелы, скобки, дефисы
-  const cleaned = phone.replace(/\D/g, "");
+  const num = Number(price);
 
-  if (cleaned.length !== 12) {
-    return {
-      isValid: false,
-      errorKey: "validation.phone.tooShort",
-    };
+  // Проверка на NaN
+  if (isNaN(num)) {
+    return { isValid: false, errorKey: "validation.service.priceInvalid" };
   }
 
-  if (!cleaned.startsWith("375")) {
-    return { isValid: false, errorKey: "validation.phone.invalidPrefix" };
+  // Проверка на дробное число
+  if (!Number.isInteger(num)) {
+    return { isValid: false, errorKey: "validation.service.priceNotInteger" };
   }
 
-  const operatorCode = cleaned.slice(3, 5);
-  if (!BY_PHONE_CODES.includes(operatorCode)) {
-    return {
-      isValid: false,
-      errorKey: "validation.phone.invalidCode",
-    };
+  // Проверка на отрицательное значение
+  if (num < PRICE_LIMITS.MIN) {
+    return { isValid: false, errorKey: "validation.service.priceTooLow" };
+  }
+
+  // Проверка на превышение максимума
+  if (num > max) {
+    return { isValid: false, errorKey: "validation.service.priceTooHigh" };
   }
 
   return { isValid: true, errorKey: null };
 }
 
+// 🔥 ЗАМЕЧАНИЕ №15: Строгий regex для email
+// Разрешает: буквы, цифры, . _ % + - в локальной части
+// Разрешает: буквы, цифры, . - в доменной части
+// Обязателен: минимум 2 символа в TLD
+const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+// 🔥 ЗАМЕЧАНИЕ №15: Regex для проверки недопустимых символов
+// Запрещает: пробелы, кириллицу, спецсимволы кроме разрешённых
+const INVALID_EMAIL_CHARS_REGEX = /[^a-zA-Z0-9._%+-@]/;
+
 /**
- * Валидация ФИО клиента
- * ПОЧЕМУ минимум 2 слова? Требование ТЗ: клиент должен указать имя и фамилию
+ * Валидация телефона Республики Беларусь
+ */
+export function validatePhone(phone) {
+  if (!phone || typeof phone !== "string" || phone.trim() === "") {
+    return { isValid: true, errorKey: null };
+  }
+  const cleaned = phone.replace(/\D/g, "");
+  if (cleaned.length === 0) {
+    return { isValid: true, errorKey: null };
+  }
+  if (cleaned.length !== 12) {
+    return { isValid: false, errorKey: "validation.phone.tooShort" };
+  }
+  if (!cleaned.startsWith("375")) {
+    return { isValid: false, errorKey: "validation.phone.invalidPrefix" };
+  }
+  const operatorCode = cleaned.slice(3, 5);
+  if (!BY_PHONE_CODES.includes(operatorCode)) {
+    return { isValid: false, errorKey: "validation.phone.invalidCode" };
+  }
+  return { isValid: true, errorKey: null };
+}
+
+/**
+ * 🔥 ЗАМЕЧАНИЕ №13: Улучшенная валидация имени
+ *
+ * Проверки по порядку:
+ * 1. Пустое значение → ошибка "обязательное поле"
+ * 2. Длина > 100 символов → ошибка "слишком длинное"
+ * 3. Недопустимые символы → ошибка "недопустимые символы"
+ *
+ * 🔥 УДАЛЕНО: Проверка на минимальное количество слов (было "минимум 2 слова")
+ *
+ * @param {string} name - имя для проверки
+ * @returns {{isValid: boolean, errorKey: string|null}}
  */
 export function validateName(name) {
   if (!name || typeof name !== "string") {
     return { isValid: false, errorKey: "validation.name.required" };
   }
-
   const trimmed = name.trim();
-
   if (trimmed.length === 0) {
     return { isValid: false, errorKey: "validation.name.required" };
   }
-
   if (trimmed.length > FIELD_LIMITS.NAME_MAX_LENGTH) {
-    return {
-      isValid: false,
-      errorKey: "validation.name.tooLong",
-    };
+    return { isValid: false, errorKey: "validation.name.tooLong" };
   }
-
-  // Проверка на 2+ слова (кириллица или латиница, допускаем дефис)
-  const wordsCount = trimmed.split(/\s+/).length;
-  if (wordsCount < 2) {
-    return { isValid: false, errorKey: "validation.name.minTwoWords" };
-  }
-
-  // Проверка на допустимые символы (буквы, пробелы, дефисы)
+  // 🔥 ЗАМЕЧАНИЕ №13: Удалена проверка на минимальное количество слов
+  // const wordsCount = trimmed.split(/\s+/).length;
+  // if (wordsCount < 2) {
+  //   return { isValid: false, errorKey: "validation.name.minTwoWords" };
+  // }
   const nameRegex = /^[a-zA-Zа-яА-ЯёЁіІўЎ\s-']+$/;
   if (!nameRegex.test(trimmed)) {
-    return {
-      isValid: false,
-      errorKey: "validation.name.invalidChars",
-    };
+    return { isValid: false, errorKey: "validation.name.invalidChars" };
   }
-
   return { isValid: true, errorKey: null };
 }
 
 /**
- * Валидация email (RFC-совместимая, упрощённая)
+ * 🔥 ЗАМЕЧАНИЕ №15: Улучшенная валидация email
+ *
+ * Проверки по порядку:
+ * 1. Пустое значение → валидно (поле необязательно)
+ * 2. Длина > 254 → ошибка "слишком длинный"
+ * 3. Недопустимые символы → ошибка "недопустимые символы"
+ * 4. Неверный формат → ошибка "некорректный формат"
+ *
+ * @param {string} email - email для проверки
+ * @returns {{isValid: boolean, errorKey: string|null}}
  */
 export function validateEmail(email) {
-  // Пустой email допустим (поле опциональное)
-  if (!email || email.trim() === "") {
+  // 🔥 Пустое значение допустимо (поле необязательное)
+  if (!email || typeof email !== "string" || email.trim() === "") {
     return { isValid: true, errorKey: null };
   }
 
-  if (email.length > FIELD_LIMITS.EMAIL_MAX_LENGTH) {
-    return {
-      isValid: false,
-      errorKey: "validation.email.tooLong",
-    };
+  const trimmed = email.trim();
+
+  // 🔥 Проверка длины (стандарт RFC 5321: максимум 254 символа)
+  if (trimmed.length > FIELD_LIMITS.EMAIL_MAX_LENGTH) {
+    return { isValid: false, errorKey: "validation.email.tooLong" };
   }
 
-  // Базовый regex: что-то @ что-то . что-то (минимум 2 символа в домене)
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-  if (!emailRegex.test(email)) {
+  //  Проверка недопустимых символов
+  // Запрещены: пробелы, кириллица, спецсимволы кроме ._ %+-@
+  if (INVALID_EMAIL_CHARS_REGEX.test(trimmed)) {
+    return { isValid: false, errorKey: "validation.email.invalidChars" };
+  }
+
+  // 🔥 Проверка корректного формата через строгий regex
+  if (!EMAIL_REGEX.test(trimmed)) {
     return { isValid: false, errorKey: "validation.email.invalid" };
   }
 
@@ -116,43 +174,29 @@ export function validateEmail(email) {
  */
 export function validateComment(comment) {
   if (!comment) {
-    return { isValid: true, errorKey: null }; // Пустой комментарий допустим
+    return { isValid: true, errorKey: null };
   }
-
   if (comment.length > FIELD_LIMITS.COMMENT_MAX_LENGTH) {
-    return {
-      isValid: false,
-      errorKey: "validation.comment.tooLong",
-    };
+    return { isValid: false, errorKey: "validation.comment.tooLong" };
   }
-
-  // Защита от XSS: запрещаем HTML-теги
   const htmlTagRegex = /<[^>]*>/;
   if (htmlTagRegex.test(comment)) {
-    return {
-      isValid: false,
-      errorKey: "validation.comment.htmlNotAllowed",
-    };
+    return { isValid: false, errorKey: "validation.comment.htmlNotAllowed" };
   }
-
   return { isValid: true, errorKey: null };
 }
 
 /**
- * Валидация даты записи (не в прошлом, не дальше горизонта)
- * @param {string} dateString - ISO-формат "YYYY-MM-DD"
+ * Валидация даты записи
  */
 export function validateBookingDate(dateString) {
   if (!dateString) {
     return { isValid: false, errorKey: "validation.date.notSelected" };
   }
-
   const selectedDate = new Date(dateString);
-
   if (isNaN(selectedDate.getTime())) {
     return { isValid: false, errorKey: "validation.date.invalidFormat" };
   }
-
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const selectedDay = new Date(
@@ -160,44 +204,30 @@ export function validateBookingDate(dateString) {
     selectedDate.getMonth(),
     selectedDate.getDate(),
   );
-
-  // Запрет прошедших дат
   if (selectedDay < today) {
     return { isValid: false, errorKey: "validation.date.inPast" };
   }
-
-  // Горизонт планирования (30 дней)
   const maxDate = new Date(today);
   maxDate.setDate(maxDate.getDate() + 30);
   if (selectedDay > maxDate) {
-    return {
-      isValid: false,
-      errorKey: "validation.date.tooFarAhead",
-    };
+    return { isValid: false, errorKey: "validation.date.tooFarAhead" };
   }
-
   return { isValid: true, errorKey: null };
 }
 
 /**
  * Универсальная валидация всей формы контактов (шаг 4)
- * 🔥 ИСПРАВЛЕНИЕ 1.1: Возвращает ключи переводов, а не строки
  */
 export function validateBookingForm(formData) {
   const errors = {};
-
   const nameResult = validateName(formData.clientName);
   if (!nameResult.isValid) errors.clientName = nameResult.errorKey;
-
   const phoneResult = validatePhone(formData.clientPhone);
   if (!phoneResult.isValid) errors.clientPhone = phoneResult.errorKey;
-
   const emailResult = validateEmail(formData.clientEmail);
   if (!emailResult.isValid) errors.clientEmail = emailResult.errorKey;
-
   const commentResult = validateComment(formData.comment);
   if (!commentResult.isValid) errors.comment = commentResult.errorKey;
-
   return {
     isValid: Object.keys(errors).length === 0,
     errors,

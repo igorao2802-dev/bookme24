@@ -1,23 +1,15 @@
 /**
  * Стили для LanguageToggle
- * BEM-методология + адаптивность
+ * BEM-методология + адаптивность + поддержка тёмной темы
  * 
- * ПОЧЕМУ именно такой дизайн?
- * - Компактный: две маленькие кнопки в одну линию (60-70px)
- * - Соответствует терракотовой палитре салона
- * - Активный язык — насыщенный терракот (primary-600)
- * - Неактивный — прозрачный с белым текстом (для шапки на градиенте)
- * - Плавная анимация через transition (150ms)
- * 
- * 🔥 ЭТАП 7.2: Переключатель языка
+ * 🔥 ЗАМЕЧАНИЕ №8: Усилена визуальная индикация активного языка
+ * - Добавлен font-weight: 600 для активного состояния
+ * - Усилена рамка в активном состоянии
+ * - Добавлен box-shadow для объёма
+ * - Улучшен контраст в тёмной теме
  */
 
 /* === КОНТЕЙНЕР === */
-/* 
-  ПОЧЕМУ backdrop-filter?
-  Создаёт эффект "матового стекла" поверх градиента шапки.
-  Это визуально отделяет переключатель от фона, не перекрывая его цветом.
-*/
 .language-toggle {
   display: inline-flex;
   gap: 2px;
@@ -25,49 +17,32 @@
   background: rgba(255, 255, 255, 0.1);
   border-radius: var(--radius-md, 8px);
   backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px); /* Safari support */
+  -webkit-backdrop-filter: blur(4px);
 }
 
 /* === КНОПКА ЯЗЫКА === */
 .language-toggle__btn {
-  /* 
-    ПОЧЕМУ min-width: 32px?
-    Достаточно для двух букв + padding, но не громоздко.
-    Вместе с gap 2px и padding 2px даёт компактный размер ~70px.
-  */
-  min-width: 32px;
-  padding: 6px 10px;
-
+  min-width: 36px;
+  padding: 6px 12px;
   background: transparent;
-  border: 1px solid transparent;
+  border: 1.5px solid transparent;
   border-radius: calc(var(--radius-md, 8px) - 2px);
-
   font-family: var(--font-family, inherit);
   font-size: var(--font-size-xs, 0.75rem);
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: 0.5px;
   line-height: 1;
-
-  /* ПОЧЕМУ color: text-inverse?
-     Переключатель размещается в шапке с терракотовым градиентом,
-     поэтому текст должен быть белым для контраста 8.5:1 */
   color: var(--color-text-inverse, #ffffff);
-
   cursor: pointer;
   user-select: none;
-
   transition:
     background-color var(--transition-fast, 150ms ease),
     border-color var(--transition-fast, 150ms ease),
-    transform var(--transition-fast, 150ms ease);
+    transform var(--transition-fast, 150ms ease),
+    font-weight var(--transition-fast, 150ms ease);
 }
 
 /* === HOVER (только для неактивных кнопок) === */
-/* 
-  ПОЧЕМУ :not(:disabled)?
-  Активная кнопка disabled, ей hover не нужен — иначе будет "мигать".
-  Это избавляет от необходимости переопределять hover для --active.
-*/
 .language-toggle__btn:hover:not(:disabled) {
   background: rgba(255, 255, 255, 0.15);
   border-color: rgba(255, 255, 255, 0.3);
@@ -79,55 +54,46 @@
 }
 
 /* === FOCUS-VISIBLE (клавиатурная навигация) === */
-/* 
-  ПОЧЕМУ :focus-visible, а не :focus?
-  - :focus срабатывает и при клике мышкой → раздражающий outline
-  - :focus-visible срабатывает ТОЛЬКО при Tab
-  Это современный стандарт A11y (WCAG 2.1).
-*/
 .language-toggle__btn:focus-visible {
   outline: 2px solid var(--color-text-inverse, #ffffff);
   outline-offset: 2px;
 }
 
-/* === АКТИВНОЕ СОСТОЯНИЕ === */
-/* 
-  ПОЧЕМУ primary-600?
-  - Терракотовый цвет бренда салона
-  - Высокий контраст с белым текстом (8.5:1 — WCAG AAA)
-  - Чётко выделяет активный язык среди прозрачных кнопок
+/* === 🔥 АКТИВНОЕ СОСТОЯНИЕ (ЗАМЕЧАНИЕ №8) === */
+/* ПОЧЕМУ такие стили?
+   - primary-600 — терракотовый цвет бренда, высокий контраст с белым (8.5:1)
+   - font-weight: 600 — жирный шрифт для явного выделения
+   - border: 2px solid — явная рамка для чёткой границы
+   - box-shadow — объём для визуального "поднятия"
 */
 .language-toggle__btn--active {
   background: var(--color-primary-600, #9c7558);
-  border-color: var(--color-primary-600, #9c7558);
+  border: 2px solid var(--color-primary-500, #b8957a);
   color: var(--color-text-inverse, #ffffff);
+  font-weight: 600;
   cursor: default;
-  box-shadow: 0 2px 4px rgba(61, 47, 38, 0.2);
+  box-shadow:
+    0 2px 4px rgba(61, 47, 38, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  letter-spacing: 0.8px;
 }
 
 /* Отключаем hover/active эффекты для активной кнопки */
 .language-toggle__btn--active:hover:not(:disabled),
 .language-toggle__btn--active:active:not(:disabled) {
   background: var(--color-primary-600, #9c7558);
-  border-color: var(--color-primary-600, #9c7558);
+  border-color: var(--color-primary-500, #b8957a);
   transform: none;
 }
 
 /* === DISABLED СОСТОЯНИЕ === */
-/* 
-  ПОЧЕМУ не меняем opacity?
-  Активная кнопка disabled, но должна выглядеть ярко,
-  а не "серой и неактивной". Пользователь должен её видеть.
-  Мы просто убираем cursor: pointer через cursor: default выше.
-*/
 .language-toggle__btn:disabled {
   /* Оставляем визуальный вид, убираем только интерактивность */
 }
 
-/* === ПОДДЕРЖКА ТЁМНОЙ ТЕМЫ (ЭТАП 6.1) === */
-/* 
-  В тёмной теме фон контейнера делаем чуть темнее для контраста,
-  т.к. основной фон страницы тёмный, а не градиент.
+/* === ПОДДЕРЖКА ТЁМНОЙ ТЕМЫ === */
+/* ПОЧЕМУ отдельные стили для тёмной темы?
+   В тёмной теме фон шапки другой, нужно адаптировать контраст
 */
 [data-theme="dark"] .language-toggle {
   background: rgba(0, 0, 0, 0.25);
@@ -142,26 +108,31 @@
   background: rgba(255, 255, 255, 0.08);
 }
 
+/* 🔥 Усиленное активное состояние в тёмной теме */
 [data-theme="dark"] .language-toggle__btn--active {
   background: var(--color-primary-600, #9c7558);
+  border: 2px solid var(--color-primary-400, #c9a88c);
   color: var(--color-text-inverse, #ffffff);
+  font-weight: 600;
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
 /* === АДАПТИВНОСТЬ === */
 @media (max-width: 480px) {
   .language-toggle__btn {
-    min-width: 28px;
-    padding: 5px 8px;
+    min-width: 32px;
+    padding: 5px 10px;
     font-size: 0.7rem;
+  }
+
+  .language-toggle__btn--active {
+    font-weight: 600;
   }
 }
 
 /* === ДОСТУПНОСТЬ: prefers-reduced-motion === */
-/* 
-  ПОЧЕМУ это важно?
-  Некоторые пользователи отключают анимации из-за вестибулярных нарушений.
-  Уважение к этим настройкам — требование WCAG 2.1.
-*/
 @media (prefers-reduced-motion: reduce) {
   .language-toggle__btn {
     transition: none;

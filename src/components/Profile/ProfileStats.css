@@ -56,8 +56,8 @@
 .profile-stats__card--highlight {
   background: linear-gradient(
     135deg,
-    var(--color-primary-600, #9c7558) 0%,
-    var(--color-primary-700, #7f5e44) 100%
+    var(--color-primary-700, #9c7558) 0%,
+    var(--color-primary-900, #7f5e44) 100%
   );
   color: white;
   border-left-color: transparent;
@@ -142,4 +142,49 @@
   .profile-stats {
     grid-template-columns: 1fr;
   }
+}
+
+/* ═══════════════════════════════════════════════
+   ТЁМНАЯ ТЕМА
+   ═══════════════════════════════════════════════ */
+[data-theme="dark"] .profile-stats__card {
+  background: var(--color-surface, #2a211b);
+  border: 1px solid var(--color-border, #44362b);
+}
+
+[data-theme="dark"] .profile-stats__card:hover {
+  background: linear-gradient(
+    135deg,
+    var(--color-surface, #2a211b) 0%,
+    var(--color-primary-soft, #3d2f26) 100%
+  );
+}
+
+[data-theme="dark"] .profile-stats__label {
+  color: var(--color-text-muted, #c9b89f);
+}
+
+[data-theme="dark"] .profile-stats__value {
+  color: var(--color-text, #f5ede4);
+}
+
+[data-theme="dark"] .profile-stats__icon {
+  background: var(--color-primary-soft, #3d2f26);
+  color: var(--color-primary-400, #c9a88c);
+}
+
+[data-theme="dark"] .profile-stats__card--highlight {
+  background: linear-gradient(
+    135deg,
+    var(--color-primary-600, #9c7558) 0%,
+    var(--color-primary-800, #5e4532) 100%
+  );
+}
+
+[data-theme="dark"] .profile-stats__card--highlight:hover {
+  background: linear-gradient(
+    135deg,
+    var(--color-primary-700, #7f5e44) 0%,
+    var(--color-primary-900, #3d2f26) 100%
+  );
 }

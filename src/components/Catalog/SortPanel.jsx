@@ -1,6 +1,9 @@
 /**
  * SortPanel.jsx — выпадающий список сортировки
- * 🔥 ЭТАП 5.4: Полная локализация опций сортировки
+ * 
+ *  ЭТАП 5.4: Полная локализация опций сортировки
+ * 🔥 ЗАМЕЧАНИЕ №10: Используется nameShort ("A–Z") вместо name ("Alphabetically")
+ *    для компактности на мобильных устройствах
  */
 import { ArrowUpDown } from 'lucide-react';
 import { useLanguage } from '../../hooks/useLanguage';
@@ -9,20 +12,23 @@ import './SortPanel.css';
 export default function SortPanel({ value, onChange, viewMode = 'services' }) {
   const { t } = useLanguage();
 
-  const options = viewMode === 'services'
-    ? [
-        { value: 'popular', label: t('catalog.sort.popular') },
-        { value: 'price-asc', label: t('catalog.sort.priceAsc') },
-        { value: 'price-desc', label: t('catalog.sort.priceDesc') },
-        { value: 'rating', label: t('catalog.sort.rating') },
-        { value: 'name', label: t('catalog.sort.name') },
-      ]
-    : [
-        { value: 'popular', label: t('catalog.sort.popular') },
-        { value: 'rating', label: t('catalog.sort.rating') },
-        { value: 'experience', label: t('catalog.sort.experience') },
-        { value: 'name', label: t('catalog.sort.name') },
-      ];
+  // 🔥 ЗАМЕЧАНИЕ №10: Используем nameShort ("A–Z") вместо name ("Alphabetically")
+  // ПОЧЕМУ? "A–Z" короче, понятнее и помещается на любых экранах
+  const options =
+    viewMode === 'services'
+      ? [
+          { value: 'popular', label: t('catalog.sort.popular') },
+          { value: 'price-asc', label: t('catalog.sort.priceAsc') },
+          { value: 'price-desc', label: t('catalog.sort.priceDesc') },
+          { value: 'rating', label: t('catalog.sort.rating') },
+          { value: 'name', label: t('catalog.sort.nameShort') }, // 🔥 Было name, стало nameShort
+        ]
+      : [
+          { value: 'popular', label: t('catalog.sort.popular') },
+          { value: 'rating', label: t('catalog.sort.rating') },
+          { value: 'experience', label: t('catalog.sort.experience') },
+          { value: 'name', label: t('catalog.sort.nameShort') }, // 🔥 Было name, стало nameShort
+        ];
 
   return (
     <div className="sort-panel">

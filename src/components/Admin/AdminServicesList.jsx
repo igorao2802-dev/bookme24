@@ -1,11 +1,11 @@
 /**
  * AdminServicesList.jsx — список услуг с CRUD-операциями
- *
+ * 
  * 🔥 ИСПРАВЛЕНО:
+ * - Устранены все опечатки (clos eModal, h andleSave)
  * - Передаётся prop specialists для назначения в форме
- * - Редактирование разрешено для всех услуг (для стандартных создаётся копия)
+ * - Редактирование разрешено для всех услуг
  * - Удаление запрещено только для стандартных услуг
- * - Строковое сравнение ID для корректной работы со старыми записями
  */
 import { useState } from 'react';
 import { Plus, Edit2, Trash2 } from 'lucide-react';
@@ -26,7 +26,6 @@ export default function AdminServicesList({
   onDelete,
 }) {
   const { t } = useLanguage();
-
   const [modalState, setModalState] = useState({
     isOpen: false,
     mode: 'add',
@@ -63,10 +62,8 @@ export default function AdminServicesList({
     }
   };
 
-  // 🔥 Редактирование разрешено для всех
   const canEdit = () => true;
 
-  // 🔥 Удаление только для кастомных
   const canDelete = (service) => {
     return service.isCustom || String(service.id).startsWith('custom_');
   };
