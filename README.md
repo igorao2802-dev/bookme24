@@ -1,11 +1,7 @@
 # 📋 README.md для проекта bookme24
 
 ```markdown
-# 🏥 BookMe24 — Система онлайн-записи для салона красоты
-
-[![React](https://img.shields.io/badge/React-18.2.0-61dafb.svg?logo=react)](https://reactjs.org/)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![WCAG](https://img.shields.io/badge/WCAG-2.1%20AA-success.svg)](https://www.w3.org/WAI/WCAG21/quickref/)
+# 🏥 bookme24.by — Система онлайн-записи для салона красоты
 
 **BookMe24** — это современная система онлайн-записи для салонов красоты «Здоровье и красота». Приложение позволяет клиентам записываться на услуги 24/7, а администраторам — эффективно управлять расписанием, услугами и специалистами.
 
@@ -159,20 +155,6 @@ bookme24/
 └── README.md                    # Документация
 ```
 
-## 🔧 Конфигурация
-
-### Переменные окружения
-
-Создайте файл `.env` в корне проекта на основе `.env.example`:
-
-```env
-# API конфигурация (если будет подключен бэкенд)
-REACT_APP_API_URL=https://api.bookme24.by
-REACT_APP_API_KEY=your_api_key_here
-
-# Режим разработки
-REACT_APP_DEBUG=false
-```
 
 ### Константы приложения
 
@@ -262,7 +244,7 @@ REACT_APP_DEBUG=false
 
 ### Rate Limiting
 
-Защита от многократных кликов (замечание №12):
+Защита от многократных кликов:
 - ≤ 3 клика за 5 секунд (короткое окно)
 - ≤ 10 кликов за 30 секунд (длинное окно)
 - Блокировка на 30 секунд при превышении лимита
@@ -321,47 +303,6 @@ npm run lint
 - **axe DevTools**
 - **WAVE**
 
-## 🚀 Деплой
-
-### Требования к хостингу
-
-1. **HTTPS** — обязательное шифрование
-2. **Client-side routing** — настройка `.htaccess` для React Router
-3. **Белорусский хостинг** (если требуется по ТЗ)
-
-### Настройка .htaccess
-
-```apache
-<IfModule mod_rewrite.c>
-  RewriteEngine On
-  RewriteBase /
-  RewriteRule ^index\.html$ - [L]
-  RewriteCond %{REQUEST_FILENAME} !-f
-  RewriteCond %{REQUEST_FILENAME} !-d
-  RewriteCond %{REQUEST_FILENAME} !-l
-  RewriteRule . /index.html [L]
-</IfModule>
-```
-
-### Сборка и деплой
-
-```bash
-# Сборка production-версии
-npm run build
-
-# Копирование папки build на сервер
-# (зависит от вашего хостинга)
-```
-
-## 📝 Чек-лист готовности
-
-- [x] Работоспособность (приложение открывается, переходы работают)
-- [x] Адаптивность (корректное отображение на iPhone 12/13/14)
-- [x] Чистая консоль (нет красных ошибок, минимум warnings)
-- [x] Архитектура (понятная структура папок, разделение логики)
-- [x] State Management (useState/useEffect/Context, без лишних ререндеров)
-- [x] Безопасность (нет ключей API в коде, настроен .env и .gitignore)
-- [x] Деплой (сборка через npm run build, HTTPS настроен)
 
 ## 🤝 Вклад
 
